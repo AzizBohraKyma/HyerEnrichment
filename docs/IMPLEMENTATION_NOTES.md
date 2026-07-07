@@ -6,7 +6,7 @@ This Scribe pass finalizes the **documentation and release handoff** for the AZI
 
 The codebase now presents the project as two clearly separated parts:
 
-- **frontend at the repo root**
+- **frontend in `frontend/`**
 - **backend in `backend/`**
 
 This matches the requested preference that backend code live in a dedicated backend folder rather than at the top level.
@@ -15,11 +15,11 @@ This matches the requested preference that backend code live in a dedicated back
 
 ### Frontend
 
-The frontend remains in the existing root-level Next.js structure:
+The frontend lives under `frontend/`:
 
-- `app/`
-- `components/`
-- `src/`
+- `frontend/app/`
+- `frontend/components/`
+- `frontend/src/`
 
 It continues to provide the enrichment intake flow, pipeline UI, and dossier presentation.
 
@@ -69,7 +69,7 @@ Ready for automated PR completion:
 
 Use this repo as:
 
-- a root-level frontend app for UI review and build steps
+- a `frontend/` app for UI review and build steps
 - a separate backend service rooted in `backend/`
 
 Recommended operator entrypoints:
@@ -77,6 +77,7 @@ Recommended operator entrypoints:
 ### Frontend
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
