@@ -1,6 +1,15 @@
+from typing import Any
+
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+try:
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+except ImportError:  # pragma: no cover - optional runtime dependency fallback
+    CONTENT_TYPE_LATEST = "text/plain; version=0.0.4; charset=utf-8"
+
+    def generate_latest(*args: Any, **kwargs: Any) -> bytes:
+        return b""
 
 from app.config import get_settings
 from app.models import HealthResponse
