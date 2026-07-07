@@ -15,7 +15,7 @@
 - backend API entrypoint, auth guard, enrichment routes, opt-out routes, and health route
 - modular enrichment worker/orchestrator and provider modules
 - backend Dockerfiles, compose configuration, environment template, and tests
-- preserved frontend application at repo root
+- moved frontend application into `frontend/`
 
 ### Notes
 
