@@ -4,7 +4,7 @@ HyerEnrichment is now structured as a **split frontend + backend repository** fo
 
 This repo contains:
 
-- a **Next.js frontend** at the repository root for the enrichment experience UI
+- a **Next.js frontend** under `frontend/` for the enrichment experience UI
 - a **Python/FastAPI backend** under `backend/` for enrichment APIs, orchestration, and backend deployment scaffolding
 
 The goal of this ticket was to preserve the existing frontend while placing the backend implementation in a dedicated `backend/` folder, matching the requested project layout.
@@ -13,7 +13,7 @@ The goal of this ticket was to preserve the existing frontend while placing the 
 
 ### Frontend
 
-The existing frontend remains at the repo root and provides:
+The frontend lives under `frontend/` and provides:
 
 - identifier intake for email, LinkedIn URL, username, company, business query, and job search
 - tier selection for `tier1` through `tier4`
@@ -42,9 +42,12 @@ The backend now lives under `backend/` and includes:
 ## Repository structure
 
 ```text
-app/                    # Next.js frontend app router
-components/             # frontend UI components
-src/                    # frontend utilities/types/mock data
+frontend/
+  app/                  # Next.js app router
+  components/           # UI components
+  src/                  # utilities/types/mock data
+  package.json
+  tsconfig.json
 backend/
   app/                  # FastAPI backend package
   docker/               # backend Dockerfiles and compose
@@ -61,15 +64,17 @@ CHANGELOG.md
 
 ## Frontend setup
 
-Install frontend dependencies from the repo root:
+Install frontend dependencies from the frontend folder:
 
 ```bash
+cd frontend
 npm install
 ```
 
 Run the frontend locally:
 
 ```bash
+cd frontend
 npm run dev
 ```
 
@@ -115,9 +120,10 @@ Use `backend/.env.example` as the starting point. The backend currently expects 
 
 ## Verification
 
-Frontend scripts from repo root:
+Frontend scripts from `frontend/`:
 
 ```bash
+cd frontend
 npm run build
 npm run lint
 npm run typecheck
@@ -133,7 +139,7 @@ pytest tests
 
 This branch is documentation-ready for automated PR completion and reflects the implemented AZI-11 repo layout:
 
-- frontend remains isolated at the repo root
+- frontend is isolated under `frontend/`
 - backend is placed under `backend/` as requested
 - backend routes, orchestrator, enrichers, Docker assets, and tests are present
 - top-level docs now describe the split architecture accurately
