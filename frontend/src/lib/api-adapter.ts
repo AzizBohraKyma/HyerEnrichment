@@ -83,7 +83,10 @@ function mapDossier(dossier: BackendDossier): Dossier {
       ? {
           source: dossier.photo.source,
           assetUrl: dossier.photo.asset_url,
-          capturedAt: dossier.photo.captured_at,
+          capturedAt:
+            typeof dossier.photo.captured_at === 'string'
+              ? dossier.photo.captured_at
+              : String(dossier.photo.captured_at ?? ''),
           confidence: dossier.photo.confidence,
         }
       : undefined,
