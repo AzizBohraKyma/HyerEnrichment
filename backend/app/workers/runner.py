@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 from datetime import datetime, timezone
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -21,18 +22,19 @@ from app.enrichers import (
     SocialAnalyzerEnricher,
     TheHarvesterEnricher,
 )
+from app.enrichers.base import Enricher
 from app.llm_router import LiteLLMDisambiguator
-from app.models import Dossier, EnrichmentRequest, JobRecord, JobStatus, SuppressionRecord
+from app.models import ConfidenceBreakdown, Dossier, EnrichmentRequest, JobRecord, JobListing, JobStatus, PhotoAsset, SocialHandle, SuppressionRecord, VerifiedEmail, BusinessProfile
 
 
 class PipelineOrchestrator:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
         self.llm = LiteLLMDisambiguator()
-        self.tier1 = [LinkedInPhotoEnricher()]
-        self.tier2 = [SherlockEnricher(), MaigretEnricher(), SocialAnalyzerEnricher()]
-        self.tier3 = [GitReconEnricher(), TheHarvesterEnricher(), EmailDiscoverEnricher(), EmailVerifyEnricher(), CrossLinkedEnricher()]
-        self.tier4 = [JobSpyEnricher(), LocalBusinessEnricher()]
+        self.tier1: list[Enricher] = [LinkedInPhotoEnricher()]
+        self.tier2: list[Enricher] = [SherlockEnricher(), MaigretEnricher(), SocialAnalyzerEnricher()]
+        self.tier3: list[Enricher] = [GitReconEnricher(), TheHarvesterEnricher(), EmailDiscoverEnricher(), EmailVerifyEnricher(), CrossLinkedEnricher()]
+        self.tier4: list[Enricher] = [JobSpyEnricher(), LocalBusinessEnricher()]
 
     async def run(self, request: EnrichmentRequest) -> JobRecord:
         suppressed = await self._is_suppressed(request)
@@ -68,7 +70,7 @@ class PipelineOrchestrator:
 
     async def add_suppression(self, identifier: str, reason: str | None = None) -> None:
         record = SuppressionRecord(identifier_hash=self._hash(identifier), reason=reason or "")
-        self.db.merge(record)
+        await self.db.merge(record)
         await self.db.commit()
 
     async def check_suppression(self, identifier: str) -> bool:
@@ -83,8 +85,8 @@ class PipelineOrchestrator:
                 return True
         return False
 
-    async def _dispatch(self, request: EnrichmentRequest) -> list[dict[str, object]]:
-        enrichers = []
+    async def _dispatch(self, request: EnrichmentRequest) -> list[dict[str, Any]]:
+        enrichers: list[Enricher] = []
         if "tier1" in request.requested_tiers:
             enrichers.extend(self.tier1)
         if "tier2" in request.requested_tiers:
@@ -94,8 +96,7 @@ class PipelineOrchestrator:
         if "tier4" in request.requested_tiers:
             enrichers.extend(self.tier4)
 
-        async def invoke(enricher: object) -> dict[str, object]:
-            worker = enricher
+        async def invoke(worker: Enricher) -> dict[str, Any]:
             if not await worker.validate(request):
                 return {}
             await worker.initialize()
@@ -108,7 +109,7 @@ class PipelineOrchestrator:
 
         return await asyncio.gather(*(invoke(enricher) for enricher in enrichers))
 
-    async def _merge(self, request: EnrichmentRequest, payloads: list[dict[str, object]]) -> Dossier:
+    async def _merge(self, request: EnrichmentRequest, payloads: list[dict[str, Any]]) -> Dossier:
         dossier = self._base_dossier(request)
         handles_seen: set[tuple[str, str]] = set()
         emails_seen: set[str] = set()
@@ -116,69 +117,92 @@ class PipelineOrchestrator:
 
         for payload in payloads:
             photo = payload.get("photo")
-            if photo and dossier.photo is None:
-                dossier.photo = photo  # type: ignore[assignment]
+            if isinstance(photo, dict) and dossier.photo is None:
+                dossier.photo = PhotoAsset.model_validate(photo)
 
-            for handle in payload.get("handles", []):
-                key = (str(handle["platform"]).lower(), str(handle["username"]).lower())
-                if key not in handles_seen:
-                    handles_seen.add(key)
-                    dossier.handles.append(handle)  # type: ignore[arg-type]
+            handles = payload.get("handles")
+            if isinstance(handles, list):
+                for handle in handles:
+                    if not isinstance(handle, dict):
+                        continue
+                    key = (str(handle.get("platform", "")).lower(), str(handle.get("username", "")).lower())
+                    if key not in handles_seen:
+                        handles_seen.add(key)
+                        dossier.handles.append(SocialHandle.model_validate(handle))
 
-            for email in payload.get("emails", []):
-                normalized = str(email).lower()
-                if normalized not in emails_seen:
-                    emails_seen.add(normalized)
-                    dossier.emails.append(str(email))
+            emails = payload.get("emails")
+            if isinstance(emails, list):
+                for email in emails:
+                    normalized = str(email).lower()
+                    if normalized not in emails_seen:
+                        emails_seen.add(normalized)
+                        dossier.emails.append(str(email))
 
-            for verified in payload.get("verified_emails", []):
-                if verified["value"].lower() not in {item.value.lower() for item in dossier.verified_emails}:
-                    dossier.verified_emails.append(verified)  # type: ignore[arg-type]
+            verified_emails = payload.get("verified_emails")
+            if isinstance(verified_emails, list):
+                for verified in verified_emails:
+                    if not isinstance(verified, dict):
+                        continue
+                    candidate = VerifiedEmail.model_validate(verified)
+                    if candidate.value.lower() not in {item.value.lower() for item in dossier.verified_emails}:
+                        dossier.verified_emails.append(candidate)
 
-            if payload.get("github"):
-                dossier.github = payload["github"]  # type: ignore[assignment]
+            github = payload.get("github")
+            if isinstance(github, dict):
+                dossier.github = github
 
-            for coworker in payload.get("coworkers", []):
-                if coworker not in dossier.coworkers:
-                    dossier.coworkers.append(str(coworker))
+            coworkers = payload.get("coworkers")
+            if isinstance(coworkers, list):
+                for coworker in coworkers:
+                    value = str(coworker)
+                    if value not in dossier.coworkers:
+                        dossier.coworkers.append(value)
 
-            for job in payload.get("jobs", []):
-                if job not in [existing.model_dump(mode="json") for existing in dossier.jobs]:
-                    dossier.jobs.append(job)  # type: ignore[arg-type]
+            jobs = payload.get("jobs")
+            if isinstance(jobs, list):
+                for job in jobs:
+                    if not isinstance(job, dict):
+                        continue
+                    job_candidate = JobListing.model_validate(job)
+                    if job_candidate.model_dump(mode="json") not in [existing.model_dump(mode="json") for existing in dossier.jobs]:
+                        dossier.jobs.append(job_candidate)
 
-            if payload.get("business") and dossier.business is None:
-                dossier.business = payload["business"]  # type: ignore[assignment]
+            business = payload.get("business")
+            if isinstance(business, dict) and dossier.business is None:
+                dossier.business = BusinessProfile.model_validate(business)
 
-            for source in payload.get("sources", []):
-                sources.add(str(source))
+            raw_sources = payload.get("sources")
+            if isinstance(raw_sources, list):
+                for source in raw_sources:
+                    sources.add(str(source))
 
         dossier.sources = sorted(sources)
         dossier.confidence = await self._build_confidence(request, dossier)
         return dossier
 
-    async def _build_confidence(self, request: EnrichmentRequest, dossier: Dossier) -> list[dict[str, object]]:
+    async def _build_confidence(self, request: EnrichmentRequest, dossier: Dossier) -> list[ConfidenceBreakdown]:
         username = request.username or (request.email or "candidate@example.com").split("@")[0]
         handle_match = any(handle.username.lower() == username.lower() for handle in dossier.handles)
         decision = await self.llm.compare(username, username if handle_match else "unknown")
         return [
-            {
-                "label": "identity-match",
-                "score": 0.91 if handle_match else 0.44,
-                "evidence": [
+            ConfidenceBreakdown(
+                label="identity-match",
+                score=0.91 if handle_match else 0.44,
+                evidence=[
                     f"cross-source handles: {len(dossier.handles)}",
                     f"llm confirmation: {decision.same_identity} ({decision.reason})",
                 ],
-            },
-            {
-                "label": "email-verification",
-                "score": 0.89 if dossier.verified_emails else 0.22,
-                "evidence": [f"verified emails: {len(dossier.verified_emails)}"],
-            },
-            {
-                "label": "coverage",
-                "score": min(1.0, 0.2 + (len(dossier.sources) * 0.1)),
-                "evidence": [f"sources: {', '.join(dossier.sources) or 'none'}"],
-            },
+            ),
+            ConfidenceBreakdown(
+                label="email-verification",
+                score=0.89 if dossier.verified_emails else 0.22,
+                evidence=[f"verified emails: {len(dossier.verified_emails)}"],
+            ),
+            ConfidenceBreakdown(
+                label="coverage",
+                score=min(1.0, 0.2 + (len(dossier.sources) * 0.1)),
+                evidence=[f"sources: {', '.join(dossier.sources) or 'none'}"],
+            ),
         ]
 
     def _base_dossier(self, request: EnrichmentRequest) -> Dossier:
