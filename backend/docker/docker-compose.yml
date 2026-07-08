@@ -6,12 +6,13 @@ services:
       dockerfile: backend/docker/Dockerfile.api
     environment:
       API_TOKEN: change-me
-      # NOTE: async /enrich needs a DB shared with the worker to poll results.
-      # SQLite is per-container; switch both to Postgres (open question #4).
-      DATABASE_URL: sqlite+aiosqlite:///./hyrepath.db
+      DATABASE_URL: postgresql+asyncpg://hyrepath:hyrepath@postgres:5432/hyrepath
       REDIS_URL: redis://redis:6379/0
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "8000:8000"
   worker:
@@ -20,17 +21,29 @@ services:
       dockerfile: backend/docker/Dockerfile.worker
     environment:
       API_TOKEN: change-me
-      DATABASE_URL: sqlite+aiosqlite:///./hyrepath.db
+      DATABASE_URL: postgresql+asyncpg://hyrepath:hyrepath@postgres:5432/hyrepath
       REDIS_URL: redis://redis:6379/0
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: hyrepath
+      POSTGRES_PASSWORD: hyrepath
+      POSTGRES_DB: hyrepath
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hyrepath -d hyrepath"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   social-analyzer:
     image: nginx:alpine
   reacher:
@@ -43,3 +56,5 @@ services:
     image: nginx:alpine
   changedetection:
     image: nginx:alpine
+volumes:
+  postgres_data:
