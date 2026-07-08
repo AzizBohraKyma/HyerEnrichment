@@ -571,6 +571,29 @@ cd backend
 pytest tests
 ```
 
+### Local Redis E2E (Option A)
+
+Requires Redis on `REDIS_URL` (see `.env`), plus API and worker in separate terminals:
+
+```bash
+# Terminal 1 — API
+cd backend
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Terminal 2 — RQ worker
+cd backend
+python -m app.workers.rq_worker
+```
+
+Automated check (API + worker must already be running):
+
+```bash
+cd backend
+python scripts/e2e_redis_test.py
+```
+
+**Windows:** RQ's default `Worker` uses `os.fork` and `SIGALRM` (unavailable on Windows). `rq_worker.py` automatically uses `SimpleWorker` + a no-op death penalty locally; Linux/Docker production keeps the default fork-based worker.
+
 ### Rate limits to respect (production)
 
 - **LinkedIn:** ~20–25 profile views/day per Multilogin profile
