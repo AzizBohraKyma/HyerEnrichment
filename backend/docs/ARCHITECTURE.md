@@ -307,7 +307,7 @@ Each enricher returns a partial dict (`photo`, `handles`, `emails`, `verified_em
 - Rate limiting
 - Audit log hashes (5-year retention per request)
 
-Configured via `REDIS_URL`. Present in docker-compose; not yet wired into the orchestrator.
+Configured via `REDIS_URL`. Present in docker-compose. A shared async client exists in `app/storage/redis_client.py` (`get_redis` FastAPI dependency, opened/closed in the app lifespan, lazy connection). Queue, suppression set, and rate limiting are **not yet wired** to it.
 
 ---
 
@@ -529,6 +529,7 @@ AGPL tools (`social-analyzer`, Reacher) run as **isolated sidecars** called over
 | API routes + auth | FastAPI + Bearer | Implemented |
 | Orchestrator + tier dispatch | `runner.py` | Implemented |
 | Enricher modules (11) | Real tool integrations | Scaffold payloads / mocks |
+| Redis client | Queue + suppression + rate limits | Shared async client wired in lifespan; no feature uses it yet |
 | Async job queue | Redis + RQ, worker process | Inline in API process |
 | Database | PostgreSQL + JSONB | SQLite default |
 | R2 photo cache | `aioboto3` → Cloudflare R2 | Local `.asset-cache/` fallback |
