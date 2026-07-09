@@ -421,9 +421,6 @@ def login_linkedin(driver: Any) -> LinkedInPhotoError:
         _type_into_login_field(driver, email_input, email)
         _type_into_login_field(driver, password_input, password)
 
-        print("Email value:", email_input.get_attribute("value"))
-        print("Password value:", password_input.get_attribute("value"))
-
         password_input.send_keys(Keys.TAB)
 
         sign_in_button = _find_sign_in_button(driver, wait)
@@ -439,7 +436,14 @@ def login_linkedin(driver: Any) -> LinkedInPhotoError:
         logger.warning("LinkedIn login form interaction failed", exc_info=True)
         return LinkedInPhotoError.TEMPORARY_FAILURE
 
-    return detect_page_state(driver)
+    state = detect_page_state(driver)
+    logger.debug(
+        "Login finished state=%s url=%s title=%s",
+        state,
+        driver.current_url,
+        driver.title,
+    )
+    return state
 
 
 def detect_page_state(driver: Any) -> LinkedInPhotoError:
@@ -447,10 +451,11 @@ def detect_page_state(driver: Any) -> LinkedInPhotoError:
     current_url = (driver.current_url or "").lower()
     page_source = (driver.page_source or "").lower()
 
-    if "captcha" in current_url or "recaptcha" in page_source or "security verification" in page_source:
+    challenge_url = any(token in current_url for token in ("/checkpoint", "/challenge", "captcha"))
+    if challenge_url:
         return LinkedInPhotoError.CAPTCHA
 
-    if any(token in current_url for token in ("/login", "/checkpoint", "/authwall", "uas/login")):
+    if any(token in current_url for token in ("/login", "/authwall", "uas/login")):
         return LinkedInPhotoError.AUTH_REQUIRED
 
     if "rate limit" in page_source or "too many requests" in page_source:
@@ -522,15 +527,32 @@ async def download_image(url: str) -> tuple[bytes | None, str | None]:
 
 def _scrape_on_driver(driver: Any, linkedin_url: str) -> tuple[LinkedInPhotoResult, str | None]:
     """Selenium-only scrape steps once a driver is connected."""
+    logger.debug("Starting scrape for %s", linkedin_url)
+
     login_state = login_linkedin(driver)
+    logger.debug(
+        "Login returned %s url=%s title=%s",
+        login_state,
+        driver.current_url,
+        driver.title,
+    )
+
     if login_state not in {LinkedInPhotoError.SUCCESS, LinkedInPhotoError.AUTH_REQUIRED}:
         return LinkedInPhotoResult(outcome=login_state), None
 
     if login_state == LinkedInPhotoError.AUTH_REQUIRED:
         return LinkedInPhotoResult(outcome=LinkedInPhotoError.AUTH_REQUIRED), None
 
+    logger.debug("Navigating to profile %s", linkedin_url)
     driver.get(linkedin_url)
+    logger.debug(
+        "Navigation finished url=%s title=%s",
+        driver.current_url,
+        driver.title,
+    )
+
     page_state = detect_page_state(driver)
+    logger.debug("Detected page state %s url=%s", page_state, driver.current_url)
     if page_state != LinkedInPhotoError.SUCCESS:
         return LinkedInPhotoResult(outcome=page_state), None
 
