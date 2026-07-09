@@ -1,5 +1,9 @@
 export type RequestedTier = 'tier1' | 'tier2' | 'tier3' | 'tier4';
 
+export type JobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'suppressed';
+
+export type EnrichMode = 'async' | 'sync';
+
 export type EnrichmentInput = {
   email?: string;
   linkedinUrl?: string;
@@ -73,7 +77,34 @@ export type Dossier = {
 
 export type EnrichmentJob = {
   id: string;
-  status: 'queued' | 'running' | 'completed';
+  status: JobStatus;
   input: EnrichmentInput;
   dossier: Dossier;
+  error?: string;
+};
+
+export type JobListItem = {
+  id: string;
+  status: JobStatus;
+  createdAt: string;
+  updatedAt: string;
+  identifierSummary: string;
+  requestedTiers: RequestedTier[];
+};
+
+export type JobListResponse = {
+  jobs: JobListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type OptOutInput = {
+  identifier: string;
+  reason?: string;
+};
+
+export type HealthStatus = {
+  status: string;
+  service: string;
 };
