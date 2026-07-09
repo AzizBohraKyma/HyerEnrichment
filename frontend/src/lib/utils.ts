@@ -1,3 +1,10 @@
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export const formatPercent = (value: number) => `${Math.round(value * 100)}%`;
 
 export const tierLabels: Record<string, string> = {
@@ -14,3 +21,7 @@ export const initialsFrom = (value: string) =>
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() || '')
     .join('');
+
+export function copyToClipboard(text: string) {
+  return navigator.clipboard.writeText(text);
+}
