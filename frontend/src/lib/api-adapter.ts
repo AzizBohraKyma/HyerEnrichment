@@ -1,4 +1,14 @@
-import { Dossier, EnrichmentInput, EnrichmentJob, RequestedTier } from '@/src/lib/types';
+import {
+  Dossier,
+  EnrichmentInput,
+  EnrichmentJob,
+  HealthStatus,
+  JobListItem,
+  JobListResponse,
+  JobStatus,
+  OptOutInput,
+  RequestedTier,
+} from '@/src/lib/types';
 
 type BackendPhoto = {
   source: string;
@@ -40,7 +50,42 @@ export type BackendJobResponse = {
   id: string;
   status: string;
   dossier: BackendDossier;
+  error?: string;
 };
+
+type BackendJobListItem = {
+  id: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  request_payload?: Record<string, unknown>;
+  identifier_summary?: string;
+};
+
+type BackendJobListResponse = {
+  jobs: BackendJobListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+type BackendHealthResponse = {
+  status: string;
+  service?: string;
+};
+
+function normalizeJobStatus(status: string): JobStatus {
+  if (
+    status === 'queued' ||
+    status === 'running' ||
+    status === 'completed' ||
+    status === 'failed' ||
+    status === 'suppressed'
+  ) {
+    return status;
+  }
+  return 'failed';
+}
 
 function readMetadataString(metadata: Record<string, unknown>, snakeKey: string, camelKey: string): string {
   const value = metadata[snakeKey] ?? metadata[camelKey];
@@ -52,8 +97,9 @@ function readMetadataTiers(metadata: Record<string, unknown>): RequestedTier[] {
   if (!Array.isArray(value)) {
     return [];
   }
-  return value.filter((tier): tier is RequestedTier =>
-    tier === 'tier1' || tier === 'tier2' || tier === 'tier3' || tier === 'tier4',
+  return value.filter(
+    (tier): tier is RequestedTier =>
+      tier === 'tier1' || tier === 'tier2' || tier === 'tier3' || tier === 'tier4',
   );
 }
 
@@ -119,16 +165,68 @@ function mapDossier(dossier: BackendDossier): Dossier {
   };
 }
 
-export function mapBackendJobToFrontend(backendJob: BackendJobResponse, input: EnrichmentInput): EnrichmentJob {
-  const status = backendJob.status;
-  const normalizedStatus: EnrichmentJob['status'] =
-    status === 'queued' || status === 'running' || status === 'completed' ? status : 'completed';
+function identifierSummaryFromPayload(payload: Record<string, unknown> | undefined): string {
+  if (!payload) {
+    return '';
+  }
+  const values = [
+    payload.email,
+    payload.linkedin_url,
+    payload.linkedinUrl,
+    payload.username,
+    payload.company,
+    payload.business,
+    payload.job_search,
+    payload.jobSearch,
+  ].filter((v): v is string => typeof v === 'string' && v.length > 0);
+  return values.join(' • ');
+}
 
+function tiersFromPayload(payload: Record<string, unknown> | undefined): RequestedTier[] {
+  if (!payload) {
+    return [];
+  }
+  const value = payload.requested_tiers ?? payload.requestedTiers;
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter(
+    (tier): tier is RequestedTier =>
+      tier === 'tier1' || tier === 'tier2' || tier === 'tier3' || tier === 'tier4',
+  );
+}
+
+export function mapBackendJobToFrontend(
+  backendJob: BackendJobResponse,
+  input: EnrichmentInput,
+): EnrichmentJob {
   return {
     id: backendJob.id,
-    status: normalizedStatus,
+    status: normalizeJobStatus(backendJob.status),
     input,
     dossier: mapDossier(backendJob.dossier),
+    error: backendJob.error,
+  };
+}
+
+export function mapBackendJobListItem(item: BackendJobListItem): JobListItem {
+  const payload = item.request_payload;
+  return {
+    id: item.id,
+    status: normalizeJobStatus(item.status),
+    createdAt: item.created_at,
+    updatedAt: item.updated_at,
+    identifierSummary: item.identifier_summary || identifierSummaryFromPayload(payload),
+    requestedTiers: tiersFromPayload(payload),
+  };
+}
+
+export function mapBackendJobListToFrontend(response: BackendJobListResponse): JobListResponse {
+  return {
+    jobs: response.jobs.map(mapBackendJobListItem),
+    total: response.total,
+    limit: response.limit,
+    offset: response.offset,
   };
 }
 
@@ -142,4 +240,58 @@ export function toBackendEnrichmentRequest(input: EnrichmentInput) {
     job_search: input.jobSearch || null,
     requested_tiers: input.requestedTiers,
   };
+}
+
+export function toBackendOptOutRequest(input: OptOutInput) {
+  return {
+    identifier: input.identifier,
+    reason: input.reason || null,
+  };
+}
+
+export function mapBackendHealth(response: BackendHealthResponse): HealthStatus {
+  return {
+    status: response.status,
+    service: response.service ?? 'hyrepath-enrichment',
+  };
+}
+
+export function parseEnrichmentInput(body: Partial<EnrichmentInput>): EnrichmentInput {
+  return {
+    email: body.email?.trim() || '',
+    linkedinUrl: body.linkedinUrl?.trim() || '',
+    username: body.username?.trim() || '',
+    company: body.company?.trim() || '',
+    business: body.business?.trim() || '',
+    jobSearch: body.jobSearch?.trim() || '',
+    requestedTiers: body.requestedTiers?.length ? body.requestedTiers : ['tier1', 'tier2', 'tier3', 'tier4'],
+  };
+}
+
+export function hasIdentifier(input: EnrichmentInput): boolean {
+  return Boolean(
+    input.email || input.linkedinUrl || input.username || input.company || input.business || input.jobSearch,
+  );
+}
+
+export async function parseBackendError(response: Response): Promise<string> {
+  const detail = await response.text();
+  let message = detail || 'Backend error';
+
+  try {
+    const parsed = JSON.parse(detail) as { detail?: string | Array<{ msg?: string }>; message?: string };
+    if (typeof parsed.message === 'string') {
+      return parsed.message;
+    }
+    if (typeof parsed.detail === 'string') {
+      return parsed.detail;
+    }
+    if (Array.isArray(parsed.detail)) {
+      return parsed.detail.map((item) => item.msg).filter(Boolean).join(', ') || message;
+    }
+  } catch {
+    // keep raw detail text
+  }
+
+  return message;
 }
