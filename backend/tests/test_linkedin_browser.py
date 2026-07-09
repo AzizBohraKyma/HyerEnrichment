@@ -13,6 +13,7 @@ from app.providers.linkedin_browser import (
     _sign_in_button_enabled,
     _type_into_login_field,
     _wait_for_enabled_sign_in_button,
+    _wait_for_profile_photo_ready,
     detect_page_state,
     extract_photo_url,
     is_placeholder_image_url,
@@ -132,6 +133,52 @@ def test_extract_photo_url_placeholder_only() -> None:
     assert state == LinkedInPhotoError.PLACEHOLDER_IMAGE
     assert url is None
     assert method is None
+
+
+def test_extract_photo_url_profile_displayphoto_selector() -> None:
+    driver = _FakeDriver(
+        elements={
+            'img[src*="profile-displayphoto"]': [
+                _FakeElement(
+                    {"src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_200_200/photo.jpg"}
+                )
+            ]
+        }
+    )
+    url, method, state = extract_photo_url(driver)
+    assert state == LinkedInPhotoError.SUCCESS
+    assert method == ExtractionMethod.DOM_FALLBACK
+    assert url is not None and "profile-displayphoto" in url
+
+
+def test_extract_photo_url_uses_data_src_and_srcset() -> None:
+    driver = _FakeDriver(
+        elements={
+            "img.pv-top-card-profile-picture__image": [
+                _FakeElement(
+                    {
+                        "data-src": "https://media.licdn.com/dms/image/real-from-data-src.jpg",
+                        "srcset": "https://media.licdn.com/dms/image/real-from-srcset.jpg 1x",
+                    }
+                )
+            ]
+        }
+    )
+    url, method, state = extract_photo_url(driver)
+    assert state == LinkedInPhotoError.SUCCESS
+    assert method == ExtractionMethod.DOM_FALLBACK
+    assert url is not None and "real-from-data-src.jpg" in url
+
+
+def test_wait_for_profile_photo_ready_succeeds() -> None:
+    driver = _FakeDriver(
+        elements={
+            'meta[property="og:image"]': [
+                _FakeElement({"content": "https://media.licdn.com/dms/image/photo.jpg"})
+            ]
+        }
+    )
+    _wait_for_profile_photo_ready(driver, _FakeWait(driver))
 
 
 def test_detect_page_state_captcha_and_login() -> None:
