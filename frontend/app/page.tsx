@@ -1,41 +1,45 @@
-"use client";
+import Link from 'next/link';
+import { MarketingShell } from '@/components/layout/MarketingShell';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { hubAudiences } from '@/src/lib/landing-content';
+import { getTierLabel } from '@/src/lib/tier-utils';
 
-import { useState } from 'react';
-import { DossierView } from '@/components/DossierView';
-import { HeroPanel } from '@/components/HeroPanel';
-import { IntakeForm } from '@/components/IntakeForm';
-import { PipelineOverview } from '@/components/PipelineOverview';
-import { EnrichmentJob, RequestedTier } from '@/src/lib/types';
-
-const defaultTiers: RequestedTier[] = ['tier1', 'tier2', 'tier3', 'tier4'];
-
-export default function HomePage() {
-  const [job, setJob] = useState<EnrichmentJob | null>(null);
-
+export default function HubPage() {
   return (
-    <main className="page-shell">
-      <HeroPanel requestedTiers={job?.input.requestedTiers ?? defaultTiers} />
-      <div className="content-stack">
-        <IntakeForm onLoaded={setJob} />
-        {job ? (
-          <>
-            <PipelineOverview job={job} />
-            <DossierView dossier={job.dossier} />
-          </>
-        ) : (
-          <section className="panel">
-            <div className="section-heading">
-              <div>
-                <span className="eyebrow">Results</span>
-                <h2>Submit an identifier to run the enrichment pipeline.</h2>
-              </div>
-            </div>
-            <p className="muted">
-              Pipeline trace and dossier details will appear here after a successful enrichment request.
-            </p>
-          </section>
-        )}
+    <MarketingShell>
+      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12">
+        <section className="flex flex-col gap-4">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Hyrepath Enrichment</p>
+          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight">
+            Customer-supplied identifiers → multi-tier public-signal dossier
+          </h1>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Self-hosted enrichment pipeline with async queue, sync quick runs, and ops-grade trace. Pick an audience or
+            open the console directly.
+          </p>
+          <Button asChild className="w-fit">
+            <Link href="/app">Open console</Link>
+          </Button>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {hubAudiences.map((audience) => (
+            <Card key={audience.slug}>
+              <CardHeader>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">{audience.eyebrow}</p>
+                <CardTitle className="text-lg">{audience.headline}</CardTitle>
+                <CardDescription>{audience.tiers.map((t) => getTierLabel(t)).join(' · ')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/${audience.slug}`}>View landing</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
       </div>
-    </main>
+    </MarketingShell>
   );
 }
