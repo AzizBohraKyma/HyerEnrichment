@@ -144,6 +144,18 @@ def test_detect_page_state_captcha_and_login() -> None:
     login_driver = _FakeDriver(current_url="https://www.linkedin.com/login")
     assert detect_page_state(login_driver) == LinkedInPhotoError.AUTH_REQUIRED
 
+    feed_driver = _FakeDriver(
+        current_url="https://www.linkedin.com/feed/",
+        page_source="<html>...recaptcha...</html>",
+    )
+    assert detect_page_state(feed_driver) == LinkedInPhotoError.SUCCESS
+
+    profile_driver = _FakeDriver(
+        current_url="https://www.linkedin.com/in/narendramodi/",
+        page_source="<html>...recaptcha...</html>",
+    )
+    assert detect_page_state(profile_driver) == LinkedInPhotoError.SUCCESS
+
 
 class _FakeWait:
     def __init__(self, driver: _FakeDriver) -> None:

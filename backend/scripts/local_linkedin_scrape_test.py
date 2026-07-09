@@ -13,7 +13,6 @@ from app.providers.linkedin_browser import (
     LinkedInPhotoError,
     _scrape_on_driver,
     download_image,
-    login_linkedin,
 )
 
 PROFILE_URL = "https://www.linkedin.com/in/narendramodi/?isSelfProfile=false"  # change me
@@ -29,13 +28,6 @@ def main() -> int:
     driver.set_page_load_timeout(45)
 
     try:
-        print("Logging in...")
-        login_state = login_linkedin(driver)
-        print(f"Login state: {login_state}")
-        if login_state != LinkedInPhotoError.SUCCESS:
-            print("Login failed or blocked (captcha/checkpoint). Check the open browser.")
-            return 1
-
         print(f"Scraping {PROFILE_URL}...")
         partial, image_url = _scrape_on_driver(driver, PROFILE_URL)
         print(f"Scrape outcome: {partial.outcome}, method: {partial.method}, confidence: {partial.confidence}")
