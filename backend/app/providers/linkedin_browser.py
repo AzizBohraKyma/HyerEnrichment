@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import StrEnum
@@ -22,6 +21,23 @@ logger = logging.getLogger(__name__)
 
 LINKEDIN_LOGIN_URL = "https://www.linkedin.com/login"
 LINKEDIN_FEED_URL = "https://www.linkedin.com/feed/"
+SIGN_IN_BUTTON_XPATH = "//button[.//span[normalize-space()='Sign in']]"
+LOGIN_EMAIL_SELECTOR = 'input[type="email"]'
+LOGIN_PASSWORD_SELECTOR = 'input[type="password"]'
+LOGIN_INPUT_INDEX = 0
+LOGIN_TYPING_PAUSE_SECONDS = 0.04
+_REACT_SYNC_INPUT_JS = """
+const el = arguments[0];
+const value = arguments[1];
+const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+if (setter) {
+    setter.call(el, value);
+} else {
+    el.value = value;
+}
+el.dispatchEvent(new Event('input', { bubbles: true }));
+el.dispatchEvent(new Event('change', { bubbles: true }));
+"""
 OG_IMAGE_CONFIDENCE = 0.84
 DOM_FALLBACK_CONFIDENCE = 0.70
 ARTIFACTS_DIR = Path(__file__).resolve().parents[2] / "artifacts" / "tier1"
@@ -156,6 +172,187 @@ def _map_outcome_to_profile(outcome: LinkedInPhotoError) -> ProfileOutcome | Non
     return mapping.get(outcome)
 
 
+# def _find_login_input(driver: Any, wait: Any, selector: str) -> Any:
+#     """Wait for and return ``querySelectorAll(selector)[LOGIN_INPUT_INDEX]``."""
+#     from selenium.webdriver.common.by import By
+
+#     def _locate(d: Any) -> Any:
+#         elements = d.find_elements(By.CSS_SELECTOR, selector)
+#         if len(elements) > LOGIN_INPUT_INDEX:
+#             print("elements[LOGIN_INPUT_INDEX]", elements[LOGIN_INPUT_INDEX])
+#             return elements[LOGIN_INPUT_INDEX]
+#         return False
+
+#     return wait.until(_locate)
+
+def _find_login_input(driver, wait, selector):
+    from selenium.webdriver.common.by import By
+
+    def _locate(d):
+        elements = d.find_elements(By.CSS_SELECTOR, selector)
+
+        print(f"\nFound {len(elements)} elements")
+
+        for i, e in enumerate(elements):
+            print(
+                i,
+                "displayed=", e.is_displayed(),
+                "enabled=", e.is_enabled(),
+                "rect=", e.rect,
+            )
+
+        for e in elements:
+            if e.is_displayed() and e.is_enabled():
+                return e
+
+        return False
+
+    return wait.until(_locate)
+
+
+def _sign_in_button_enabled(button: Any) -> bool:
+    """Return True when LinkedIn's Sign in control is visible and clickable."""
+    if not button.is_displayed():
+        return False
+    if not button.is_enabled():
+        return False
+    aria_disabled = (button.get_attribute("aria-disabled") or "").strip().lower()
+    return aria_disabled not in {"true", "1"}
+
+
+def _find_sign_in_button(driver, wait):
+    from selenium.webdriver.common.by import By
+
+    def _locate(d):
+        buttons = d.find_elements(
+            By.XPATH,
+            "//button[.//span[normalize-space()='Sign in']]"
+        )
+
+        print("Sign in buttons found:", len(buttons))
+
+        for b in buttons:
+            print(
+                "displayed:",
+                b.is_displayed(),
+                "enabled:",
+                b.is_enabled(),
+                "text:",
+                b.text
+            )
+
+        if buttons:
+            return buttons[0]
+
+        return False
+
+    return wait.until(_locate)
+
+
+# def _wait_for_enabled_sign_in_button(driver: Any, wait: Any) -> Any:
+    """Wait until the Sign in button exists and LinkedIn has enabled it."""
+
+    # def _locate(d: Any) -> Any:
+    #     from selenium.webdriver.common.by import By
+
+    #     buttons = d.find_elements(By.XPATH, SIGN_IN_BUTTON_XPATH)
+    #     if not buttons:
+    #         buttons = d.find_elements(By.CSS_SELECTOR, "button[type='submit']")
+    #     if len(buttons) <= LOGIN_INPUT_INDEX:
+    #         return False
+    #     button = buttons[LOGIN_INPUT_INDEX]
+    #     if _sign_in_button_enabled(button):
+    #         return button
+    #     return False
+
+    # return wait.until(_locate)
+    def _locate(d):
+        from selenium.webdriver.common.by import By
+
+        buttons = d.find_elements(By.CSS_SELECTOR, "button[type='submit']")
+
+        print("\nButtons found:", len(buttons))
+
+        for i, b in enumerate(buttons):
+            print(
+                i,
+                "displayed=", b.is_displayed(),
+                "enabled=", b.is_enabled(),
+                "aria-disabled=", b.get_attribute("aria-disabled"),
+                "disabled=", b.get_attribute("disabled"),
+                "text=", b.text,
+            )
+
+        if not buttons:
+            return False
+
+        button = buttons[0]
+
+        if _sign_in_button_enabled(button):
+            return button
+
+        return False
+
+def _wait_for_enabled_sign_in_button(driver, wait):
+    from selenium.webdriver.common.by import By
+
+    while True:
+        buttons = driver.find_elements(By.CSS_SELECTOR, "button[type='submit']")
+
+        print("Buttons:", len(buttons))
+
+        for i, b in enumerate(buttons):
+            print(
+                i,
+                "displayed=", b.is_displayed(),
+                "enabled=", b.is_enabled(),
+                "aria-disabled=", b.get_attribute("aria-disabled"),
+                "disabled=", b.get_attribute("disabled"),
+                "text=", b.text,
+            )
+
+        input("Press Enter after inspecting the browser...")
+        break
+
+def _type_into_login_field(driver: Any, field: Any, value: str) -> None:
+    """Type into a React-controlled LinkedIn login field and sync component state."""
+    from selenium.webdriver.common.action_chains import ActionChains
+
+    field.click()
+    field.clear()
+
+    actions = ActionChains(driver)
+    actions.click(field)
+    for char in value:
+        actions.send_keys(char)
+        actions.pause(LOGIN_TYPING_PAUSE_SECONDS)
+    actions.perform()
+
+    driver.execute_script(_REACT_SYNC_INPUT_JS, field, value)
+
+
+def _click_sign_in_button(driver: Any, button: Any) -> None:
+    """Scroll the Sign in button into view and click it, with a JS fallback."""
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
+    try:
+        button.click()
+    except Exception:
+        logger.debug("Sign in native click failed; using JS click", exc_info=True)
+        driver.execute_script("arguments[0].click();", button)
+
+
+def _wait_for_post_login_navigation(driver: Any, wait: Any) -> None:
+    """Wait until LinkedIn leaves the login form or shows a challenge page."""
+
+    def _done(d: Any) -> bool:
+        url = (d.current_url or "").lower()
+        if any(token in url for token in ("/checkpoint", "/authwall", "captcha")):
+            return True
+        return "/login" not in url and "uas/login" not in url
+
+    wait.until(_done)
+
+
 def connect_selenium(port: int) -> Any:
     """Connect a Selenium Remote driver to a Multilogin profile port."""
     from selenium import webdriver
@@ -183,25 +380,61 @@ def login_linkedin(driver: Any) -> LinkedInPhotoError:
     if not email or not password:
         return LinkedInPhotoError.AUTH_REQUIRED
 
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support import expected_conditions as ec
     from selenium.webdriver.support.ui import WebDriverWait
 
     driver.get(LINKEDIN_LOGIN_URL)
+    print(driver.current_url)
+    print(driver.title)
+    print(driver.page_source[:1000])
+    driver.save_screenshot("linkedin_login.png")
     state = detect_page_state(driver)
     if state in {LinkedInPhotoError.CAPTCHA, LinkedInPhotoError.SUCCESS}:
         return state
 
     wait = WebDriverWait(driver, settings.tier1_browser_timeout_seconds)
     try:
-        username_input = wait.until(ec.presence_of_element_located((By.ID, "username")))
-        password_input = driver.find_element(By.ID, "password")
-        username_input.clear()
-        username_input.send_keys(email)
-        password_input.clear()
-        password_input.send_keys(password)
-        driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        time.sleep(2)
+        from selenium.webdriver.common.keys import Keys
+
+        email_input = _find_login_input(driver, wait, LOGIN_EMAIL_SELECTOR)
+        password_input = _find_login_input(driver, wait, LOGIN_PASSWORD_SELECTOR)
+        print("Email element:", email_input)
+        print("Password element:", password_input)
+        print(
+            "Email displayed:",
+            email_input.is_displayed(),
+            "enabled:",
+            email_input.is_enabled(),
+        )
+        print(
+            "Password displayed:",
+            password_input.is_displayed(),
+            "enabled:",
+            password_input.is_enabled(),
+        )
+
+
+        # _type_into_login_field(driver, email_input, email)
+        # _type_into_login_field(driver, password_input, password)
+        # password_input.send_keys(Keys.TAB)
+
+        # sign_in_button = _wait_for_enabled_sign_in_button(driver, wait)
+        _type_into_login_field(driver, email_input, email)
+        _type_into_login_field(driver, password_input, password)
+
+        print("Email value:", email_input.get_attribute("value"))
+        print("Password value:", password_input.get_attribute("value"))
+
+        password_input.send_keys(Keys.TAB)
+
+        sign_in_button = _find_sign_in_button(driver, wait)
+        print("Displayed:", sign_in_button.is_displayed())
+        print("Enabled:", sign_in_button.is_enabled())
+        print("Disabled:", sign_in_button.get_attribute("disabled"))
+        print("aria-disabled:", sign_in_button.get_attribute("aria-disabled"))
+        print("Class:", sign_in_button.get_attribute("class"))
+        print(sign_in_button.text)
+        _click_sign_in_button(driver, sign_in_button)
+        _wait_for_post_login_navigation(driver, wait)
     except Exception:
         logger.warning("LinkedIn login form interaction failed", exc_info=True)
         return LinkedInPhotoError.TEMPORARY_FAILURE
