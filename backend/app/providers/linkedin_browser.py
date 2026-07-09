@@ -67,7 +67,11 @@ DOM_PHOTO_SELECTORS = (
     "img.profile-photo-edit__preview",
     "img[data-delayed-url]",
     "img.top-card-layout__entity-image",
+    'img[src*="profile-displayphoto"]',
+    'img[src*="media.licdn.com/dms/image"]',
 )
+
+DOM_PHOTO_ATTRS = ("src", "data-delayed-url", "data-ghost-url", "data-src")
 
 
 class LinkedInPhotoError(StrEnum):
@@ -470,6 +474,85 @@ def detect_page_state(driver: Any) -> LinkedInPhotoError:
     return LinkedInPhotoError.SUCCESS
 
 
+def _photo_url_from_srcset(srcset: str) -> str | None:
+    """Return the first URL from an img srcset attribute."""
+    for part in srcset.split(","):
+        url = part.strip().split(" ", 1)[0].strip()
+        if url:
+            return url
+    return None
+
+
+def _photo_candidates_from_element(img: Any) -> list[str]:
+    """Collect possible profile photo URLs from a DOM img element."""
+    candidates: list[str] = []
+    for attr in DOM_PHOTO_ATTRS:
+        value = (img.get_attribute(attr) or "").strip()
+        if value:
+            candidates.append(value)
+    srcset = (img.get_attribute("srcset") or "").strip()
+    if srcset:
+        parsed = _photo_url_from_srcset(srcset)
+        if parsed:
+            candidates.append(parsed)
+    return candidates
+
+
+def _log_photo_extraction_debug(driver: Any) -> None:
+    """Log DOM probes when profile photo extraction fails."""
+    css = "css selector"
+    og_nodes = driver.find_elements(css, 'meta[property="og:image"]')
+    og_content = (og_nodes[0].get_attribute("content") or "").strip() if og_nodes else ""
+    logger.warning(
+        "Photo extraction debug og:image_count=%s og_content=%r placeholder=%s",
+        len(og_nodes),
+        og_content[:200] if og_content else "",
+        is_placeholder_image_url(og_content) if og_content else None,
+    )
+
+    for selector in DOM_PHOTO_SELECTORS:
+        imgs = driver.find_elements(css, selector)
+        if not imgs:
+            continue
+        first = imgs[0]
+        attrs = {
+            attr: (first.get_attribute(attr) or "").strip()
+            for attr in (*DOM_PHOTO_ATTRS, "srcset")
+        }
+        logger.warning(
+            "Photo extraction debug selector=%r count=%s attrs=%s",
+            selector,
+            len(imgs),
+            attrs,
+        )
+
+    profile_imgs = driver.find_elements(css, 'img[src*="profile-displayphoto"]')
+    if profile_imgs:
+        first_src = (profile_imgs[0].get_attribute("src") or "").strip()
+        logger.warning(
+            "Photo extraction debug profile-displayphoto count=%s src=%r placeholder=%s",
+            len(profile_imgs),
+            first_src[:200] if first_src else "",
+            is_placeholder_image_url(first_src) if first_src else None,
+        )
+
+
+def _wait_for_profile_photo_ready(driver: Any, wait: Any) -> None:
+    """Wait until og:image or a profile photo img is present in the DOM."""
+
+    def _ready(_d: Any) -> bool:
+        css = "css selector"
+        for node in _d.find_elements(css, 'meta[property="og:image"]'):
+            if (node.get_attribute("content") or "").strip():
+                return True
+        for selector in DOM_PHOTO_SELECTORS:
+            if _d.find_elements(css, selector):
+                return True
+        return bool(_d.find_elements(css, 'img[src*="profile-displayphoto"]'))
+
+    wait.until(_ready)
+
+
 def extract_photo_url(
     driver: Any,
 ) -> tuple[str | None, ExtractionMethod | None, LinkedInPhotoError]:
@@ -484,8 +567,7 @@ def extract_photo_url(
 
     for selector in DOM_PHOTO_SELECTORS:
         for img in driver.find_elements(css, selector):
-            for attr in ("src", "data-delayed-url", "data-ghost-url"):
-                candidate = (img.get_attribute(attr) or "").strip()
+            for candidate in _photo_candidates_from_element(img):
                 if not candidate or is_placeholder_image_url(candidate):
                     continue
                 return candidate, ExtractionMethod.DOM_FALLBACK, LinkedInPhotoError.SUCCESS
@@ -527,6 +609,7 @@ async def download_image(url: str) -> tuple[bytes | None, str | None]:
 
 def _scrape_on_driver(driver: Any, linkedin_url: str) -> tuple[LinkedInPhotoResult, str | None]:
     """Selenium-only scrape steps once a driver is connected."""
+    settings = get_settings()
     logger.debug("Starting scrape for %s", linkedin_url)
 
     login_state = login_linkedin(driver)
@@ -556,8 +639,19 @@ def _scrape_on_driver(driver: Any, linkedin_url: str) -> tuple[LinkedInPhotoResu
     if page_state != LinkedInPhotoError.SUCCESS:
         return LinkedInPhotoResult(outcome=page_state), None
 
+    from selenium.webdriver.support.ui import WebDriverWait
+
+    wait = WebDriverWait(driver, settings.tier1_browser_timeout_seconds)
+    try:
+        _wait_for_profile_photo_ready(driver, wait)
+    except Exception:
+        logger.warning("Timed out waiting for profile photo DOM", exc_info=True)
+
     image_url, method, extract_state = extract_photo_url(driver)
     if extract_state != LinkedInPhotoError.SUCCESS or not image_url or method is None:
+        if extract_state in {LinkedInPhotoError.NO_IMAGE, LinkedInPhotoError.PLACEHOLDER_IMAGE}:
+            _log_photo_extraction_debug(driver)
+            save_failure_screenshot(driver, None)
         return LinkedInPhotoResult(outcome=extract_state), None
 
     confidence = OG_IMAGE_CONFIDENCE if method == ExtractionMethod.OG_IMAGE else DOM_FALLBACK_CONFIDENCE
