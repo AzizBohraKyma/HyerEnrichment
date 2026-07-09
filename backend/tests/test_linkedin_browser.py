@@ -9,6 +9,10 @@ from app.providers.linkedin_browser import (
     ExtractionMethod,
     LinkedInBrowserClient,
     LinkedInPhotoError,
+    _find_login_input,
+    _sign_in_button_enabled,
+    _type_into_login_field,
+    _wait_for_enabled_sign_in_button,
     detect_page_state,
     extract_photo_url,
     is_placeholder_image_url,
@@ -18,11 +22,35 @@ from app.providers.linkedin_browser import (
 
 
 class _FakeElement:
-    def __init__(self, attrs: dict[str, str]) -> None:
+    def __init__(
+        self,
+        attrs: dict[str, str],
+        *,
+        displayed: bool = True,
+        enabled: bool = True,
+    ) -> None:
         self._attrs = attrs
+        self._displayed = displayed
+        self._enabled = enabled
+        self.typed: list[str] = []
 
     def get_attribute(self, name: str) -> str | None:
         return self._attrs.get(name)
+
+    def is_displayed(self) -> bool:
+        return self._displayed
+
+    def is_enabled(self) -> bool:
+        return self._enabled
+
+    def click(self) -> None:
+        return None
+
+    def clear(self) -> None:
+        self.typed.clear()
+
+    def send_keys(self, value: str) -> None:
+        self.typed.append(value)
 
 
 class _FakeDriver:
@@ -32,17 +60,27 @@ class _FakeDriver:
         current_url: str = "https://www.linkedin.com/in/example",
         page_source: str = "<html></html>",
         elements: dict[str, list[_FakeElement]] | None = None,
+        xpath_elements: dict[str, list[_FakeElement]] | None = None,
     ) -> None:
         self.current_url = current_url
         self.page_source = page_source
         self._elements = elements or {}
+        self._xpath_elements = xpath_elements or {}
         self.calls: list[str] = []
+        self.script_calls: list[tuple[str, tuple[object, ...]]] = []
 
     def get(self, url: str) -> None:
         self.calls.append(url)
 
-    def find_elements(self, _by: object, selector: str) -> list[_FakeElement]:
+    def find_elements(self, by: object, selector: str) -> list[_FakeElement]:
+        from selenium.webdriver.common.by import By
+
+        if by == By.XPATH:
+            return list(self._xpath_elements.get(selector, []))
         return list(self._elements.get(selector, []))
+
+    def execute_script(self, script: str, *args: object) -> None:
+        self.script_calls.append((script, args))
 
     def quit(self) -> None:
         return None
@@ -105,6 +143,80 @@ def test_detect_page_state_captcha_and_login() -> None:
 
     login_driver = _FakeDriver(current_url="https://www.linkedin.com/login")
     assert detect_page_state(login_driver) == LinkedInPhotoError.AUTH_REQUIRED
+
+
+class _FakeWait:
+    def __init__(self, driver: _FakeDriver) -> None:
+        self._driver = driver
+
+    def until(self, condition: object) -> object:
+        result = condition(self._driver)  # type: ignore[operator]
+        assert result is not False
+        return result
+
+
+def test_find_login_input_uses_node_list_zero_for_email() -> None:
+    driver = _FakeDriver(
+        elements={
+            'input[type="email"]': [
+                _FakeElement({"name": "session_key"}),
+                _FakeElement({"name": "decoy"}),
+            ]
+        }
+    )
+    found = _find_login_input(driver, _FakeWait(driver), 'input[type="email"]')
+    assert found is not None
+    assert found.get_attribute("name") == "session_key"
+
+
+def test_find_login_input_uses_node_list_zero_for_password() -> None:
+    driver = _FakeDriver(
+        elements={
+            'input[type="password"]': [
+                _FakeElement({"name": "session_password"}),
+                _FakeElement({"name": "decoy"}),
+            ]
+        }
+    )
+    found = _find_login_input(driver, _FakeWait(driver), 'input[type="password"]')
+    assert found.get_attribute("name") == "session_password"
+
+
+def test_sign_in_button_enabled_respects_disabled_and_aria() -> None:
+    assert _sign_in_button_enabled(_FakeElement({}))
+    assert not _sign_in_button_enabled(_FakeElement({}, enabled=False))
+    assert not _sign_in_button_enabled(_FakeElement({"aria-disabled": "true"}))
+    assert not _sign_in_button_enabled(_FakeElement({}, displayed=False))
+
+
+def test_wait_for_enabled_sign_in_button_returns_enabled_button() -> None:
+    enabled = _FakeElement({"type": "submit"})
+    driver = _FakeDriver(
+        xpath_elements={
+            "//button[.//span[normalize-space()='Sign in']]": [enabled],
+        }
+    )
+    found = _wait_for_enabled_sign_in_button(driver, _FakeWait(driver))
+    assert found is enabled
+
+
+def test_type_into_login_field_runs_react_sync_script() -> None:
+    field = _FakeElement({"name": "session_key"})
+    driver = _FakeDriver()
+
+    with patch("selenium.webdriver.common.action_chains.ActionChains") as chains_cls:
+        chains = MagicMock()
+        chains.click.return_value = chains
+        chains.send_keys.return_value = chains
+        chains.pause.return_value = chains
+        chains_cls.return_value = chains
+
+        _type_into_login_field(driver, field, "bot@example.com")
+
+    chains.perform.assert_called_once()
+    assert driver.script_calls
+    assert "HTMLInputElement.prototype" in driver.script_calls[0][0]
+    assert driver.script_calls[0][1][1] == "bot@example.com"
 
 
 def test_login_linkedin_requires_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
