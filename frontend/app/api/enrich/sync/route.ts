@@ -17,9 +17,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'At least one identifier is required.' }, { status: 400 });
   }
 
+  if (input.requestedTiers.includes('tier1')) {
+    return NextResponse.json(
+      { message: 'Tier 1 is not available in sync mode. Use async enrichment or remove tier1.' },
+      { status: 400 },
+    );
+  }
+
   let backendResponse: Response;
   try {
-    backendResponse = await backendFetch('/enrich', {
+    backendResponse = await backendFetch('/enrich/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(toBackendEnrichmentRequest(input)),
@@ -34,5 +41,5 @@ export async function POST(request: NextRequest) {
   }
 
   const backendJob = (await backendResponse.json()) as BackendJobResponse;
-  return NextResponse.json(mapBackendJobToFrontend(backendJob, input), { status: 202 });
+  return NextResponse.json(mapBackendJobToFrontend(backendJob, input), { status: 200 });
 }
