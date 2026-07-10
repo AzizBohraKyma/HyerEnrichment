@@ -346,7 +346,7 @@ def test_type_into_login_field_runs_react_sync_script() -> None:
     field = _FakeElement({"name": "session_key"})
     driver = _FakeDriver()
 
-    with patch("selenium.webdriver.common.action_chains.ActionChains") as chains_cls:
+    with patch("app.providers.linkedin.login.ActionChains") as chains_cls:
         chains = MagicMock()
         chains.click.return_value = chains
         chains.send_keys.return_value = chains
@@ -433,10 +433,10 @@ async def test_browser_client_downloads_image(monkeypatch: pytest.MonkeyPatch) -
     client = LinkedInBrowserClient(mlx=mlx, pool=pool)
 
     with (
-        patch("app.providers.linkedin_browser.browser_semaphore") as sem_mock,
-        patch("app.providers.linkedin_browser.connect_selenium", return_value=driver),
+        patch("app.providers.linkedin.client.browser_semaphore") as sem_mock,
+        patch("app.providers.linkedin.client.connect_selenium", return_value=driver),
         patch(
-            "app.providers.linkedin_browser._scrape_on_driver",
+            "app.providers.linkedin.client.scrape_on_driver",
             return_value=(
                 MagicMock(
                     outcome=LinkedInPhotoError.SUCCESS,
@@ -446,9 +446,9 @@ async def test_browser_client_downloads_image(monkeypatch: pytest.MonkeyPatch) -
                 "https://media.licdn.com/dms/image/photo.jpg",
             ),
         ),
-        patch("app.providers.linkedin_browser.asyncio.to_thread", side_effect=lambda fn, *args: fn(*args)),
+        patch("app.providers.linkedin.client.asyncio.to_thread", side_effect=lambda fn, *args: fn(*args)),
         patch(
-            "app.providers.linkedin_browser.download_image",
+            "app.providers.linkedin.client.download_image",
             new=AsyncMock(return_value=(b"jpeg-bytes", "image/jpeg")),
         ),
     ):
