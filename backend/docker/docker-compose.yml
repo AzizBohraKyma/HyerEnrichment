@@ -25,7 +25,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.worker
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "host.docker.internal:${MULTILOGIN_HOST_IP:-host-gateway}"
     environment:
       API_TOKEN: change-me
       DATABASE_URL: postgresql+asyncpg://hyrepath:hyrepath@postgres:5432/hyrepath

@@ -118,6 +118,61 @@ class Settings(BaseSettings):
     audit_log_retention_years: int = Field(default=5, alias="AUDIT_LOG_RETENTION_YEARS")
 
 
+_TIER1_PROD_ENVS = frozenset({"production", "staging"})
+
+
+def validate_tier1_settings(settings: Settings | None = None) -> None:
+    """Fail fast when Tier 1 is enabled without required credentials.
+
+    Raises RuntimeError listing missing env key *names* only (never secret values).
+    No-op when ``enable_tier1`` is false. Staging/production also require R2.
+    """
+    cfg = settings if settings is not None else get_settings()
+    if not cfg.enable_tier1:
+        return
+
+    missing: list[str] = []
+    if cfg.browser_mode.strip().lower() == "multilogin":
+        if not cfg.multilogin_email.strip():
+            missing.append("MULTILOGIN_EMAIL")
+        if not cfg.multilogin_password.get_secret_value().strip():
+            missing.append("MULTILOGIN_PASSWORD")
+        if not cfg.multilogin_folder_id.strip():
+            missing.append("MULTILOGIN_FOLDER_ID")
+        if not cfg.linkedin_bot_email.strip():
+            missing.append("LINKEDIN_BOT_EMAIL")
+        if not cfg.linkedin_bot_password.get_secret_value().strip():
+            missing.append("LINKEDIN_BOT_PASSWORD")
+
+    if cfg.app_env.strip().lower() in _TIER1_PROD_ENVS:
+        if not (
+            cfg.r2_account_id.strip()
+            and cfg.r2_access_key_id.strip()
+            and cfg.r2_secret_access_key.get_secret_value().strip()
+            and cfg.r2_bucket.strip()
+        ):
+            missing.extend(
+                [
+                    "R2_ACCOUNT_ID",
+                    "R2_ACCESS_KEY_ID",
+                    "R2_SECRET_ACCESS_KEY",
+                    "R2_BUCKET",
+                ]
+            )
+
+    if missing:
+        seen: set[str] = set()
+        ordered: list[str] = []
+        for key in missing:
+            if key not in seen:
+                seen.add(key)
+                ordered.append(key)
+        raise RuntimeError(
+            "ENABLE_TIER1=true but required settings are missing: "
+            + ", ".join(ordered)
+        )
+
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

@@ -45,7 +45,7 @@ Hyrepath Enrichment backend — architecture reference for the FastAPI service u
 | API route / auth | API endpoints section | `routes/enrich.py`, `routes/opt_out.py`, `main.py` |
 | Async job queue | Implementation status | `routes/enrich.py`, `workers/runner.py`, `docker/docker-compose.yml` |
 | Opt-out / suppression | Legal section + `_is_suppressed()` | `workers/runner.py`, `routes/opt_out.py`, `models.py` `SuppressionRecord` |
-| Photo / Tier 1 | Tier 1 section | `enrichers/linkedin_photo.py`, `providers/multilogin.py`, `providers/profile_pool.py`, `providers/linkedin_browser.py`, `storage/photo_cache.py`, `storage/r2.py` |
+| Photo / Tier 1 | Tier 1 section | `enrichers/linkedin_photo.py`, `providers/multilogin.py`, `providers/profile_pool.py`, `providers/linkedin_browser.py`, `storage/photo_cache.py`, `storage/r2.py`, `docker/docker-compose.tier1.yml` (`env_file`), `config.validate_tier1_settings` |
 | Env / config | Environment variables section | `config.py`, `.env.example` |
 | Tests | Testing strategy | `tests/test_pipeline_shape.py` |
 | Frontend integration | Frontend contract below | `frontend/src/lib/api-adapter.ts`, `frontend/src/lib/types.ts` |
@@ -466,6 +466,9 @@ Copy `backend/.env.example` → `backend/.env`.
 | `MULTILOGIN_LAUNCHER_URL` | MLX launcher base (`/api/v2` for start, `/api/v1` derived for stop) |
 | `MULTILOGIN_SELENIUM_HOST` | Selenium Remote host (Docker: `http://host.docker.internal`) |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | R2 credentials |
+| `LINKEDIN_BOT_EMAIL`, `LINKEDIN_BOT_PASSWORD` | Dummy LinkedIn account for Selenium login |
+
+**Docker Tier 1:** use `-f docker-compose.tier1.yml`. That override loads secrets from `env_file` (`../.env` or `WORKER_ENV_FILE`) into the **worker only**, forces `MULTILOGIN_SELENIUM_HOST=http://host.docker.internal`, maps `launcher.mlx.yt` and `host.docker.internal` → `host-gateway` (or `MULTILOGIN_HOST_IP` on WSL2 + Docker Engine so traffic reaches Windows), and the worker exits on boot if Multilogin/bot (and staging/production R2) settings are missing (`validate_tier1_settings`).
 
 ### Tier 3 (email) — target
 
@@ -561,7 +564,7 @@ AGPL tools (`social-analyzer`, Reacher) run as **isolated sidecars** called over
 | LinkedIn photo cache | Redis + Postgres by slug hash | `storage/photo_cache.py` + `PhotoCacheRecord`; slug-keyed TTL; cache-before-browser in `linkedin_photo.py` |
 | Multilogin + Selenium | MLX launcher + Selenium Remote | `providers/multilogin.py`, `profile_pool.py`, `linkedin_browser.py`; worker-only `ENABLE_TIER1`; `/enrich/sync` skips tier1 |
 | Tier 1 pipeline dispatch | Tier 1 serial, tiers 2–4 parallel | `runner.py` `_dispatch(sync_mode=...)`; see `docs/TESTING_TIER1.md` |
-| Tier 1 Docker ops | Worker image + compose override | `Dockerfile.worker` (Chromium + `.[enrichers]`); `docker-compose.tier1.yml`; `tier1_*` Prometheus counters |
+| Tier 1 Docker ops | Worker image + compose override | `Dockerfile.worker` (Chromium + `.[enrichers]`); `docker-compose.tier1.yml` injects secrets via `env_file` (`WORKER_ENV_FILE` or `../.env`), forces `MULTILOGIN_SELENIUM_HOST`, maps `launcher.mlx.yt`/`host.docker.internal` → `host-gateway` or `MULTILOGIN_HOST_IP` (WSL2); `validate_tier1_settings()` fail-fast on worker boot; `tier1_*` Prometheus counters |
 | Tier 1 hardening (3.7) | Session reuse, denylist, rate limits | `TIER1_SKIP_LOGIN_IF_SESSION_VALID`; `profile_pool.refund_view()`; `probe_tier1_canary.py`; configurable cooldowns |
 | LiteLLM disambiguation | Routed LLM calls | `LLM_MODE=stub|ollama|litellm` (default stub) via `providers/llm.py` |
 | Langfuse tracing | Per disambiguation call | `providers.llm.trace()`; no-op until `LANGFUSE_*` set |
