@@ -59,6 +59,8 @@ curl http://localhost:9005/get_settings
 curl http://localhost:8080/api/docs
 ```
 
+**GMaps compose note:** service builds via [`Dockerfile.google-maps-scraper`](../docker/Dockerfile.google-maps-scraper) (upstream binary + Playwright 1.57.0 driver assembled from npm/nodejs.org). Do **not** mount a volume over `/opt` — that shadows `/opt/node` and `/opt/package`. Hub `:latest` alone still 404s on the retired azureedge CDN.
+
 Strict contract + API path:
 
 ```bash
@@ -66,6 +68,17 @@ cd backend
 python scripts/e2e_realworld_strict.py
 # or: bash scripts/e2e_realworld_strict.sh
 ```
+
+### Free-sidecar smoke (2026-07-13)
+
+| Check | Result |
+|-------|--------|
+| Worker → SA `:9005/get_settings` | PASS (HTTP 200) |
+| Worker → GMaps `:8080/api/docs` | PASS (HTTP 200) |
+| Sync `tier2`+`tier4` (`torvalds` + `coffee shop San Francisco`) | PASS — `sources`: Social Analyzer + Google Maps Scraper; 3 handles; business `Hey Neighbor Cafe` |
+| `e2e_realworld_strict` GMaps create/poll/download | PASS (`status=ok`, csv ~397KB) |
+| `e2e_realworld_strict` SA settings/analyze | PASS |
+| Unrelated FAILs | `GITRECON_SCRIPT` unset; `gmaps_legacy_search_rejected` (GET `/search` returns 200, probe expects 4xx) |
 
 ---
 
@@ -122,14 +135,14 @@ curl -s -X POST http://localhost:8000/enrich/sync \
 |--------|---------------|----------------|
 | Sherlock | ☐ | handles |
 | Maigret | ☐ | handles |
-| Social Analyzer | ☐ | handles |
+| Social Analyzer | ☑ | handles (3 for `torvalds`, 2026-07-13 smoke) |
 | GitRecon | ☐ | github + handles |
 | theHarvester | ☐ | emails |
 | Email Sleuth | ☐ | emails |
 | Email Verify | ☐ | verified_emails |
 | CrossLinked | ☐ | coworkers |
 | JobSpy | ☐ | jobs |
-| Google Maps | ☐ | business |
+| Google Maps | ☑ | business (`Hey Neighbor Cafe`, 2026-07-13 smoke) |
 
 ---
 
