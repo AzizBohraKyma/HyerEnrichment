@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     # Tier 2 — handle hunt. Sidecar URLs default empty -> empty fragment.
     social_analyzer_url: str = Field(default="", alias="SOCIAL_ANALYZER_URL")
     sherlock_timeout_seconds: int = Field(default=60, alias="SHERLOCK_TIMEOUT_SECONDS")
-    maigret_timeout_seconds: int = Field(default=90, alias="MAIGRET_TIMEOUT_SECONDS")
+    maigret_timeout_seconds: int = Field(default=180, alias="MAIGRET_TIMEOUT_SECONDS")
 
     # Tier 3 — OSINT + email
     github_token: str = Field(default="", alias="GITHUB_TOKEN")

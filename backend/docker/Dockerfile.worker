@@ -16,7 +16,10 @@ ENV CHROME_BIN=/usr/bin/chromium \
 
 COPY pyproject.toml /app/pyproject.toml
 COPY app /app/backend/app
-RUN pip install --no-cache-dir ".[enrichers]"
+# .[enrichers] includes sherlock-project + maigret so Tier 2 shell-outs work in Docker.
+RUN pip install --no-cache-dir ".[enrichers]" \
+    && which sherlock \
+    && which maigret
 
 COPY . /app/backend
 ENV PYTHONPATH=/app/backend
