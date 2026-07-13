@@ -512,12 +512,12 @@ Copy `backend/.env.example` → `backend/.env`.
 | `redis` | Queue + suppression + rate limits |
 | `social-analyzer` | AGPL sidecar (Tier 2) |
 | `reacher` | SMTP verification sidecar (Tier 3) |
-| `google-maps-scraper` | Local business sidecar (Tier 4) |
+| `google-maps-scraper` | Local business sidecar (Tier 4); built via `Dockerfile.google-maps-scraper` (Playwright driver from npm — not Hub CDN) |
 | `litellm` | LLM proxy |
 | `langfuse` | LLM observability |
 | `changedetection` | Company change signals via `POST /api/signals/changedetection` |
 
-**Current:** compose uses real images. Free-mode sidecars (`social-analyzer`, `google-maps-scraper`) start by default; paid/heavy services (`reacher`, `litellm`, `ollama`, `scrapoxy`, `langfuse`, `changedetection`) sit behind compose `profiles:` so a plain `docker compose up` stays free. Enrichers call real tools (subprocess/library/sidecar) selected by the Phase 0 provider layer (`app/providers/`), and **degrade to a valid empty fragment** when a tool, sidecar, or key is missing — never a crash. Free -> paid is an env flip via the mode flags in `config.py` (`PROXY_MODE`, `BROWSER_MODE`, `LLM_MODE`, `EMAIL_VERIFY_LEVEL`, `ENABLE_TIER1`).
+**Current:** compose uses real images/builds. Free-mode sidecars (`social-analyzer`, `google-maps-scraper`) start by default; paid/heavy services (`reacher`, `litellm`, `ollama`, `scrapoxy`, `langfuse`, `changedetection`) sit behind compose `profiles:` so a plain `docker compose up` stays free. `google-maps-scraper` is built locally (`Dockerfile.google-maps-scraper`) with a pre-assembled Playwright 1.57.0 driver — Hub `:latest` still hits the retired azureedge CDN. Do not volume-mount over `/opt`. Enrichers call real tools (subprocess/library/sidecar) selected by the Phase 0 provider layer (`app/providers/`), and **degrade to a valid empty fragment** when a tool, sidecar, or key is missing — never a crash. Free -> paid is an env flip via the mode flags in `config.py` (`PROXY_MODE`, `BROWSER_MODE`, `LLM_MODE`, `EMAIL_VERIFY_LEVEL`, `ENABLE_TIER1`).
 
 ### AGPL isolation
 
@@ -660,6 +660,6 @@ Track these as architecture decisions mature:
 3. Remove Bearer auth from `POST /api/opt-out` for compliance accessibility
 4. ~~Promote SQLite → PostgreSQL in default docker-compose wiring~~ (done) — remaining: Alembic migrations and `JSONB` columns when the schema stabilizes
 5. ~~Connect LiteLLM + Langfuse in `llm_router.py`~~ (done, opt-in) — remaining: real prompt tuning + cost dashboards once `LLM_MODE=litellm` is exercised
-6. ~~Swap nginx sidecar placeholders for real Reacher, social-analyzer, and GMaps images~~ (done) — remaining: verify each real image's health/endpoints in a staging compose run
+6. ~~Swap nginx sidecar placeholders for real Reacher, social-analyzer, and GMaps images~~ (done) — GMaps Playwright CDN 404 fixed via local Dockerfile with npm-assembled driver (2026-07-13); free-sidecar smoke PASS
 
 For tier-specific issues, use `[Tier N]` in issue titles (e.g. `[Tier 3] Reacher fallback fails on catch-all`).
