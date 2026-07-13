@@ -4,11 +4,42 @@ Enrichers **fail silently**: the pipeline can return `status: "completed"` with 
 
 ---
 
+## Tier 2 full E2E (recommended first)
+
+One-shot free-path + litellm harness for Sherlock / Maigret / Social Analyzer:
+
+```bash
+bash backend/scripts/e2e_tier2.sh
+```
+
+Windows (WSL):
+
+```powershell
+wsl -d Ubuntu-22.04 -u root bash /mnt/g/ThunderMarketingCorp/HyerEnrichment/backend/scripts/e2e_tier2.sh
+```
+
+**Stage A (free):** rebuilds `api` + `worker` with `sherlock`/`maigret` on PATH, brings up `social-analyzer`, asserts isolation probes, `/enrich/sync` and async `/enrich` for `requested_tiers:["tier2"]`. Report: `backend/.e2e-results/tier2-report.json`.
+
+**Stage B (litellm):** requires `OPENAI_API_KEY` or `GEMINI_API_KEY` in `backend/.env`. Starts `--profile llm` and runs live `_disambiguate_handles` via the proxy.
+
+### Scrapoxy (optional, not gated)
+
+Default is `PROXY_MODE=none` (direct; ban risk at volume). Manual smoke:
+
+```bash
+cd backend/docker
+# Start scrapoxy behind paid profile, then:
+# PROXY_MODE=scrapoxy SCRAPOXY_URL=http://scrapoxy:8888 docker compose --profile paid up -d
+# Confirm Sherlock/Maigret CLI invocations include --proxy (see ProxyProvider + enricher args).
+```
+
+---
+
 ## Layer 0 — Shape tests (mocked, fast)
 
 ```bash
 cd backend
-pytest tests/test_pipeline_shape.py -v
+pytest tests/test_pipeline_shape.py tests/test_tier2_merge.py tests/test_enrichers.py -v
 ```
 
 Proves merge/scoring — **not** that real CLIs or sidecars work.
@@ -193,10 +224,10 @@ python scripts/probe_enrichers.py
 
 **JobSpy on native Windows:** `python-jobspy` loads numpy; some Windows Python 3.13 builds segfault at runtime. The probe script auto-skips JobSpy on Windows unless you pass `--include-jobspy` (runs in a subprocess so a crash won't kill the whole script). Prefer testing JobSpy inside Docker/WSL.
 
-Use **WSL2 + Docker Desktop** for bash scripts (`e2e_realworld_strict.sh`, `probe_sidecars.sh`):
+Use **WSL2 + Docker Desktop** for bash scripts (`e2e_tier2.sh`, `e2e_realworld_strict.sh`, `probe_sidecars.sh`):
 
 ```powershell
-wsl -d Ubuntu-22.04 -u root bash /mnt/g/ThunderMarketingCorp/HyerEnrichment/backend/scripts/e2e_realworld_strict.sh
+wsl -d Ubuntu-22.04 -u root bash /mnt/g/ThunderMarketingCorp/HyerEnrichment/backend/scripts/e2e_tier2.sh
 ```
 
 ---
@@ -208,6 +239,7 @@ wsl -d Ubuntu-22.04 -u root bash /mnt/g/ThunderMarketingCorp/HyerEnrichment/back
 | Email Discover | Partial OK | Pattern fallback without `email-sleuth` |
 | Email Verify | Partial OK | MX if `dnspython` installed |
 | Social Analyzer / Local Business | Depends | Sidecar up + correct API contract |
-| Sherlock, Maigret, TheHarvester, CrossLinked, GitRecon, JobSpy | Often EMPTY | CLIs / jobspy not in `Dockerfile.worker` by default |
+| Sherlock, Maigret | OK after rebuild | Installed via `.[enrichers]` (`sherlock-project`, `maigret`) in worker/api images |
+| TheHarvester, CrossLinked, GitRecon, JobSpy | Often EMPTY | Remaining CLIs / paths not all baked into the image |
 
-Validate CLI enrichers locally (tools on host) with Layer 3 while Docker worker image is still minimal.
+Validate remaining CLI enrichers locally (tools on host) with Layer 3 while those installs are still optional.

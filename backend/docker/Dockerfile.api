@@ -1,6 +1,9 @@
 FROM python:3.12-slim
 WORKDIR /app
 COPY pyproject.toml /app/pyproject.toml
-RUN pip install --no-cache-dir ".[enrichers]"
+# Sync path runs Tier 2 CLIs in-process on the API; keep sherlock/maigret on PATH.
+RUN pip install --no-cache-dir ".[enrichers]" \
+    && which sherlock \
+    && which maigret
 COPY . /app/backend
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "backend"]
