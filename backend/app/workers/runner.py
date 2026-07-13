@@ -285,9 +285,19 @@ class PipelineOrchestrator:
                     if not isinstance(handle, dict):
                         continue
                     key = (str(handle.get("platform", "")).lower(), str(handle.get("username", "")).lower())
+                    candidate = SocialHandle.model_validate(handle)
                     if key not in handles_seen:
                         handles_seen.add(key)
-                        dossier.handles.append(SocialHandle.model_validate(handle))
+                        dossier.handles.append(candidate)
+                        continue
+                    # Prefer higher confidence on platform/username collision.
+                    for index, existing in enumerate(dossier.handles):
+                        existing_key = (existing.platform.lower(), existing.username.lower())
+                        if existing_key != key:
+                            continue
+                        if candidate.confidence > existing.confidence:
+                            dossier.handles[index] = candidate
+                        break
 
             emails = payload.get("emails")
             if isinstance(emails, list):

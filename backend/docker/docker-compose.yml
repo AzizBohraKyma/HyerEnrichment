@@ -83,6 +83,18 @@ services:
       dockerfile: Dockerfile.social-analyzer
     ports:
       - "9005:9005"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:9005/get_settings').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
     restart: unless-stopped
   # Built via Dockerfile.google-maps-scraper: upstream binary + Playwright
   # 1.57.0 driver from npm/nodejs.org (Hub :latest 404s on retired CDN).
