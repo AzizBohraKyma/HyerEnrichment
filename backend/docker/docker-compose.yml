@@ -84,13 +84,17 @@ services:
     ports:
       - "9005:9005"
     restart: unless-stopped
+  # Built via Dockerfile.google-maps-scraper: upstream binary + Playwright
+  # 1.57.0 driver from npm/nodejs.org (Hub :latest 404s on retired CDN).
+  # Do not mount a volume over /opt — that shadows /opt/node and /opt/package.
   google-maps-scraper:
-    image: gosom/google-maps-scraper:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.google-maps-scraper
     command: ["-web", "-addr", "0.0.0.0:8080", "-data-folder", "/gmapsdata"]
     ports:
       - "8080:8080"
     volumes:
-      - gmaps_playwright_cache:/opt
       - gmaps_data:/gmapsdata
     restart: unless-stopped
 
@@ -160,5 +164,4 @@ volumes:
   tier1_artifacts:
   ollama_data:
   changedetection_data:
-  gmaps_playwright_cache:
   gmaps_data:
