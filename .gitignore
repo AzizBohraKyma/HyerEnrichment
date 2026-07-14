@@ -1,23 +1,72 @@
+# Dependencies
 node_modules/
 .venv/
+venv/
+
+# Build / output
 dist/
 build/
 .next/
 out/
 *.tsbuildinfo
 coverage/
-.env/
-.env.local
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env.local
+
+# Logs & OS
 *.log
 .DS_Store
-backend/.env
-backend/artifacts/
-frontend/.env.local
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
 # Python
-venv/
-.venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
+.tox/
+htmlcov/
+.coverage
+.coverage.*
+.hypothesis/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Backend dev/runtime artifacts
+backend/artifacts/
+.e2e-results/
+.asset-cache/
+
+# Frontend extras
+.vercel/
+.turbo/
+.eslintcache
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
+# IDE / editor
+.vscode/
+.idea/
+.cursor/
+
+# Agent / local tooling state
+.openclaw/
+.paperclip/
+.zero-human/
