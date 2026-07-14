@@ -1,0 +1,153 @@
+[
+  {
+    "id": "tech-01",
+    "category": "technical",
+    "username": "example-tech-01",
+    "email": "dev01@example.com",
+    "company": "ExampleTech",
+    "job_search": "software engineer remote",
+    "business": "coffee shop San Francisco",
+    "enrichers": ["sherlock", "maigret", "social_analyzer", "gitrecon", "email_discover", "email_verify"]
+  },
+  {
+    "id": "tech-02",
+    "category": "technical",
+    "username": "example-tech-02",
+    "email": "dev02@example.com",
+    "company": "ExampleTech",
+    "enrichers": ["sherlock", "maigret", "gitrecon", "crosslinked"]
+  },
+  {
+    "id": "tech-03",
+    "category": "technical",
+    "username": "example-tech-03",
+    "company": "OpenSourceCo",
+    "enrichers": ["sherlock", "maigret", "social_analyzer", "theharvester"]
+  },
+  {
+    "id": "tech-04",
+    "category": "technical",
+    "username": "example-tech-04",
+    "email": "dev04@example.org",
+    "enrichers": ["sherlock", "gitrecon", "email_verify"]
+  },
+  {
+    "id": "tech-05",
+    "category": "technical",
+    "username": "example-tech-05",
+    "company": "CloudLabs",
+    "job_search": "backend engineer",
+    "enrichers": ["sherlock", "maigret", "email_discover", "jobspy"]
+  },
+  {
+    "id": "tech-06",
+    "category": "technical",
+    "username": "example-tech-06",
+    "email": "hex06@example.com",
+    "company": "DevTools Inc",
+    "enrichers": ["social_analyzer", "gitrecon", "theharvester", "crosslinked"]
+  },
+  {
+    "id": "tech-07",
+    "category": "technical",
+    "username": "example-tech-07",
+    "company": "DataSystems",
+    "enrichers": ["sherlock", "maigret", "email_discover"]
+  },
+  {
+    "id": "sales-01",
+    "category": "non-technical",
+    "username": "example-sales-01",
+    "email": "sales01@example.com",
+    "company": "Acme Sales",
+    "enrichers": ["sherlock", "email_verify", "crosslinked", "theharvester"]
+  },
+  {
+    "id": "sales-02",
+    "category": "non-technical",
+    "username": "example-sales-02",
+    "company": "Acme Sales",
+    "enrichers": ["email_discover", "crosslinked"]
+  },
+  {
+    "id": "sales-03",
+    "category": "non-technical",
+    "username": "example-sales-03",
+    "email": "rep03@example.com",
+    "company": "Northwind",
+    "enrichers": ["sherlock", "maigret", "email_verify"]
+  },
+  {
+    "id": "sales-04",
+    "category": "non-technical",
+    "username": "example-sales-04",
+    "company": "Contoso",
+    "job_search": "account executive",
+    "enrichers": ["crosslinked", "jobspy", "theharvester"]
+  },
+  {
+    "id": "sales-05",
+    "category": "non-technical",
+    "username": "example-sales-05",
+    "email": "ae05@example.com",
+    "company": "Fabrikam",
+    "enrichers": ["sherlock", "email_discover", "email_verify"]
+  },
+  {
+    "id": "ops-01",
+    "category": "non-technical",
+    "username": "example-ops-01",
+    "company": "LogisticsCo",
+    "business": "warehouse Austin TX",
+    "enrichers": ["crosslinked", "local_business", "theharvester"]
+  },
+  {
+    "id": "ops-02",
+    "category": "non-technical",
+    "username": "example-ops-02",
+    "email": "ops02@example.com",
+    "company": "RetailCo",
+    "business": "grocery store Seattle",
+    "enrichers": ["email_verify", "local_business"]
+  },
+  {
+    "id": "sparse-01",
+    "category": "sparse",
+    "username": "example-sparse-01",
+    "enrichers": ["sherlock", "maigret"]
+  },
+  {
+    "id": "sparse-02",
+    "category": "sparse",
+    "email": "only-email@example.com",
+    "enrichers": ["email_verify", "gitrecon"]
+  },
+  {
+    "id": "sparse-03",
+    "category": "sparse",
+    "company": "OnlyCompany LLC",
+    "enrichers": ["theharvester", "crosslinked", "email_discover"]
+  },
+  {
+    "id": "sparse-04",
+    "category": "sparse",
+    "job_search": "remote customer success",
+    "enrichers": ["jobspy"]
+  },
+  {
+    "id": "sparse-05",
+    "category": "sparse",
+    "business": "pizza restaurant Chicago",
+    "enrichers": ["local_business"]
+  },
+  {
+    "id": "mixed-01",
+    "category": "technical",
+    "username": "example-mixed-01",
+    "email": "mixed01@example.com",
+    "company": "MixedWorks",
+    "job_search": "platform engineer",
+    "business": "coworking space Denver",
+    "enrichers": ["sherlock", "maigret", "social_analyzer", "gitrecon", "theharvester", "email_discover", "email_verify", "crosslinked", "jobspy", "local_business"]
+  }
+]
