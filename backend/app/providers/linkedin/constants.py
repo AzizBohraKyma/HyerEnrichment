@@ -56,6 +56,7 @@ DOM_PHOTO_SELECTORS = (
     FIGURE_PHOTO_SELECTOR,
     'div[componentkey="topcard-logo-image-referencekey"] img',
     'div[aria-label="Profile photo"] img',
+    'img[src*="profile-displayphoto"]',
 )
 
 DOM_PHOTO_ATTRS = ("src", "data-delayed-url", "data-ghost-url", "data-src")
