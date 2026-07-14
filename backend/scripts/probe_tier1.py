@@ -6,6 +6,8 @@ Usage:
   python scripts/probe_tier1.py --connect-test
   python scripts/probe_tier1.py --scrape --linkedin-url https://www.linkedin.com/in/someone
 
+For staged Docker/WSL networking validation, use ``create_session.py check``.
+
 Loads `.env` from backend/ via get_settings(). Live MLX/LinkedIn calls are manual
 only — not run in CI.
 """
@@ -15,78 +17,19 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts._tier1_setup_common import audit_prerequisites, print_prereqs
 from app.config import get_settings
 from app.providers.linkedin_browser import LinkedInBrowserClient, LinkedInPhotoError
 from app.providers.multilogin import MultiloginClient, MultiloginError
 from app.providers.profile_pool import ProfilePool
 
 LINKEDIN_LOGIN_URL = "https://www.linkedin.com/login"
-
-
-@dataclass
-class PrereqRow:
-    name: str
-    present: bool
-    detail: str
-
-
-def audit_prerequisites() -> list[PrereqRow]:
-    settings = get_settings()
-    rows: list[PrereqRow] = []
-
-    def env(name: str, value: str, env_key: str) -> None:
-        ok = bool(value.strip())
-        rows.append(PrereqRow(name=name, present=ok, detail=value.strip() or f"{env_key} unset"))
-
-    env("ENABLE_TIER1", str(settings.enable_tier1).lower(), "ENABLE_TIER1")
-    env("BROWSER_MODE", settings.browser_mode, "BROWSER_MODE")
-    env("MULTILOGIN_EMAIL", settings.multilogin_email, "MULTILOGIN_EMAIL")
-    env(
-        "MULTILOGIN_PASSWORD",
-        "***" if settings.multilogin_password.get_secret_value().strip() else "",
-        "MULTILOGIN_PASSWORD",
-    )
-    env("MULTILOGIN_FOLDER_ID", settings.multilogin_folder_id, "MULTILOGIN_FOLDER_ID")
-    env("MULTILOGIN_WORKSPACE_ID", settings.multilogin_workspace_id, "MULTILOGIN_WORKSPACE_ID")
-    env("MULTILOGIN_PROFILE_ID", settings.multilogin_profile_id, "MULTILOGIN_PROFILE_ID")
-    env("MULTILOGIN_API_URL", settings.multilogin_api_url, "MULTILOGIN_API_URL")
-    env("MULTILOGIN_LAUNCHER_URL", settings.multilogin_launcher_url, "MULTILOGIN_LAUNCHER_URL")
-    env("MULTILOGIN_SELENIUM_HOST", settings.multilogin_selenium_host, "MULTILOGIN_SELENIUM_HOST")
-    env("LINKEDIN_BOT_EMAIL", settings.linkedin_bot_email, "LINKEDIN_BOT_EMAIL")
-    env(
-        "LINKEDIN_BOT_PASSWORD",
-        "***" if settings.linkedin_bot_password.get_secret_value().strip() else "",
-        "LINKEDIN_BOT_PASSWORD",
-    )
-
-    try:
-        import selenium  # noqa: F401
-
-        rows.append(PrereqRow(name="selenium", present=True, detail="package installed"))
-    except ImportError:
-        rows.append(
-            PrereqRow(
-                name="selenium",
-                present=False,
-                detail="pip install selenium (worker image or pip install selenium)",
-            )
-        )
-
-    return rows
-
-
-def print_prereqs(rows: list[PrereqRow]) -> None:
-    print("== Tier 1 prerequisites ==")
-    for row in rows:
-        mark = "OK" if row.present else "MISS"
-        print(f"{mark:4}  {row.name}: {row.detail}")
 
 
 async def connect_test(*, linkedin_url: str) -> int:

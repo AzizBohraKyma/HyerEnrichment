@@ -43,6 +43,65 @@ docker compose exec worker chromium --version
 
 ---
 
+## Layer 1.5 — Session gate (`create_session.py`)
+
+Staged Multilogin + Selenium validation with explicit exit codes. Use this **before**
+`probe_tier1.py --connect-test` when debugging Docker/WSL/Windows networking — it
+TCP-probes the dynamic Selenium port before attaching WebDriver.
+
+```bash
+cd backend
+python scripts/create_session.py diagnose
+python scripts/create_session.py check
+python scripts/create_session.py seed-linkedin --profile-id <MLX_PROFILE_UUID>
+python scripts/create_session.py check --require-linkedin --profile-id <MLX_PROFILE_UUID>
+```
+
+From the worker container (WSL2 + Docker Engine — set host IP first):
+
+```bash
+cd backend/docker
+export MULTILOGIN_HOST_IP=$(ip route show default | awk '{print $3}')
+docker compose -f docker-compose.yml -f docker-compose.tier1.yml up -d --force-recreate worker
+docker compose -f docker-compose.yml -f docker-compose.tier1.yml exec worker \
+  python scripts/create_session.py check
+echo $?
+```
+
+### Exit codes
+
+| Code | Meaning | Typical fix |
+|------|---------|-------------|
+| `0` | All requested checks passed | Proceed to scrape / async jobs |
+| `1` | Missing prereqs / invalid config | Fill `.env` |
+| `2` | MLX auth or profile lifecycle failed | Credentials, folder id, launcher |
+| `3` | Selenium port TCP failed | `MULTILOGIN_HOST_IP`, recreate worker, Windows firewall |
+| `4` | TCP OK but Selenium Remote/`/status` failed | Stop/restart stuck MLX profile |
+| `5` | LinkedIn session invalid / captcha | `seed-linkedin` or manual MLX login |
+
+`check` does **not** call `ProfilePool.acquire()` — diagnostics must not burn daily view counters.
+
+Automated tests (CI, no live MLX):
+
+```bash
+cd backend
+pytest tests/test_create_session.py -v
+```
+
+### Acceptance tiers (manual)
+
+| Tier | Proves | Command |
+|------|--------|---------|
+| **A** | Logic + exit codes | `pytest tests/test_create_session.py -v` |
+| **B** | MLX on Windows host | `python scripts/create_session.py check` with `MULTILOGIN_SELENIUM_HOST=http://127.0.0.1` |
+| **C** | Docker worker networking | `docker compose ... exec worker python scripts/create_session.py check` → exit `0` |
+| **D** | LinkedIn cookies in profile | `seed-linkedin` then `check --require-linkedin` |
+| **E** | Production enricher path | `probe_tier1.py --scrape` + `POST /enrich` with `tier1` |
+
+**100% Tier 1 ready** = Tier A + C + E (and D when MLX profiles are fresh).
+
+---
+
 ## Layer 2 — Multilogin connectivity
 
 Multilogin launcher must be running on the host (not inside Docker).
