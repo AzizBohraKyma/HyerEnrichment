@@ -1,0 +1,103 @@
+# CI-safe override: replace heavy AGPL/Playwright/Go sidecars with HTTP mocks.
+#
+# Usage:
+#   cd backend/docker
+#   docker compose -f docker-compose.yml -f docker-compose.fake-sidecars.yml --profile paid up --build -d \
+#     api worker redis postgres social-analyzer google-maps-scraper email-verifier reacher
+#
+# Verify:
+#   bash backend/scripts/e2e_fake_sidecars.sh
+
+services:
+  api:
+    environment:
+      EMAIL_VERIFY_LEVEL: smtp
+      REACHER_URL: http://reacher:8080
+
+  worker:
+    environment:
+      ENABLE_TIER1: "false"
+      EMAIL_VERIFY_LEVEL: smtp
+      REACHER_URL: http://reacher:8080
+
+  social-analyzer:
+    build:
+      context: fake-sidecars
+      dockerfile: Dockerfile
+    image: hyrepath/fake-sidecar:latest
+    command: ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port 9005"]
+    environment:
+      FAKE_SIDECAR: social-analyzer
+      LISTEN_PORT: "9005"
+    ports:
+      - "9005:9005"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9005/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
+
+  google-maps-scraper:
+    build:
+      context: fake-sidecars
+      dockerfile: Dockerfile
+    image: hyrepath/fake-sidecar:latest
+    command: ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port 8080"]
+    environment:
+      FAKE_SIDECAR: google-maps-scraper
+      LISTEN_PORT: "8080"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
+
+  email-verifier:
+    build:
+      context: fake-sidecars
+      dockerfile: Dockerfile
+    image: hyrepath/fake-sidecar:latest
+    command: ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port 8080"]
+    environment:
+      FAKE_SIDECAR: email-verifier
+      LISTEN_PORT: "8080"
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/v1/health@example.com/verification')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
+
+  reacher:
+    build:
+      context: fake-sidecars
+      dockerfile: Dockerfile
+    image: hyrepath/fake-sidecar:latest
+    command: ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port 8080"]
+    environment:
+      FAKE_SIDECAR: reacher
+      LISTEN_PORT: "8080"
+    ports:
+      - "8082:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
