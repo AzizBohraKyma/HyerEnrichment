@@ -1,4 +1,4 @@
-# Tier 2–4 testing checklist
+﻿# Tier 2â€“4 testing checklist
 
 Enrichers **fail silently**: the pipeline can return `status: "completed"` with no error while individual sources return `{}`. Use **`dossier.sources`** in API responses to see which enrichers contributed data.
 
@@ -50,14 +50,14 @@ cd backend/docker
 
 ---
 
-## Layer 0 — Shape tests (mocked, fast)
+## Layer 0 â€” Shape tests (mocked, fast)
 
 ```bash
 cd backend
 pytest tests/test_pipeline_shape.py tests/test_tier2_merge.py tests/test_enrichers.py -v
 ```
 
-Proves merge/scoring — **not** that real CLIs or sidecars work.
+Proves merge/scoring â€” **not** that real CLIs or sidecars work.
 
 ---
 
@@ -106,7 +106,7 @@ docker compose exec worker sh -c 'which sherlock maigret theHarvester crosslinke
 | Sherlock | 2 | `sherlock` on PATH |
 | Maigret | 2 | `maigret` on PATH |
 | Social Analyzer | 2 | Sidecar + `SOCIAL_ANALYZER_URL` |
-| GitRecon | 3 | `GITRECON_SCRIPT` → `gitrecon.py` |
+| GitRecon | 3 | `GITRECON_SCRIPT` â†’ `gitrecon.py` |
 | TheHarvester | 3 | `theHarvester` on PATH |
 | Email Discover | 3 | `email-sleuth` (optional; pattern fallback always returns something) |
 | Email Verify | 3 | `mailchecker` (core dep); `dnspython` (`pip install .[enrichers]`); `EMAIL_VERIFIER_URL` (AfterShip sidecar); optional Reacher when `EMAIL_VERIFY_LEVEL=smtp` |
@@ -116,7 +116,7 @@ docker compose exec worker sh -c 'which sherlock maigret theHarvester crosslinke
 
 ---
 
-## Layer 2 — Sidecar health
+## Layer 2 â€” Sidecar health
 
 ```bash
 cd backend/docker
@@ -148,6 +148,8 @@ python scripts/e2e_realworld_strict.py
 
 ### Free-sidecar smoke
 
+**Contract expectations:**
+
 | Check | Expected |
 |-------|----------|
 | `probe_sidecars.sh` GMaps job create/status | POST `/api/v1/jobs`, GET `/api/v1/jobs/{id}` |
@@ -156,9 +158,20 @@ python scripts/e2e_realworld_strict.py
 | `e2e_realworld_strict` GMaps create/poll/download | Job API + CSV download |
 | `e2e_tier3` GitRecon | `GITRECON_SCRIPT=/opt/gitrecon/gitrecon.py` in api/worker images |
 
+**Observed smoke (reference run):**
+
+| Check | Result |
+|-------|--------|
+| Worker → SA `:9005/get_settings` | PASS (HTTP 200) |
+| Worker → GMaps `:8080/api/docs` | PASS (HTTP 200) |
+| Sync `tier2`+`tier4` (`torvalds` + `coffee shop San Francisco`) | PASS — `sources`: Social Analyzer + Google Maps Scraper; 3 handles; business `Hey Neighbor Cafe` |
+| `e2e_realworld_strict` GMaps create/poll/download | PASS (`status=ok`, csv ~397KB) |
+| `e2e_realworld_strict` SA settings/analyze | PASS |
+| Unrelated FAILs | `GITRECON_SCRIPT` unset; `gmaps_legacy_search_rejected` (GET `/search` returns 200, probe expects 4xx) |
+
 ---
 
-## Layer 3 — Enricher isolation
+## Layer 3 â€” Enricher isolation
 
 ```bash
 cd backend
@@ -170,13 +183,13 @@ python scripts/probe_enrichers.py --only sherlock,maigret --json
 |--------|---------|
 | `SKIP` | Required request field missing |
 | `EMPTY {}` | Tool missing, timeout, or no results |
-| `OK` | Enricher returned data — inspect keys |
+| `OK` | Enricher returned data â€” inspect keys |
 
 Stable test subjects: `torvalds` / `satyanadella` (GitHub), company `Microsoft`, email `noreply@github.com`, job `"software engineer remote"`, business `"coffee shop San Francisco"`.
 
 ---
 
-## Layer 4 — Tier-by-tier API (`/enrich/sync`)
+## Layer 4 â€” Tier-by-tier API (`/enrich/sync`)
 
 **Tier 2:**
 
@@ -209,20 +222,20 @@ curl -s -X POST http://localhost:8000/enrich/sync \
 
 | Source | In `sources`? | Data returned? |
 |--------|---------------|----------------|
-| Sherlock | ☐ | handles |
-| Maigret | ☐ | handles |
-| Social Analyzer | ☑ | handles (3 for `torvalds`, 2026-07-13 smoke) |
-| GitRecon | ☐ | github + handles |
-| theHarvester | ☐ | emails |
-| Email Sleuth | ☐ | emails |
-| Email Verify | ☐ | verified_emails |
-| CrossLinked | ☐ | coworkers |
-| JobSpy | ☐ | jobs |
-| Google Maps | ☑ | business (`Hey Neighbor Cafe`, 2026-07-13 smoke) |
+| Sherlock | â˜ | handles |
+| Maigret | â˜ | handles |
+| Social Analyzer | â˜‘ | handles (3 for `torvalds`, 2026-07-13 smoke) |
+| GitRecon | â˜ | github + handles |
+| theHarvester | â˜ | emails |
+| Email Sleuth | â˜ | emails |
+| Email Verify | â˜ | verified_emails |
+| CrossLinked | â˜ | coworkers |
+| JobSpy | â˜ | jobs |
+| Google Maps | â˜‘ | business (`Hey Neighbor Cafe`, 2026-07-13 smoke) |
 
 ---
 
-## Env vars (serious Tier 2–4 run)
+## Env vars (serious Tier 2â€“4 run)
 
 ```env
 SOCIAL_ANALYZER_URL=http://social-analyzer:9005    # Docker network
@@ -250,7 +263,7 @@ bash backend/scripts/e2e_tier3.sh
 
 Stage A (default): api + worker + redis + postgres + **email-verifier** sidecar; asserts all five Tier 3 sources on sync + async enrich.
 
-Stage B (optional): `RUN_TIER3_SMTP=1 bash backend/scripts/e2e_tier3.sh` — also starts Reacher (`--profile paid`) when `EMAIL_VERIFY_LEVEL=smtp`.
+Stage B (optional): `RUN_TIER3_SMTP=1 bash backend/scripts/e2e_tier3.sh` â€” also starts Reacher (`--profile paid`) when `EMAIL_VERIFY_LEVEL=smtp`.
 
 Unit tests:
 
@@ -263,12 +276,15 @@ pytest tests/test_tier3_merge.py tests/test_enrichers.py
 
 ## Recommended order
 
-1. `pytest tests/test_enrichers.py tests/test_pipeline_shape.py -v` (Layer 0)
-2. `bash backend/scripts/probe_sidecars.sh` (Layer 2 sidecar smoke)
-3. `bash backend/scripts/e2e_tier2.sh` → `tier2-report.json`
-4. `bash backend/scripts/e2e_tier3.sh` → `tier3-report.json`
-5. `bash backend/scripts/e2e_realworld_strict.sh` → `strict-report.json`
-6. For each FAIL → `python scripts/probe_enrichers.py --only <name>`
+1. `docker compose up` (api + worker + sidecars)
+2. `pytest tests/test_enrichers.py tests/test_pipeline_shape.py -v` (Layer 0)
+3. `bash backend/scripts/probe_sidecars.sh` (Layer 2 sidecar smoke)
+4. `bash backend/scripts/e2e_tier2.sh` → `tier2-report.json`
+5. `bash backend/scripts/e2e_tier3.sh` → `tier3-report.json`
+6. `bash backend/scripts/e2e_realworld_strict.sh` → `strict-report.json` (or local `python scripts/e2e_realworld_strict.py`)
+7. For each FAIL → `python scripts/probe_enrichers.py --only <name>`
+8. Fix prerequisites (CLI, env, sidecar), then re-run tier curl commands above
+9. Test async: `POST /enrich` + poll `GET /enrich/{id}`
 
 ---
 
