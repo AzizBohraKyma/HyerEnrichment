@@ -6,10 +6,11 @@ missing, misconfigured, or returning no data.
 
 Usage:
   cd backend
-  python scripts/probe_enrichers.py              # run all probes
+  python scripts/probe_enrichers.py              # run all probes (default samples)
   python scripts/probe_enrichers.py --prereqs    # audit CLIs / env only
   python scripts/probe_enrichers.py --only sherlock,email_verify
   python scripts/probe_enrichers.py --json       # machine-readable summary
+  python scripts/probe_enrichers.py --canary docs/tier234_canary_set.json --limit 3 --json
 
 Load `.env` from backend/ automatically via get_settings().
 """
@@ -26,7 +27,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -50,6 +51,105 @@ from app.models import EnrichmentRequest
 
 RESULTS_DIR = ROOT / ".e2e-results"
 
+DEFAULT_PROFILE: dict[str, str] = {
+    "username": "torvalds",
+    "company": "Microsoft",
+    "email": "noreply@github.com",
+    "job_search": "software engineer remote",
+    "business": "coffee shop San Francisco",
+}
+
+# slug -> (display name, tier, factory)
+EnricherFactory = Callable[[], Enricher]
+RequestBuilder = Callable[[dict[str, str]], EnrichmentRequest]
+
+ENRICHER_SPECS: list[tuple[str, str, str, EnricherFactory, RequestBuilder]] = [
+    (
+        "sherlock",
+        "Sherlock",
+        "2",
+        SherlockEnricher,
+        lambda p: EnrichmentRequest(username=p.get("username") or None),
+    ),
+    (
+        "maigret",
+        "Maigret",
+        "2",
+        MaigretEnricher,
+        lambda p: EnrichmentRequest(username=p.get("username") or None),
+    ),
+    (
+        "social_analyzer",
+        "Social Analyzer",
+        "2",
+        SocialAnalyzerEnricher,
+        lambda p: EnrichmentRequest(username=p.get("username") or None),
+    ),
+    (
+        "gitrecon",
+        "GitRecon",
+        "3",
+        GitReconEnricher,
+        lambda p: EnrichmentRequest(
+            username=p.get("username") or None,
+            email=p.get("email") or None,
+        ),
+    ),
+    (
+        "theharvester",
+        "TheHarvester",
+        "3",
+        TheHarvesterEnricher,
+        lambda p: EnrichmentRequest(
+            company=p.get("company") or None,
+            email=p.get("email") or None,
+        ),
+    ),
+    (
+        "email_discover",
+        "Email Discover",
+        "3",
+        EmailDiscoverEnricher,
+        lambda p: EnrichmentRequest(
+            username=p.get("username") or None,
+            company=p.get("company") or None,
+        ),
+    ),
+    (
+        "email_verify",
+        "Email Verify",
+        "3",
+        EmailVerifyEnricher,
+        lambda p: EnrichmentRequest(
+            email=p.get("email") or None,
+            username=p.get("username") or None,
+        ),
+    ),
+    (
+        "crosslinked",
+        "CrossLinked",
+        "3",
+        CrossLinkedEnricher,
+        lambda p: EnrichmentRequest(company=p.get("company") or None),
+    ),
+    (
+        "jobspy",
+        "JobSpy",
+        "4",
+        JobSpyEnricher,
+        lambda p: EnrichmentRequest(job_search=p.get("job_search") or None),
+    ),
+    (
+        "local_business",
+        "Local Business",
+        "4",
+        LocalBusinessEnricher,
+        lambda p: EnrichmentRequest(business=p.get("business") or None),
+    ),
+]
+
+ENRICHER_SLUGS = {spec[0] for spec in ENRICHER_SPECS}
+
 
 @dataclass
 class PrereqRow:
@@ -70,6 +170,26 @@ class ProbeRow:
     note: str = ""
 
 
+@dataclass
+class CanaryCell:
+    profile_id: str
+    category: str
+    enricher: str
+    tier: str
+    status: str  # PASS | FAIL | SKIP
+    probe_status: str
+    note: str = ""
+    keys: list[str] = field(default_factory=list)
+
+
+@dataclass
+class CanaryProfileResult:
+    profile_id: str
+    category: str
+    status: str  # PASS | FAIL | SKIP
+    cells: list[CanaryCell] = field(default_factory=list)
+
+
 # JobSpy pulls numpy/pandas; native Windows Python 3.13 + MINGW numpy can segfault.
 JOBSPY_SUBPROCESS_TIMEOUT = 180.0
 WINDOWS_JOBSPY_NOTE = (
@@ -80,6 +200,78 @@ WINDOWS_JOBSPY_NOTE = (
 
 def _slug(name: str) -> str:
     return name.lower().replace(" ", "_").replace("-", "_")
+
+
+def _profile_fields(entry: dict[str, Any]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for key in ("username", "email", "company", "job_search", "business"):
+        value = str(entry.get(key) or "").strip()
+        if value:
+            out[key] = value
+    return out
+
+
+def load_canary_entries(path: Path) -> list[dict[str, Any]]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise ValueError("canary file must be a JSON array")
+    return raw
+
+
+def resolve_enricher_slugs(entry: dict[str, Any], fields: dict[str, str]) -> list[str]:
+    """Return enricher slugs to run for a profile row."""
+    requested = entry.get("enrichers")
+    if requested is None:
+        slugs = [slug for slug, *_rest in ENRICHER_SPECS]
+    else:
+        if not isinstance(requested, list):
+            raise ValueError("enrichers must be a list of slugs")
+        slugs = [_slug(str(item)) for item in requested]
+
+    selected: list[str] = []
+    for slug in slugs:
+        if slug not in ENRICHER_SLUGS:
+            continue
+        # Build a temporary request to see if validate could pass with fields present.
+        # Still include slug; missing fields become SKIP at run time.
+        selected.append(slug)
+        _ = fields  # reserved for future field filtering clarity
+    return selected
+
+
+def build_tests_for_profile(
+    fields: dict[str, str],
+    *,
+    enricher_slugs: list[str] | None = None,
+) -> list[tuple[str, str, Enricher, EnrichmentRequest]]:
+    allowed = set(enricher_slugs) if enricher_slugs is not None else ENRICHER_SLUGS
+    tests: list[tuple[str, str, Enricher, EnrichmentRequest]] = []
+    for slug, name, tier, factory, builder in ENRICHER_SPECS:
+        if slug not in allowed:
+            continue
+        tests.append((name, tier, factory(), builder(fields)))
+    return tests
+
+
+def build_tests() -> list[tuple[str, str, Enricher, EnrichmentRequest]]:
+    return build_tests_for_profile(DEFAULT_PROFILE)
+
+
+def score_probe_to_canary(probe_status: str) -> str:
+    """Map isolation probe status to canary PASS/FAIL/SKIP."""
+    if probe_status == "OK":
+        return "PASS"
+    if probe_status in {"EMPTY", "CRASH"}:
+        return "FAIL"
+    return "SKIP"
+
+
+def profile_status_from_cells(cells: list[CanaryCell]) -> str:
+    if any(cell.status == "FAIL" for cell in cells):
+        return "FAIL"
+    if any(cell.status == "PASS" for cell in cells):
+        return "PASS"
+    return "SKIP"
 
 
 def audit_prerequisites() -> list[PrereqRow]:
@@ -173,46 +365,6 @@ def audit_prerequisites() -> list[PrereqRow]:
     )
 
     return rows
-
-
-def build_tests() -> list[tuple[str, str, Enricher, EnrichmentRequest]]:
-    return [
-        ("Sherlock", "2", SherlockEnricher(), EnrichmentRequest(username="torvalds")),
-        ("Maigret", "2", MaigretEnricher(), EnrichmentRequest(username="torvalds")),
-        (
-            "Social Analyzer",
-            "2",
-            SocialAnalyzerEnricher(),
-            EnrichmentRequest(username="torvalds"),
-        ),
-        ("GitRecon", "3", GitReconEnricher(), EnrichmentRequest(username="torvalds")),
-        ("TheHarvester", "3", TheHarvesterEnricher(), EnrichmentRequest(company="Microsoft")),
-        (
-            "Email Discover",
-            "3",
-            EmailDiscoverEnricher(),
-            EnrichmentRequest(username="torvalds", company="Microsoft"),
-        ),
-        (
-            "Email Verify",
-            "3",
-            EmailVerifyEnricher(),
-            EnrichmentRequest(email="noreply@github.com"),
-        ),
-        ("CrossLinked", "3", CrossLinkedEnricher(), EnrichmentRequest(company="Microsoft")),
-        (
-            "JobSpy",
-            "4",
-            JobSpyEnricher(),
-            EnrichmentRequest(job_search="software engineer remote"),
-        ),
-        (
-            "Local Business",
-            "4",
-            LocalBusinessEnricher(),
-            EnrichmentRequest(business="coffee shop San Francisco"),
-        ),
-    ]
 
 
 def _note_for_empty(name: str, settings: Any) -> str:
@@ -310,17 +462,55 @@ def _row_from_fragment(
     )
 
 
+async def probe_one(
+    name: str,
+    tier: str,
+    enricher: Enricher,
+    request: EnrichmentRequest,
+    *,
+    include_jobspy: bool = False,
+) -> ProbeRow:
+    settings = get_settings()
+    slug = _slug(name)
+
+    if slug == "jobspy" and sys.platform == "win32" and not include_jobspy:
+        return ProbeRow(name=name, tier=tier, status="SKIP", note=WINDOWS_JOBSPY_NOTE)
+
+    if not await enricher.validate(request):
+        return ProbeRow(
+            name=name,
+            tier=tier,
+            status="SKIP",
+            note="validate() returned False - missing required request field",
+        )
+
+    if slug == "jobspy" and include_jobspy:
+        status, fragment, note = _probe_jobspy_subprocess(request)
+        return _row_from_fragment(name, tier, status, fragment, note)
+
+    fragment = await enricher.run(request)
+    status = "OK" if fragment else "EMPTY"
+    return _row_from_fragment(
+        name,
+        tier,
+        status,
+        fragment,
+        "" if fragment else _note_for_empty(name, settings),
+    )
+
+
 async def probe_enrichers(
     only: set[str] | None = None,
     *,
     include_jobspy: bool = False,
     skip: set[str] | None = None,
+    tests: list[tuple[str, str, Enricher, EnrichmentRequest]] | None = None,
 ) -> list[ProbeRow]:
-    settings = get_settings()
     rows: list[ProbeRow] = []
     skip = skip or set()
+    suite = tests if tests is not None else build_tests()
 
-    for name, tier, enricher, request in build_tests():
+    for name, tier, enricher, request in suite:
         slug = _slug(name)
         if only and slug not in only:
             continue
@@ -329,42 +519,104 @@ async def probe_enrichers(
                 ProbeRow(name=name, tier=tier, status="SKIP", note="excluded via --skip")
             )
             continue
-
-        if slug == "jobspy" and sys.platform == "win32" and not include_jobspy:
-            rows.append(
-                ProbeRow(name=name, tier=tier, status="SKIP", note=WINDOWS_JOBSPY_NOTE)
-            )
-            continue
-
-        if not await enricher.validate(request):
-            rows.append(
-                ProbeRow(
-                    name=name,
-                    tier=tier,
-                    status="SKIP",
-                    note="validate() returned False - missing required request field",
-                )
-            )
-            continue
-
-        if slug == "jobspy" and include_jobspy:
-            status, fragment, note = _probe_jobspy_subprocess(request)
-            rows.append(_row_from_fragment(name, tier, status, fragment, note))
-            continue
-
-        fragment = await enricher.run(request)
-        status = "OK" if fragment else "EMPTY"
         rows.append(
-            _row_from_fragment(
+            await probe_one(
                 name,
                 tier,
-                status,
-                fragment,
-                "" if fragment else _note_for_empty(name, settings),
+                enricher,
+                request,
+                include_jobspy=include_jobspy,
             )
         )
 
     return rows
+
+
+async def run_canary(
+    entries: list[dict[str, Any]],
+    *,
+    only: set[str] | None = None,
+    include_jobspy: bool = False,
+    skip: set[str] | None = None,
+    limit: int | None = None,
+) -> list[CanaryProfileResult]:
+    results: list[CanaryProfileResult] = []
+    for index, entry in enumerate(entries):
+        if limit is not None and index >= limit:
+            break
+        profile_id = str(entry.get("id") or f"profile-{index + 1}").strip()
+        category = str(entry.get("category") or "unknown").strip()
+        fields = _profile_fields(entry)
+        try:
+            slugs = resolve_enricher_slugs(entry, fields)
+        except ValueError as exc:
+            results.append(
+                CanaryProfileResult(
+                    profile_id=profile_id,
+                    category=category,
+                    status="FAIL",
+                    cells=[
+                        CanaryCell(
+                            profile_id=profile_id,
+                            category=category,
+                            enricher="(config)",
+                            tier="-",
+                            status="FAIL",
+                            probe_status="CRASH",
+                            note=str(exc),
+                        )
+                    ],
+                )
+            )
+            continue
+
+        if only:
+            slugs = [slug for slug in slugs if slug in only]
+        if skip:
+            slugs = [slug for slug in slugs if slug not in skip]
+
+        cells: list[CanaryCell] = []
+        if not slugs:
+            cells.append(
+                CanaryCell(
+                    profile_id=profile_id,
+                    category=category,
+                    enricher="(none)",
+                    tier="-",
+                    status="SKIP",
+                    probe_status="SKIP",
+                    note="no enrichers selected or fields present",
+                )
+            )
+        else:
+            tests = build_tests_for_profile(fields, enricher_slugs=slugs)
+            probes = await probe_enrichers(
+                include_jobspy=include_jobspy,
+                tests=tests,
+            )
+            for probe in probes:
+                cells.append(
+                    CanaryCell(
+                        profile_id=profile_id,
+                        category=category,
+                        enricher=_slug(probe.name),
+                        tier=probe.tier,
+                        status=score_probe_to_canary(probe.status),
+                        probe_status=probe.status,
+                        note=probe.note,
+                        keys=list(probe.keys),
+                    )
+                )
+
+        results.append(
+            CanaryProfileResult(
+                profile_id=profile_id,
+                category=category,
+                status=profile_status_from_cells(cells),
+                cells=cells,
+            )
+        )
+    return results
 
 
 def print_prereqs(rows: list[PrereqRow]) -> None:
@@ -401,6 +653,56 @@ def print_scorecard(rows: list[ProbeRow]) -> None:
         print(f"{row.name:<18} {row.tier:<5} {row.status:<6} {keys}")
 
 
+def print_canary(results: list[CanaryProfileResult]) -> None:
+    print("\n== Tier 2–4 canary ==")
+    fail_cells = 0
+    for profile in results:
+        print(f"\n{profile.status:4}  {profile.category:14} {profile.profile_id}")
+        for cell in profile.cells:
+            if cell.status == "FAIL":
+                fail_cells += 1
+            keys = ", ".join(cell.keys) if cell.keys else "-"
+            note = f" - {cell.note}" if cell.note else ""
+            print(
+                f"  {cell.status:4}  tier{cell.tier}  {cell.enricher:<16} "
+                f"probe={cell.probe_status} keys=[{keys}]{note}"
+            )
+    print(
+        f"\nSummary: profiles "
+        f"pass={sum(1 for r in results if r.status == 'PASS')} "
+        f"fail={sum(1 for r in results if r.status == 'FAIL')} "
+        f"skip={sum(1 for r in results if r.status == 'SKIP')} "
+        f"| cell_fail={fail_cells}"
+    )
+
+
+def write_canary_report(results: list[CanaryProfileResult], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    cells = [cell for profile in results for cell in profile.cells]
+    report = {
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "profiles": [
+            {
+                "id": profile.profile_id,
+                "category": profile.category,
+                "status": profile.status,
+                "cells": [asdict(cell) for cell in profile.cells],
+            }
+            for profile in results
+        ],
+        "summary": {
+            "profiles_pass": sum(1 for r in results if r.status == "PASS"),
+            "profiles_fail": sum(1 for r in results if r.status == "FAIL"),
+            "profiles_skip": sum(1 for r in results if r.status == "SKIP"),
+            "cells_pass": sum(1 for c in cells if c.status == "PASS"),
+            "cells_fail": sum(1 for c in cells if c.status == "FAIL"),
+            "cells_skip": sum(1 for c in cells if c.status == "SKIP"),
+        },
+    }
+    path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(f"\nReport written to {path}")
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description="Probe Tier 2–4 enrichers in isolation")
     parser.add_argument(
@@ -423,6 +725,17 @@ async def main() -> int:
         action="store_true",
         help="Run JobSpy on native Windows in a subprocess (may still crash on bad numpy builds)",
     )
+    parser.add_argument(
+        "--canary",
+        metavar="PATH",
+        help="Run fixed profile canary JSON (PASS/FAIL/SKIP) instead of default samples",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="With --canary, only run the first N profiles",
+    )
     parser.add_argument("--json", action="store_true", help="Write JSON report to .e2e-results/")
     args = parser.parse_args()
 
@@ -437,6 +750,31 @@ async def main() -> int:
 
     if sys.platform == "win32" and not args.include_jobspy and (only is None or "jobspy" in (only or set())):
         print("\nNote: JobSpy auto-skipped on native Windows (use --include-jobspy or Docker/WSL).")
+
+    if args.canary:
+        path = Path(args.canary)
+        if not path.is_file():
+            print(f"Canary file not found: {path}")
+            return 1
+        try:
+            entries = load_canary_entries(path)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"Invalid canary file: {exc}")
+            return 1
+        results = await run_canary(
+            entries,
+            only=only,
+            include_jobspy=args.include_jobspy,
+            skip=skip,
+            limit=args.limit,
+        )
+        print_canary(results)
+        if args.json:
+            write_canary_report(results, RESULTS_DIR / "tier234-canary.json")
+        fail_cells = sum(
+            1 for profile in results for cell in profile.cells if cell.status == "FAIL"
+        )
+        return 0 if fail_cells == 0 else 1
 
     probes = await probe_enrichers(only=only, include_jobspy=args.include_jobspy, skip=skip)
     print_probes(probes)
@@ -461,9 +799,9 @@ async def main() -> int:
                 "crash": sum(1 for r in probes if r.status == "CRASH"),
             },
         }
-        path = RESULTS_DIR / "probe-enrichers.json"
-        path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-        print(f"\nReport written to {path}")
+        out_path = RESULTS_DIR / "probe-enrichers.json"
+        out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        print(f"\nReport written to {out_path}")
 
     return 0
 

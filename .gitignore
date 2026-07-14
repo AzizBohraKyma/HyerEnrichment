@@ -48,6 +48,12 @@ backend/artifacts/
 .e2e-results/
 .asset-cache/
 
+# Local Tier 1 canary profiles (copy from tier1_canary_set.example.json)
+backend/docs/tier1_canary_set.json
+
+# Local Tier 2–4 canary profiles (copy from tier234_canary_set.example.json)
+backend/docs/tier234_canary_set.json
+
 # Frontend extras
 .vercel/
 .turbo/
