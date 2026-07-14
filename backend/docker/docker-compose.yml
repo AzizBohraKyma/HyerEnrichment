@@ -1,4 +1,4 @@
-version: "3.9"
+﻿version: "3.9"
 services:
   api:
     build:
@@ -23,7 +23,9 @@ services:
       LITELLM_MODEL: ${LITELLM_MODEL:-gpt-4o-mini}
       LITELLM_FALLBACKS: ${LITELLM_FALLBACKS:-}
       DISAMBIGUATION_THRESHOLD: ${DISAMBIGUATION_THRESHOLD:-0.7}
-      # Tier 3 — OSINT + email (free default-on sidecar + worker CLIs)
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
+      # Tier 3 â€” OSINT + email (free default-on sidecar + worker CLIs)
       GITRECON_SCRIPT: /opt/gitrecon/gitrecon.py
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       EMAIL_SLEUTH_BIN: email-sleuth
@@ -56,7 +58,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       SOCIAL_ANALYZER_URL: http://social-analyzer:9005
       GMAPS_SCRAPER_URL: http://google-maps-scraper:8080
-      # Tier 1 (LinkedIn photo) runs on the worker only — never enable on api.
+      # Tier 1 (LinkedIn photo) runs on the worker only â€” never enable on api.
       ENABLE_TIER1: ${ENABLE_TIER1:-false}
       BROWSER_MODE: ${BROWSER_MODE:-local}
       MULTILOGIN_SELENIUM_HOST: ${MULTILOGIN_SELENIUM_HOST:-http://host.docker.internal}
@@ -66,6 +68,8 @@ services:
       LITELLM_MODEL: ${LITELLM_MODEL:-gpt-4o-mini}
       LITELLM_FALLBACKS: ${LITELLM_FALLBACKS:-}
       DISAMBIGUATION_THRESHOLD: ${DISAMBIGUATION_THRESHOLD:-0.7}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       GITRECON_SCRIPT: /opt/gitrecon/gitrecon.py
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       EMAIL_SLEUTH_BIN: email-sleuth
@@ -102,7 +106,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  # ── Free-mode sidecars (default-on) ─────────────────────────────
+  # â”€â”€ Free-mode sidecars (default-on) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # AGPL tools stay isolated behind HTTP; never imported into app/.
   social-analyzer:
     build:
@@ -125,7 +129,7 @@ services:
     restart: unless-stopped
   # Built via Dockerfile.google-maps-scraper: upstream binary + Playwright
   # 1.57.0 driver from npm/nodejs.org (Hub :latest 404s on retired CDN).
-  # Do not mount a volume over /opt — that shadows /opt/node and /opt/package.
+  # Do not mount a volume over /opt â€” that shadows /opt/node and /opt/package.
   google-maps-scraper:
     build:
       context: .
@@ -156,7 +160,7 @@ services:
       start_period: 20s
     restart: unless-stopped
 
-  # ── Paid / heavy services (opt-in via `--profile`) ──────────────
+  # â”€â”€ Paid / heavy services (opt-in via `--profile`) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Free-mode `docker compose up` never launches these. Flip the matching
   # provider mode flag AND start the profile when you pay.
   reacher:
@@ -166,7 +170,7 @@ services:
       RCH_HTTP_HOST: 0.0.0.0
     restart: unless-stopped
   litellm:
-    # Do NOT env_file the whole backend/.env — it injects Hyrepath DATABASE_URL
+    # Do NOT env_file the whole backend/.env â€” it injects Hyrepath DATABASE_URL
     # (sqlite) and crash-loops the proxy. Pass vendor keys via compose
     # --env-file ../.env interpolation only. Chat completions need no LiteLLM DB.
     # Newer proxy images require an explicit model_list (see litellm_config.yaml).
