@@ -4,7 +4,7 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import get_settings
@@ -19,6 +19,8 @@ SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSe
 
 _BACKEND_ROOT = Path(__file__).resolve().parents[2]
 BASELINE_REVISION = "001_baseline_schema"
+# Stable lock key so API + worker do not run DDL concurrently.
+_MIGRATION_LOCK_KEY = 0x4879_5245_4D49_4752  # "HYREMIGR"
 
 
 def alembic_config(database_url: str | None = None) -> Config:
@@ -44,13 +46,7 @@ def legacy_pre_alembic(connection) -> bool:
     return "jobs" in tables and "alembic_version" not in tables
 
 
-def run_migrations(database_url: str, *, stamp_if_legacy: bool = True) -> None:
-    """Stamp legacy bootstrap DBs at baseline (optional), then upgrade to head.
-
-    For Postgres, prefer calling via ``init_db`` or an async check when no
-    sync DBAPI (psycopg) is installed — this helper uses a sync URL rewrite
-    and may fail on Postgres without psycopg. SQLite always works.
-    """
+def _stamp_and_upgrade(database_url: str, *, stamp_if_legacy: bool) -> None:
     cfg = alembic_config(database_url)
     if stamp_if_legacy:
         sync_engine = create_engine(_to_sync_url(database_url))
@@ -65,18 +61,34 @@ def run_migrations(database_url: str, *, stamp_if_legacy: bool = True) -> None:
     command.upgrade(cfg, "head")
 
 
+def run_migrations(database_url: str, *, stamp_if_legacy: bool = True) -> None:
+    """Stamp legacy bootstrap DBs at baseline (optional), then upgrade to head."""
+    sync_url = _to_sync_url(database_url)
+    if sync_url.startswith("postgresql"):
+        lock_engine = create_engine(sync_url)
+        try:
+            with lock_engine.connect() as lock_conn:
+                lock_conn.execute(text("SELECT pg_advisory_lock(:k)"), {"k": _MIGRATION_LOCK_KEY})
+                lock_conn.commit()
+                try:
+                    _stamp_and_upgrade(database_url, stamp_if_legacy=stamp_if_legacy)
+                finally:
+                    lock_conn.execute(
+                        text("SELECT pg_advisory_unlock(:k)"), {"k": _MIGRATION_LOCK_KEY}
+                    )
+                    lock_conn.commit()
+        finally:
+            lock_engine.dispose()
+        return
+
+    _stamp_and_upgrade(database_url, stamp_if_legacy=stamp_if_legacy)
+
+
 async def init_db() -> None:
     """Apply Alembic migrations. Auto-stamps legacy unversioned databases."""
-    cfg = alembic_config()
-
-    async with engine.begin() as conn:
-        needs_stamp = await conn.run_sync(legacy_pre_alembic)
-
-    if needs_stamp:
-        logger.info("pre-Alembic schema detected; stamping %s", BASELINE_REVISION)
-        command.stamp(cfg, BASELINE_REVISION)
-
-    command.upgrade(cfg, "head")
+    # Run sync Alembic under an advisory lock (Postgres) so API + worker boot
+    # cannot deadlock on concurrent ALTER TYPE.
+    run_migrations(settings.database_url, stamp_if_legacy=True)
     logger.info("database schema migrated to alembic head (dialect=%s)", engine.dialect.name)
 
 
