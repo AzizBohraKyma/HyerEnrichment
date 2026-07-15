@@ -31,7 +31,7 @@ class _NoOpDeathPenalty(BaseDeathPenalty):
 def main() -> None:
     # Fail closed when Tier 1 is enabled without Multilogin/bot (and prod R2).
     validate_tier1_settings(get_settings())
-    # Ensure tables exist before the first job runs — the worker must not
+    # Ensure schema is migrated before the first job — the worker must not
     # depend on the API having started first (shared Postgres in Docker).
     asyncio.run(_init_db_once())
     connection = get_redis_connection()

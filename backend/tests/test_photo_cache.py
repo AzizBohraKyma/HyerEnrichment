@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.models import Base, PhotoAsset, PhotoCacheRecord
+from app.models import PhotoAsset, PhotoCacheRecord
 from app.storage.photo_cache import PhotoCache, slug_hash
 
 
@@ -23,10 +23,12 @@ class _FakeRedis:
 
 
 @pytest.fixture
-async def db_session(monkeypatch: pytest.MonkeyPatch) -> AsyncSession:
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+async def db_session(monkeypatch: pytest.MonkeyPatch, tmp_path) -> AsyncSession:
+    url = f"sqlite+aiosqlite:///{(tmp_path / 'photo_cache.db').as_posix()}"
+    from tests.migration_helpers import upgrade_head
+
+    upgrade_head(url)
+    engine = create_async_engine(url)
 
     session_factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     monkeypatch.setattr("app.storage.photo_cache.SessionLocal", session_factory)

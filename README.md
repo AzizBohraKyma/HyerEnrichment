@@ -776,7 +776,7 @@ HyerEnrichment/
 | `jobs` | `id`, `status`, `request_payload` (JSON), `dossier_payload` (JSON), timestamps | Enrichment job records |
 | `suppression_list` | `identifier_hash` (SHA-256), `reason`, `created_at` | Opt-out durable store |
 
-Schema created by `init_db()` (`create_all`) — no Alembic migrations yet.
+Schema created by `init_db()` via **Alembic** (`upgrade head`; auto-stamps pre-Alembic DBs). Document columns are JSONB on Postgres / JSON on SQLite (`JsonDoc`).
 
 ---
 
@@ -944,7 +944,7 @@ npm run typecheck
 | 11 enricher modules | Real tool integrations | **Done** — degrade to empty fragments when absent |
 | Provider layer | Config-selected backends | **Done** — `app/providers/` |
 | Redis (suppression, rate limits, queue) | All three roles | **Done** |
-| Database | PostgreSQL + JSONB | Postgres in Docker; SQLite local; no Alembic yet |
+| Database | PostgreSQL + JSONB | Postgres in Docker; SQLite local; **Alembic** + `JsonDoc` (JSONB/JSON) |
 | R2 photo cache | Cloudflare R2 via aioboto3 | Local `.asset-cache/` fallback |
 | Multilogin + Playwright | CDP stealth browser | `BrowserProvider`; Tier 1 off by default |
 | LiteLLM disambiguation | Routed LLM calls | Opt-in via `LLM_MODE` |
@@ -966,7 +966,7 @@ For the authoritative per-area breakdown, see **Implementation status** in [`bac
 Priority next slices (from architecture planning):
 
 1. **Unauthenticated opt-out/DSAR** — remove Bearer auth when senior approves (see `backend/docs/LEGAL.md`)
-2. **Alembic migrations** — Replace `create_all` with versioned schema migrations; promote `JSON` → `JSONB` in Postgres
+2. ~~**Alembic migrations** — Replace `create_all` with versioned schema migrations; promote `JSON` → `JSONB` in Postgres~~ (done)
 3. **Real R2 uploads** — Wire `aioboto3` to Cloudflare R2 when `R2_ACCOUNT_ID` + keys are set (local cache is the fallback today)
 4. **Sidecar contract verification** — Tune gitrecon JSON schema, social-analyzer/GMaps endpoint contracts against live deployments
 5. **LLM prompt tuning** — Real disambiguation prompts + Langfuse cost dashboards once `LLM_MODE=litellm` is exercised in staging

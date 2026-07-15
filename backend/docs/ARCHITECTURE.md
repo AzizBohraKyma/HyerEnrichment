@@ -3,7 +3,7 @@
 Hyrepath Enrichment backend — architecture reference for the FastAPI service under `backend/`.
 
 **Version:** 0.2 (July 2026)  
-**Last verified against code:** 2026-07-13  
+**Last verified against code:** 2026-07-15  
 **Repo layout:** `HyerEnrichment/backend/` (split from the Next.js frontend in `frontend/`)
 
 ---
@@ -26,7 +26,7 @@ Hyrepath Enrichment backend — architecture reference for the FastAPI service u
 |------------|---------------|
 | `POST /enrich` runs inline | Enqueues to **Redis + RQ**; the worker process runs the orchestrator. `/enrich/sync` still runs inline. In Docker, API + worker share Postgres so polling works cross-process |
 | Enrichers call real tools | They do (subprocess/library/sidecar) behind the `app/providers/` layer, but **degrade to empty fragments** when a tool/sidecar/key is missing. Defaults are fully free/self-hosted; free -> paid is an env flip |
-| Database is Postgres everywhere | Local dev default is **SQLite** (`sqlite+aiosqlite:///./hyrepath.db`); **Docker compose uses Postgres** (`postgresql+asyncpg://...@postgres:5432/hyrepath`) shared by API + worker |
+| Database is Postgres everywhere | Local dev default is **SQLite** (`sqlite+aiosqlite:///./hyrepath.db`); **Docker compose uses Postgres** (`postgresql+asyncpg://...@postgres:5432/hyrepath`) shared by API + worker. Schema via **Alembic** (`init_db` → upgrade head); document columns are **JSONB** on Postgres |
 | R2 uploads go to Cloudflare | **R2 when `R2_*` creds set** (`aioboto3` PutObject + HeadObject); else local `backend/.asset-cache/` |
 | LiteLLM disambiguation is live | Config-selected via `LLM_MODE`; **default is the heuristic stub** (no keys). `ollama`/`litellm` opt-in. Orchestrator walks handles below `DISAMBIGUATION_THRESHOLD` and keep/drops via `llm.compare` |
 | Opt-out is unauthenticated | **Bearer token required** (intentional v1; see `docs/LEGAL.md`) |
@@ -294,12 +294,14 @@ Each enricher returns a partial dict (`photo`, `handles`, `emails`, `verified_em
 
 | Table | Purpose |
 |-------|---------|
-| `jobs` | Job id, status, request JSON, dossier JSONB, timestamps |
+| `jobs` | Job id, status, request/dossier JSONB (JSON on SQLite), timestamps |
 | `suppression_list` | SHA-256 hashed identifiers + opt-out reason |
 
 **Docker / production:** PostgreSQL via `DATABASE_URL` (`postgresql+asyncpg://hyrepath:hyrepath@postgres:5432/hyrepath` in compose; API and worker share it).  
 **Local dev default:** SQLite (`sqlite+aiosqlite:///./hyrepath.db`).  
-Schema is created by `init_db()` (`create_all`) at API lifespan and worker startup — no Alembic migrations yet. Dossier JSON uses the portable `JSON` type (not `JSONB`) for now.
+Schema is owned by **Alembic** (`backend/alembic/`). `init_db()` (API lifespan + worker startup) stamps pre-Alembic `create_all` databases at baseline when `jobs` exists and `alembic_version` is missing, then runs `upgrade head`. Document columns use `JsonDoc` (`JSONB` on Postgres, `JSON` on SQLite). Do not use `create_all` for durable schema.
+
+**Ops notes:** Boot applies migrations automatically — no manual `alembic upgrade` required for Compose. Legacy volumes are auto-stamped (do not delete `postgres_data` unless wiping data is intentional). Local SQLite: delete `hyrepath.db` or let auto-stamp run. Postgres migration edge tests: `TEST_DATABASE_URL=postgresql+asyncpg://… pytest -m postgres` (needs `pip install -e ".[dev]"` for psycopg).
 
 ### Object storage (R2)
 
@@ -563,7 +565,7 @@ AGPL tools (`social-analyzer`, Reacher) run as **isolated sidecars** called over
 | Provider layer (Phase 0) | Config-selected free/paid backends | `app/providers/` (proxy, browser, llm, email_verify, sidecar, process); 5 mode flags in `config.py` |
 | Redis client | Queue + suppression + rate limits | Shared async client wired in lifespan; suppression, rate limiting, and queue all use it |
 | Async job queue | Redis + RQ, worker process | Implemented — `/enrich` enqueues, `rq_worker` executes; Docker compose shares Postgres for cross-process polling |
-| Database | PostgreSQL + JSONB | Postgres in Docker compose (asyncpg, `JSON` type); SQLite default for local dev; `create_all`, no Alembic |
+| Database | PostgreSQL + JSONB | Postgres in Docker compose (asyncpg, **JSONB** via `JsonDoc`); SQLite local default; **Alembic** migrations (`init_db` upgrade head; auto-stamp legacy) |
 | R2 photo cache | `aioboto3` → Cloudflare R2 | `storage/r2.py` — R2 PutObject + HeadObject when `R2_*` creds set; local `backend/.asset-cache/` fallback (CWD-safe path) |
 | LinkedIn photo cache | Redis + Postgres by slug hash | `storage/photo_cache.py` + `PhotoCacheRecord`; slug-keyed TTL; cache-before-browser in `linkedin_photo.py` |
 | Multilogin + Selenium | MLX launcher + Selenium Remote | `providers/multilogin.py`, `profile_pool.py`, `linkedin_browser.py`; worker-only `ENABLE_TIER1`; `/enrich/sync` skips tier1 |
@@ -661,7 +663,7 @@ Track these as architecture decisions mature:
 1. ~~Wire Redis/RQ so `/enrich` is truly async~~ (done) — ~~make `/enrich/sync` exclude Tier 1 browser work~~ (done: `runner.py` sync_mode skips tier1)
 2. ~~Replace enricher mocks with subprocess/library integrations per upstream repo~~ (done) — remaining: GMaps sidecar against live deployments; Tier 2 SA + Sherlock/Maigret covered by `e2e_tier2.sh`; Tier 3 covered by `e2e_tier3.sh`
 3. Remove Bearer auth from `POST /api/opt-out` for compliance accessibility
-4. ~~Promote SQLite → PostgreSQL in default docker-compose wiring~~ (done) — remaining: Alembic migrations and `JSONB` columns when the schema stabilizes
+4. ~~Promote SQLite → PostgreSQL in default docker-compose wiring~~ (done) — ~~Alembic migrations and `JSONB` columns~~ (done)
 5. ~~Connect LiteLLM + Langfuse in `llm_router.py`~~ (done, opt-in) — remaining: real prompt tuning + cost dashboards once `LLM_MODE=litellm` is exercised
 6. ~~Swap nginx sidecar placeholders for real Reacher, social-analyzer, and GMaps images~~ (done) — GMaps Playwright CDN 404 fixed via local Dockerfile with npm-assembled driver (2026-07-13); free-sidecar smoke PASS; social-analyzer healthcheck + Tier 2 E2E harness
 

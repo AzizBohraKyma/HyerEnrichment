@@ -6,7 +6,7 @@
 #   2. POST /enrich                  -> 202 queued
 #   3. poll GET /enrich/{id}         -> completed (worker + shared DB)
 #   4. POST /api/opt-out             -> enrich blocked; suppression persisted
-#   5. restart worker container      -> old job still completed (data in volume)
+#   5. restart worker container      -> purged job still present (data in volume)
 #
 # Usage (from repo root or anywhere):
 #   bash backend/scripts/e2e_compose_test.sh
@@ -21,6 +21,8 @@ COMPOSE_DIR="$(cd "$SCRIPT_DIR/../docker" && pwd)"
 BASE="http://localhost:8000"
 TOKEN="change-me"
 AUTH="Authorization: Bearer $TOKEN"
+# Unique per run so a prior opt-out on the postgres volume cannot suppress enqueue.
+IDENT="compose-e2e-$(date +%s)"
 
 cd "$COMPOSE_DIR"
 
@@ -39,9 +41,9 @@ done
 [ "$code" = "200" ] || fail "health never returned 200 (last=$code)"
 pass "health 200"
 
-echo "== enqueue async job =="
+echo "== enqueue async job (ident=$IDENT) =="
 resp="$(curl -s -X POST "$BASE/enrich" -H "$AUTH" -H 'Content-Type: application/json' \
-  -d '{"username":"compose-e2e","requested_tiers":["tier2"]}')"
+  -d "{\"username\":\"$IDENT\",\"requested_tiers\":[\"tier2\"]}")"
 echo "  enqueue response: $resp"
 status="$(echo "$resp" | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
 job_id="$(echo "$resp" | python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')"
@@ -60,32 +62,33 @@ done
 pass "async poll completed"
 
 echo "== opt-out suppression =="
-ident="compose-e2e"
 oc="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/opt-out" -H "$AUTH" \
-  -H 'Content-Type: application/json' -d "{\"identifier\":\"$ident\",\"reason\":\"e2e\"}")"
+  -H 'Content-Type: application/json' -d "{\"identifier\":\"$IDENT\",\"reason\":\"e2e\"}")"
 [ "$oc" = "202" ] || fail "opt-out expected 202, got $oc"
-chk="$(curl -s "$BASE/api/opt-out/check?identifier=$ident" -H "$AUTH" \
+chk="$(curl -s "$BASE/api/opt-out/check?identifier=$IDENT" -H "$AUTH" \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["suppressed"])')"
 [ "$chk" = "True" ] || fail "identifier not reported suppressed"
 sup="$(curl -s -X POST "$BASE/enrich/sync" -H "$AUTH" -H 'Content-Type: application/json' \
-  -d "{\"username\":\"$ident\",\"requested_tiers\":[\"tier2\"]}" \
+  -d "{\"username\":\"$IDENT\",\"requested_tiers\":[\"tier2\"]}" \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
 [ "$sup" = "suppressed" ] || fail "enrich not suppressed (got $sup)"
 pass "opt-out blocks enrichment (suppression in Postgres)"
 
 echo "== opt-out purge clears prior job dossier =="
-purged_dossier="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
-  | python3 -c 'import sys,json;d=json.load(sys.stdin);print(len(d.get("dossier") or {}))')"
-[ "$purged_dossier" = "0" ] || fail "prior job dossier not purged after opt-out (keys=$purged_dossier)"
+# API always serializes dossier via Dossier.model_validate, so an empty payload
+# still has ~11 default keys — assert status=purged instead of len(dossier)==0.
+purged_status="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
+  | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
+[ "$purged_status" = "purged" ] || fail "prior job not purged after opt-out (status=$purged_status)"
 pass "opt-out purged stored dossier for matching identifier"
 
-echo "== restart worker; old job must survive in Postgres volume =="
+echo "== restart worker; purged job must survive in Postgres volume =="
 docker compose restart worker
 sleep 3
 after="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
-[ "$after" = "completed" ] || fail "old job lost after worker restart (got $after)"
-pass "old job still completed after worker restart"
+[ "$after" = "purged" ] || fail "old job lost after worker restart (got $after)"
+pass "old job still purged after worker restart"
 
 echo ""
 echo "All Docker Compose E2E checks passed."

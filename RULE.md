@@ -71,6 +71,7 @@ Rules for humans and agents writing code in this repo. Read **before** implement
 - **No browser work in routes** — Playwright / Multilogin stays in Tier 1 enrichers
 - **Async end-to-end** — DB, storage, enrichers, and route handlers are `async`; no `run_until_complete` in request paths
 - **Tier registration in one place** — add enrichers to `PipelineOrchestrator.__init__` in `runner.py`
+- **Schema changes via Alembic only** — never reintroduce `_migrate_schema` or durable `create_all`; new columns/indexes = new revision under `backend/alembic/versions/`
 
 ### Frontend
 
