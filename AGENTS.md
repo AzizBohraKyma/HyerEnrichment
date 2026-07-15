@@ -140,7 +140,7 @@ For enrichment API, orchestrator, enricher, tier, opt-out, or storage tasks:
 2. Check **Implementation status** — scaffold vs target
 3. Verify behavior in `backend/app/` before implementing
 
-Do not assume Redis queue, real enricher integrations, Postgres, LiteLLM, or unauthenticated opt-out exist yet.
+Do not assume Redis queue, real enricher integrations, Postgres, or LiteLLM exist yet.
 
 ## Tools
 

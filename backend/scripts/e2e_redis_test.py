@@ -77,9 +77,10 @@ def test_async_queue() -> None:
 
 def test_suppression() -> None:
     identifier = "e2e-blocked@example.com"
+    # Opt-out is unauthenticated — no Authorization header.
     r = httpx.post(
         f"{BASE}/api/opt-out",
-        headers={**HEADERS, "Content-Type": "application/json"},
+        headers={"Content-Type": "application/json"},
         json={"identifier": identifier, "reason": "e2e-test"},
         timeout=10,
     )
@@ -92,7 +93,6 @@ def test_suppression() -> None:
 
     check = httpx.get(
         f"{BASE}/api/opt-out/check",
-        headers=HEADERS,
         params={"identifier": identifier},
         timeout=10,
     )
@@ -106,7 +106,7 @@ def test_suppression() -> None:
     )
     assert enrich.status_code == 200, enrich.text
     assert enrich.json()["status"] == "suppressed"
-    print("PASS  suppression (Redis set + enrich blocked)")
+    print("PASS  suppression (unauthenticated opt-out + enrich blocked)")
 
 
 def test_rate_limit() -> None:
