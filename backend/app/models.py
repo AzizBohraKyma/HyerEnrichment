@@ -7,7 +7,11 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import JSON, DateTime, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+# Postgres: jsonb; SQLite (local/tests): json. Single ORM type for both dialects.
+JsonDoc = JSONB().with_variant(JSON(), "sqlite")
 
 
 class Base(DeclarativeBase):
@@ -173,9 +177,9 @@ class JobRecord(Base):
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: f"job_{uuid4().hex}")
     status: Mapped[str] = mapped_column(String(32), default=JobStatus.queued.value, nullable=False)
-    request_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
-    dossier_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
-    identifier_hashes: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    request_payload: Mapped[dict[str, Any]] = mapped_column(JsonDoc, default=dict, nullable=False)
+    dossier_payload: Mapped[dict[str, Any]] = mapped_column(JsonDoc, default=dict, nullable=False)
+    identifier_hashes: Mapped[list[str]] = mapped_column(JsonDoc, default=list, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
@@ -195,7 +199,7 @@ class AuditLog(Base):
     event_type: Mapped[str] = mapped_column(String(64), nullable=False)
     identifier_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     job_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    details: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JsonDoc, default=dict, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
@@ -206,7 +210,7 @@ class DsarRecord(Base):
     identifier_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     request_type: Mapped[str] = mapped_column(String(32), nullable=False)
     status: Mapped[str] = mapped_column(String(32), default=DsarStatus.pending.value, nullable=False)
-    details: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JsonDoc, default=dict, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
