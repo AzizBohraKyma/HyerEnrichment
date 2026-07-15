@@ -74,18 +74,20 @@ sup="$(curl -s -X POST "$BASE/enrich/sync" -H "$AUTH" -H 'Content-Type: applicat
 pass "opt-out blocks enrichment (suppression in Postgres)"
 
 echo "== opt-out purge clears prior job dossier =="
-purged_dossier="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
-  | python3 -c 'import sys,json;d=json.load(sys.stdin);print(len(d.get("dossier") or {}))')"
-[ "$purged_dossier" = "0" ] || fail "prior job dossier not purged after opt-out (keys=$purged_dossier)"
+# API always serializes dossier via Dossier.model_validate, so an empty payload
+# still has ~11 default keys — assert status=purged instead of len(dossier)==0.
+purged_status="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
+  | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
+[ "$purged_status" = "purged" ] || fail "prior job not purged after opt-out (status=$purged_status)"
 pass "opt-out purged stored dossier for matching identifier"
 
-echo "== restart worker; old job must survive in Postgres volume =="
+echo "== restart worker; purged job must survive in Postgres volume =="
 docker compose restart worker
 sleep 3
 after="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
-[ "$after" = "completed" ] || fail "old job lost after worker restart (got $after)"
-pass "old job still completed after worker restart"
+[ "$after" = "purged" ] || fail "old job lost after worker restart (got $after)"
+pass "old job still purged after worker restart"
 
 echo ""
 echo "All Docker Compose E2E checks passed."
