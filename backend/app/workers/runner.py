@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
@@ -28,6 +27,7 @@ from app.enrichers import (
     TheHarvesterEnricher,
 )
 from app.config import get_settings
+from app.enrichers._shared import common_email_patterns, slugify_domain
 from app.enrichers.base import Enricher
 from app.llm_router import LiteLLMDisambiguator
 from app.models import (
@@ -308,8 +308,8 @@ class PipelineOrchestrator:
                 add(str(email))
 
         if not candidates and request.username:
-            slug = re.sub(r"[^a-z0-9]", "", (request.company or "example").lower()) or "example"
-            add(f"{request.username}@{slug}.com")
+            for pattern in common_email_patterns(request.username, slugify_domain(request.company)):
+                add(pattern)
 
         cap = max(1, settings.email_verify_max_per_job)
         return candidates[:cap]

@@ -60,3 +60,69 @@ def urls_to_handles(
 def slugify_domain(company: str | None) -> str:
     slug = re.sub(r"[^a-z0-9]", "", (company or "example").lower())
     return f"{slug or 'example'}.com"
+
+
+_NAME_SPLIT_RE = re.compile(r"[\s._\-]+")
+_LOCAL_PART_RE = re.compile(r"[^a-z]")
+
+
+def split_person_name(raw: str) -> tuple[str, str | None]:
+    """Split a free-form name/username into (first, last_or_none).
+
+    Tokens are lowercased and stripped to a-z. Two or more tokens use the first
+    and last token; a single token returns ``(token, None)``.
+    """
+    tokens = [
+        _LOCAL_PART_RE.sub("", part.lower())
+        for part in _NAME_SPLIT_RE.split((raw or "").strip())
+        if part.strip()
+    ]
+    tokens = [token for token in tokens if token]
+    if not tokens:
+        return "candidate", None
+    if len(tokens) == 1:
+        return tokens[0], None
+    return tokens[0], tokens[-1]
+
+
+def common_email_patterns(name: str, domain: str, *, limit: int = 10) -> list[str]:
+    """Prevalence-ordered corporate email guesses from a name + domain.
+
+    Pure compute / offline fallback when email-sleuth is missing or returns
+    nothing. Caps at ``limit`` (default 10) to match EMAIL_VERIFY_MAX_PER_JOB.
+    """
+    first, last = split_person_name(name)
+    domain = (domain or "").strip().lower().lstrip("@")
+    if not domain or not first:
+        return []
+
+    locals_: list[str]
+    if last:
+        f_initial = first[0]
+        l_initial = last[0]
+        locals_ = [
+            f"{first}.{last}",
+            f"{f_initial}{last}",
+            f"{first}{last}",
+            first,
+            f"{first}_{last}",
+            f"{first}-{last}",
+            f"{f_initial}.{last}",
+            f"{first}.{l_initial}",
+            last,
+            f"{last}.{first}",
+        ]
+    else:
+        locals_ = [first]
+
+    emails: list[str] = []
+    seen: set[str] = set()
+    for local in locals_:
+        address = f"{local}@{domain}"
+        if address in seen:
+            continue
+        seen.add(address)
+        emails.append(address)
+        if len(emails) >= max(1, limit):
+            break
+    return emails

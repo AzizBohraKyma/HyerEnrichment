@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import json
-import re
 from typing import Any
 
 from app.config import get_settings
+from app.enrichers._shared import common_email_patterns, slugify_domain
 from app.enrichers.base import Enricher
 from app.models import EnrichmentRequest
 from app.providers import run_command
@@ -23,8 +23,8 @@ class EmailDiscoverEnricher(Enricher):
 
         emails = await self._email_sleuth(settings.email_sleuth_bin, username, domain)
         if not emails:
-            # Pure-compute fallback: pattern generation, always free and offline.
-            emails = [f"{username}@{domain}"]
+            # Pure-compute fallback: common corporate patterns, always free/offline.
+            emails = common_email_patterns(username, domain)
 
         return {"emails": emails}
 
@@ -49,6 +49,5 @@ class EmailDiscoverEnricher(Enricher):
 
     def _domain(self, request: EnrichmentRequest) -> str:
         if request.email and "@" in request.email:
-            return request.email.split("@")[-1]
-        slug = re.sub(r"[^a-z0-9]", "", (request.company or "example").lower())
-        return f"{slug or 'example'}.com"
+            return request.email.split("@")[-1].lower()
+        return slugify_domain(request.company)

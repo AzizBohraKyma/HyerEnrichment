@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import asyncio
-import re
 from typing import Any
 
 from app.config import get_settings
+from app.enrichers._shared import common_email_patterns, slugify_domain
 from app.enrichers.base import Enricher
 from app.models import EnrichmentRequest
 from app.providers import EmailVerifier
@@ -42,8 +42,7 @@ class EmailVerifyEnricher(Enricher):
         if request.email:
             emails.append(request.email)
         elif request.username:
-            slug = re.sub(r"[^a-z0-9]", "", (request.company or "example").lower()) or "example"
-            emails.append(f"{request.username}@{slug}.com")
+            emails.extend(common_email_patterns(request.username, slugify_domain(request.company)))
         if not emails:
             return {}
         return await self.verify_emails(emails)
