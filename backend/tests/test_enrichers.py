@@ -84,9 +84,47 @@ async def test_email_discover_falls_back_to_pattern(monkeypatch: pytest.MonkeyPa
 
     monkeypatch.setattr(email_discover_mod, "run_command", _cmd(127, ""))
     fragment = await EmailDiscoverEnricher().run(
+        EnrichmentRequest(username="jane doe", company="Acme Corp")
+    )
+    emails = fragment["emails"]
+    assert emails[0] == "jane.doe@acmecorp.com"
+    assert "jdoe@acmecorp.com" in emails
+    assert "janedoe@acmecorp.com" in emails
+    assert "jane@acmecorp.com" in emails
+    assert len(emails) == 10
+
+
+async def test_email_discover_falls_back_single_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.enrichers import email_discover as email_discover_mod
+
+    monkeypatch.setattr(email_discover_mod, "run_command", _cmd(127, ""))
+    fragment = await EmailDiscoverEnricher().run(
         EnrichmentRequest(username="jane", company="Acme Corp")
     )
     assert fragment["emails"] == ["jane@acmecorp.com"]
+
+
+def test_split_person_name_and_common_patterns() -> None:
+    from app.enrichers._shared import common_email_patterns, split_person_name
+
+    assert split_person_name("Jane Doe") == ("jane", "doe")
+    assert split_person_name("jane.doe") == ("jane", "doe")
+    assert split_person_name("jane") == ("jane", None)
+
+    patterns = common_email_patterns("jane doe", "acme.com")
+    assert patterns == [
+        "jane.doe@acme.com",
+        "jdoe@acme.com",
+        "janedoe@acme.com",
+        "jane@acme.com",
+        "jane_doe@acme.com",
+        "jane-doe@acme.com",
+        "j.doe@acme.com",
+        "jane.d@acme.com",
+        "doe@acme.com",
+        "doe.jane@acme.com",
+    ]
+    assert common_email_patterns("jane", "acmecorp.com") == ["jane@acmecorp.com"]
 
 
 async def test_email_discover_parses_sleuth_json(monkeypatch: pytest.MonkeyPatch) -> None:
