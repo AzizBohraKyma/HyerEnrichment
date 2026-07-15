@@ -29,7 +29,7 @@ Hyrepath Enrichment backend — architecture reference for the FastAPI service u
 | Database is Postgres everywhere | Local dev default is **SQLite** (`sqlite+aiosqlite:///./hyrepath.db`); **Docker compose uses Postgres** (`postgresql+asyncpg://...@postgres:5432/hyrepath`) shared by API + worker. Schema via **Alembic** (`init_db` → upgrade head); document columns are **JSONB** on Postgres |
 | R2 uploads go to Cloudflare | **R2 when `R2_*` creds set** (`aioboto3` PutObject + HeadObject); else local `backend/.asset-cache/` |
 | LiteLLM disambiguation is live | Config-selected via `LLM_MODE`; **default is the heuristic stub** (no keys). `ollama`/`litellm` opt-in. Orchestrator walks handles below `DISAMBIGUATION_THRESHOLD` and keep/drops via `llm.compare` |
-| Opt-out is unauthenticated | **Bearer token required** (intentional v1; see `docs/LEGAL.md`) |
+| Opt-out / DSAR are unauthenticated | **Public** (IP rate-limited via `MAX_COMPLIANCE_REQUESTS_PER_MINUTE`); enrich routes still require Bearer |
 | Suppression lives in Redis only | **SQL table** `suppression_list` is the durable record; Redis set `suppression:hashes` is a fast-path cache (dual-write, SQL fallback) |
 | Audit logs | **SQL `audit_logs`** — 5-year retention via `purge_audit_logs.py` |
 | DSAR flow | **`POST/GET /api/dsar`** — automated access/deletion in v1 |
@@ -321,7 +321,7 @@ Configured via `REDIS_URL`. Present in docker-compose. A shared async client exi
 **Wired today:**
 
 - *Suppression fast path.* `add_suppression()` writes SQL first (durable record), then `SADD suppression:hashes`. `check_suppression()` tries `SISMEMBER` first; on a miss or Redis error it falls back to the authoritative SQL table and backfills Redis on a hit. Opt-out is never weakened by a Redis outage — no TTL on suppression hashes.
-- *Rate limiting.* Fixed-window counters (`ratelimit:{sync|async}:{token-hash}`) via `check_rate_limit()`. `POST /enrich` enforces `MAX_ASYNC_REQUESTS_PER_MINUTE`; `POST /enrich/sync` enforces `MAX_SYNC_REQUESTS_PER_MINUTE`. Dependencies live in `app/routes/rate_limit.py`. Over-limit returns `429`. **Fails open** on Redis error — protection, not correctness. Scope is per API token (SHA-256, first 16 hex chars); raw tokens are never logged.
+- *Rate limiting.* Fixed-window counters via `check_rate_limit()`. `POST /enrich` enforces `MAX_ASYNC_REQUESTS_PER_MINUTE` and `POST /enrich/sync` enforces `MAX_SYNC_REQUESTS_PER_MINUTE` scoped per API token (`ratelimit:{sync|async}:{token-hash}`). Opt-out and DSAR enforce `MAX_COMPLIANCE_REQUESTS_PER_MINUTE` scoped per client IP (`ratelimit:compliance:{host-hash}`). Dependencies live in `app/routes/rate_limit.py`. Over-limit returns `429`. **Fails open** on Redis error — protection, not correctness. Raw tokens and IPs are never logged (hashed to 16 hex chars).
 - *Job queue (RQ).* `POST /enrich` enqueues to the `enrichment` queue via `app/workers/queue.py` (synchronous `redis-py` connection — RQ is not async-compatible). The worker (`app/workers/rq_worker.py`) runs `init_db()` at startup (so tables exist even if the API hasn't booted), then dequeues and calls `run_enrichment_job` (`app/workers/jobs.py`), which bridges to the async orchestrator with `asyncio.run` and a fresh DB session. Because each job gets its own event loop, the job disposes the shared async Redis client and DB engine pool in a `finally` — loop-bound connections leaking into the next job cause "Event loop is closed" failures. Enqueue failure marks the job `failed` and returns `503`.
 
 **Redis roles now wired:** suppression fast path, rate limiting, job queue. Compliance audit trail is in SQL (`audit_logs`).
@@ -330,18 +330,20 @@ Configured via `REDIS_URL`. Present in docker-compose. A shared async client exi
 
 ## API endpoints
 
-All enrichment and opt-out routes require `Authorization: Bearer <API_TOKEN>` in the **current** implementation.
+Enrichment routes require `Authorization: Bearer <API_TOKEN>`. Opt-out and DSAR routes are **unauthenticated** (IP rate-limited) so data subjects can exercise rights without an API key. See `docs/LEGAL.md`.
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/enrich` | Create enrichment job (202 Accepted) |
-| `GET` | `/enrich/{job_id}` | Poll job status + dossier |
-| `POST` | `/enrich/sync` | Synchronous enrichment path |
-| `POST` | `/api/opt-out` | Register identifier suppression (LGPD/GDPR/CCPA) |
-| `GET` | `/api/opt-out/check?identifier=` | Check if identifier is suppressed |
-| `GET` | `/health` | Liveness |
-| `GET` | `/ready` | Readiness |
-| `GET` | `/metrics` | Prometheus metrics (when `prometheus_client` installed) |
+| Method | Path | Auth | Purpose |
+|--------|------|------|---------|
+| `POST` | `/enrich` | Bearer | Create enrichment job (202 Accepted) |
+| `GET` | `/enrich/{job_id}` | Bearer | Poll job status + dossier |
+| `POST` | `/enrich/sync` | Bearer | Synchronous enrichment path |
+| `POST` | `/api/opt-out` | Public | Register identifier suppression (LGPD/GDPR/CCPA) |
+| `GET` | `/api/opt-out/check?identifier=` | Public | Check if identifier is suppressed |
+| `POST` | `/api/dsar` | Public | Create access or deletion request |
+| `GET` | `/api/dsar/{id}` | Public | Poll DSAR status and summary |
+| `GET` | `/health` | Public | Liveness |
+| `GET` | `/ready` | Public | Readiness |
+| `GET` | `/metrics` | Public | Prometheus metrics (when `prometheus_client` installed) |
 
 ### Example request
 
@@ -381,7 +383,7 @@ Authorization: Bearer <API_TOKEN>
 }
 ```
 
-**Target policy:** `POST /api/opt-out` should be **unauthenticated** so data subjects can opt out without an API key. Track this as a compliance gap in the current scaffold.
+**Auth policy:** Enrichment requires Bearer. `POST /api/opt-out`, `GET /api/opt-out/check`, and DSAR routes are unauthenticated with IP-scoped rate limiting (`MAX_COMPLIANCE_REQUESTS_PER_MINUTE`).
 
 ---
 
@@ -450,7 +452,7 @@ Copy `backend/.env.example` → `backend/.env`.
 
 | Variable | Purpose |
 |----------|---------|
-| `API_TOKEN` | Bearer token for protected routes |
+| `API_TOKEN` | Bearer token for enrichment (and other protected) routes |
 | `DATABASE_URL` | Async DB URL (SQLite local default; Postgres in Docker/production) |
 | `REDIS_URL` | Redis connection (queue + suppression target) |
 | `R2_BUCKET` | R2 bucket name |
@@ -491,14 +493,15 @@ Copy `backend/.env.example` → `backend/.env`.
 | `OPENAI_API_KEY`, `GEMINI_API_KEY` | Vendor keys on **litellm container only** (`env_file`) |
 | `DISAMBIGUATION_THRESHOLD` | Default `0.7` |
 
-### Rate limits (enforced per API token via Redis fixed-window counters)
+### Rate limits (Redis fixed-window counters)
 
-| Variable | Default |
-|----------|---------|
-| `MAX_SYNC_REQUESTS_PER_MINUTE` | 10 |
-| `MAX_ASYNC_REQUESTS_PER_MINUTE` | 30 |
-| `LINKEDIN_PHOTO_TTL_SECONDS` | 86400 |
-| `USERNAME_LOOKUP_TTL_SECONDS` | 3600 |
+| Variable | Default | Scope |
+|----------|---------|-------|
+| `MAX_SYNC_REQUESTS_PER_MINUTE` | 10 | Per API token (`/enrich/sync`) |
+| `MAX_ASYNC_REQUESTS_PER_MINUTE` | 30 | Per API token (`/enrich`) |
+| `MAX_COMPLIANCE_REQUESTS_PER_MINUTE` | 20 | Per client IP (opt-out + DSAR) |
+| `LINKEDIN_PHOTO_TTL_SECONDS` | 86400 | — |
+| `USERNAME_LOOKUP_TTL_SECONDS` | 3600 | — |
 
 ---
 
@@ -663,7 +666,7 @@ Track these as architecture decisions mature:
 
 1. ~~Wire Redis/RQ so `/enrich` is truly async~~ (done) — ~~make `/enrich/sync` exclude Tier 1 browser work~~ (done: `runner.py` sync_mode skips tier1)
 2. ~~Replace enricher mocks with subprocess/library integrations per upstream repo~~ (done) — remaining: GMaps sidecar against live deployments; Tier 2 SA + Sherlock/Maigret covered by `e2e_tier2.sh`; Tier 3 covered by `e2e_tier3.sh`
-3. Remove Bearer auth from `POST /api/opt-out` for compliance accessibility
+3. ~~Remove Bearer auth from `POST /api/opt-out` for compliance accessibility~~ (done) — opt-out and DSAR are public with IP rate limiting; enrich remains Bearer-protected
 4. ~~Promote SQLite → PostgreSQL in default docker-compose wiring~~ (done) — ~~Alembic migrations and `JSONB` columns~~ (done)
 5. ~~Connect LiteLLM + Langfuse in `llm_router.py`~~ (done, opt-in) — remaining: real prompt tuning + cost dashboards once `LLM_MODE=litellm` is exercised
 6. ~~Swap nginx sidecar placeholders for real Reacher, social-analyzer, and GMaps images~~ (done) — GMaps Playwright CDN 404 fixed via local Dockerfile with npm-assembled driver (2026-07-13); free-sidecar smoke PASS; social-analyzer healthcheck + Tier 2 E2E harness

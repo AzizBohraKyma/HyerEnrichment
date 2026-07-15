@@ -11,6 +11,13 @@
 
 - `api` and `worker` wait for Redis with `condition: service_healthy` (same gate pattern as Postgres)
 
+## [Compliance] - 2026-07-15
+
+### Changed
+
+- `POST /api/opt-out`, `GET /api/opt-out/check`, and DSAR routes are unauthenticated so data subjects can opt out without an API key; enrichment routes remain Bearer-protected
+- Public compliance routes use IP-scoped rate limiting (`MAX_COMPLIANCE_REQUESTS_PER_MINUTE`)
+
 ## [Enrichers] - 2026-07-08
 
 ### Added

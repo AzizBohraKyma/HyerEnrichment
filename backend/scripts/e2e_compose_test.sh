@@ -61,11 +61,11 @@ done
 [ "$final" = "completed" ] || fail "job did not complete (last=$final)"
 pass "async poll completed"
 
-echo "== opt-out suppression =="
-oc="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/opt-out" -H "$AUTH" \
+echo "== opt-out suppression (unauthenticated) =="
+oc="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/opt-out" \
   -H 'Content-Type: application/json' -d "{\"identifier\":\"$IDENT\",\"reason\":\"e2e\"}")"
 [ "$oc" = "202" ] || fail "opt-out expected 202, got $oc"
-chk="$(curl -s "$BASE/api/opt-out/check?identifier=$IDENT" -H "$AUTH" \
+chk="$(curl -s "$BASE/api/opt-out/check?identifier=$IDENT" \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["suppressed"])')"
 [ "$chk" = "True" ] || fail "identifier not reported suppressed"
 sup="$(curl -s -X POST "$BASE/enrich/sync" -H "$AUTH" -H 'Content-Type: application/json' \

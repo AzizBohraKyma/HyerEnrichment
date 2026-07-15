@@ -224,10 +224,10 @@ def test_opt_out_suppresses_enrichment() -> None:
     headers = {"Authorization": "Bearer change-me"}
     identifier = "suppressed-user@example.com"
 
-    response = client.post("/api/opt-out", headers=headers, json={"identifier": identifier, "reason": "gdpr"})
+    response = client.post("/api/opt-out", json={"identifier": identifier, "reason": "gdpr"})
     assert response.status_code == 202
 
-    response = client.get("/api/opt-out/check", headers=headers, params={"identifier": identifier})
+    response = client.get("/api/opt-out/check", params={"identifier": identifier})
     assert response.status_code == 200
     assert response.json()["suppressed"] is True
 
@@ -283,7 +283,7 @@ def test_async_enrich_suppressed_skips_enqueue(monkeypatch: pytest.MonkeyPatch) 
     headers = {"Authorization": "Bearer change-me"}
     identifier = "async-suppressed@example.com"
 
-    client.post("/api/opt-out", headers=headers, json={"identifier": identifier, "reason": "gdpr"})
+    client.post("/api/opt-out", json={"identifier": identifier, "reason": "gdpr"})
 
     response = client.post(
         "/enrich",

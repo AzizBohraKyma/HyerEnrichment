@@ -18,11 +18,11 @@ Hyrepath Enrichment — compliance reference for operators and developers.
 
 ## Authentication (v1)
 
-`POST /api/opt-out`, `GET /api/opt-out/check`, and `POST /api/dsar` require **Bearer token** authentication today.
+Enrichment routes (`/enrich`, `/enrich/sync`, …) require **Bearer token** authentication (`Authorization: Bearer <API_TOKEN>`).
 
-The public frontend form at `/opt-out` proxies requests using a server-side `BACKEND_API_TOKEN`.
+`POST /api/opt-out`, `GET /api/opt-out/check`, `POST /api/dsar`, and `GET /api/dsar/{id}` are **unauthenticated** so data subjects can exercise rights without an API key. They are protected by an IP-scoped rate limit (`MAX_COMPLIANCE_REQUESTS_PER_MINUTE`, default 20).
 
-**Future:** When approved, remove `Depends(verify_token)` from `opt_out_router` and `dsar_router` in `app/main.py` so data subjects can call the API directly without a key.
+The public frontend form at `/opt-out` proxies requests to the backend (the BFF may still send a server-side token; it is not required for these routes).
 
 ---
 

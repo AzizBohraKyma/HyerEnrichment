@@ -1,7 +1,7 @@
 import hashlib
 import logging
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from redis.exceptions import RedisError
 
 from app.config import Settings, get_settings
@@ -14,6 +14,12 @@ def _client_id(authorization: str | None) -> str:
     """Stable per-caller id without logging the raw token."""
     token = (authorization or "anonymous").removeprefix("Bearer ").strip()
     return hashlib.sha256(token.encode("utf-8")).hexdigest()[:16]
+
+
+def _host_client_id(request: Request) -> str:
+    """Stable per-IP id for unauthenticated compliance routes."""
+    host = request.client.host if request.client else "unknown"
+    return hashlib.sha256(host.encode("utf-8")).hexdigest()[:16]
 
 
 async def _enforce(scope: str, limit: int) -> None:
@@ -43,3 +49,13 @@ async def enforce_async_rate_limit(
     settings: Settings = Depends(get_settings),
 ) -> None:
     await _enforce(f"async:{_client_id(authorization)}", settings.max_async_requests_per_minute)
+
+
+async def enforce_compliance_rate_limit(
+    request: Request,
+    settings: Settings = Depends(get_settings),
+) -> None:
+    await _enforce(
+        f"compliance:{_host_client_id(request)}",
+        settings.max_compliance_requests_per_minute,
+    )

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     job_lookup_ttl_seconds: int = Field(default=1800, alias="JOB_LOOKUP_TTL_SECONDS")
     max_sync_requests_per_minute: int = Field(default=10, alias="MAX_SYNC_REQUESTS_PER_MINUTE")
     max_async_requests_per_minute: int = Field(default=30, alias="MAX_ASYNC_REQUESTS_PER_MINUTE")
+    max_compliance_requests_per_minute: int = Field(
+        default=20, alias="MAX_COMPLIANCE_REQUESTS_PER_MINUTE"
+    )
 
     # Provider mode switches (Phase 0): the only flags that flip free -> paid.
     # Defaults = fully free / self-hosted. See app/providers/.
