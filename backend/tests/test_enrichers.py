@@ -19,16 +19,24 @@ from app.enrichers.social_analyzer import SocialAnalyzerEnricher, extract_social
 from app.models import EnrichmentRequest
 from app.providers import EmailVerifier, ProxyProvider
 from app.providers import sidecar as sidecar_mod
+from tests.conftest import FakeRedis
 
 
 def _cmd(returncode: int, stdout: str):
-    async def _run(args, timeout, env=None):
+    async def _run(args, timeout, env=None, cwd=None):
         return returncode, stdout, ""
 
     return _run
 
 
+def _patch_gitrecon_redis(monkeypatch: pytest.MonkeyPatch) -> FakeRedis:
+    fake = FakeRedis()
+    monkeypatch.setattr(gitrecon_mod, "get_redis_client", lambda: fake)
+    return fake
+
+
 async def test_gitrecon_parses_output_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_gitrecon_redis(monkeypatch)
     monkeypatch.setattr(get_settings(), "gitrecon_script", "")
     payload = {
         "username": "octocat",
@@ -54,6 +62,7 @@ async def test_gitrecon_parses_output_file(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 async def test_gitrecon_degrades_when_tool_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_gitrecon_redis(monkeypatch)
     monkeypatch.setattr(gitrecon_mod, "run_command", _cmd(127, ""))
     fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat"))
     assert fragment == {}
