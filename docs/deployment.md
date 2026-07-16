@@ -108,6 +108,7 @@ Configure the reverse proxy or load balancer to use `/ready` for routing decisio
 
 ```bash
 BASE_URL=https://enrich.hyrepath.io API_TOKEN='…' make smoke-prod
+BASE_URL=https://enrich.hyrepath.io API_TOKEN='…' bash backend/scripts/prod_acceptance.sh
 ```
 
 See [PROD_SMOKE.md](PROD_SMOKE.md) and [PROD_ACCEPTANCE.md](PROD_ACCEPTANCE.md).
