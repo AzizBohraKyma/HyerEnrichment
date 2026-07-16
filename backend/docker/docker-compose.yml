@@ -39,6 +39,10 @@ services:
       SCRAPOXY_URL: ${SCRAPOXY_URL:-}
       CROSSLINKED_SEARCH_ENGINES: ${CROSSLINKED_SEARCH_ENGINES:-yahoo}
       CROSSLINKED_TIMEOUT_SECONDS: ${CROSSLINKED_TIMEOUT_SECONDS:-120}
+      # Change signals (changedetection.io → API → optional NOTIFY_WEBHOOK_URL)
+      CHANGEDETECTION_URL: ${CHANGEDETECTION_URL:-http://changedetection:5000}
+      CHANGEDETECTION_API_KEY: ${CHANGEDETECTION_API_KEY:-}
+      NOTIFY_WEBHOOK_URL: ${NOTIFY_WEBHOOK_URL:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -249,6 +253,11 @@ services:
   changedetection:
     image: ghcr.io/dgtlmoon/changedetection.io:latest
     profiles: ["observability"]
+    environment:
+      PORT: "5000"
+      BASE_URL: ${CHANGEDETECTION_PUBLIC_URL:-http://localhost:5000}
+    ports:
+      - "5000:5000"
     volumes:
       - changedetection_data:/datastore
     restart: unless-stopped
