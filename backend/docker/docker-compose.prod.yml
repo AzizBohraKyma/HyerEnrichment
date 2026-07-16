@@ -21,6 +21,7 @@ services:
       REDIS_URL: ${REDIS_URL:?set REDIS_URL}
     ports:
       - "127.0.0.1:8000:8000"
+    restart: unless-stopped
 
   worker:
     env_file:
@@ -30,6 +31,7 @@ services:
       API_TOKEN: ${API_TOKEN:?set API_TOKEN}
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
       REDIS_URL: ${REDIS_URL:?set REDIS_URL}
+    restart: unless-stopped
 
   postgres:
     ports: []
@@ -37,15 +39,20 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-hyrepath}
+    restart: unless-stopped
 
   redis:
     ports: []
+    restart: unless-stopped
 
   social-analyzer:
     ports: []
+    restart: unless-stopped
 
   google-maps-scraper:
     ports: []
+    restart: unless-stopped
 
   email-verifier:
     ports: []
+    restart: unless-stopped
