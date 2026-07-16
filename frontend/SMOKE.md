@@ -22,6 +22,28 @@ npm run dev
 7. **Marketing** — `/`, `/recruiters`, … `/journalists` render; CTAs link to `/app?tiers=...`.
 8. **Build** — `npm run build` and `npm run typecheck` pass.
 
+## Integration E2E (live backend)
+
+Requires backend at `http://localhost:8000` with `BACKEND_API_TOKEN=change-me` (or matching `backend/.env`).
+
+```bash
+# From repo root — starts api, worker, redis, postgres and runs tests
+make integration-e2e
+# or
+bash scripts/fullstack_e2e.sh
+# Windows
+.\scripts\fullstack_e2e.ps1
+```
+
+With backend already running:
+
+```bash
+cd frontend
+npm run test:integration
+```
+
+Integration specs live in `e2e/integration/` and use `FRONTEND_USE_MOCKS=false`. History and dashboard assertions require backend `GET /enrich` (see `feat/enrich-job-list` PR).
+
 ## Architecture
 
 - Browser calls `/api/*` only (BFF).

@@ -1,7 +1,7 @@
 # HyerEnrichment — common local-dev targets
 # Free Docker stack: api, worker, redis, postgres, social-analyzer, google-maps-scraper
 
-.PHONY: help setup up down test smoke migrate
+.PHONY: help setup up down test smoke migrate integration-e2e
 
 .DEFAULT_GOAL := help
 
@@ -17,6 +17,7 @@ help: ## List available targets
 	@echo "  test     Run pytest in backend"
 	@echo "  smoke    Run backend/scripts/smoke_test.py"
 	@echo "  migrate  Run Alembic upgrade head in backend"
+	@echo "  integration-e2e  Start backend stack and run frontend Playwright integration tests"
 	@echo "  help     Show this help"
 
 setup: ## Env file + editable backend install (venv; avoids PEP 668)
@@ -51,3 +52,6 @@ smoke: ## Quick health smoke test
 
 migrate: ## Apply Alembic migrations
 	cd $(BACKEND_DIR) && alembic upgrade head
+
+integration-e2e: ## Backend Compose stack + frontend Playwright integration tests
+	bash scripts/fullstack_e2e.sh
