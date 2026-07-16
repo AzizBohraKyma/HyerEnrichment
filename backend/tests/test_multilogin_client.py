@@ -192,7 +192,6 @@ async def test_list_profiles_search_400_raises(mlx_settings: None) -> None:
 
 @pytest.mark.asyncio
 async def test_sign_in_failure_raises(mlx_settings: None) -> None:
-    client = MultiloginClient()
     with patch("app.providers.multilogin.httpx.AsyncClient") as mock_client_cls:
         mock_client = AsyncMock()
         mock_client.__aenter__.return_value = mock_client

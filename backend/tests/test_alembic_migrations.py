@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
-from sqlalchemy import JSON, DateTime, String, Text, create_engine, inspect, text
+from sqlalchemy import JSON, DateTime, String, Text, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from app.models import JobRecord, JsonDoc
