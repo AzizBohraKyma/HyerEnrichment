@@ -683,9 +683,12 @@ Set `E2E_SKIP_COMPOSE=1` to skip `e2e_compose_test.sh` when the stack is already
 
 ### Rate limits to respect (production)
 
-- **LinkedIn:** ~20–25 profile views/day per Multilogin profile
-- **GitHub API:** 5,000 req/hour authenticated
-- **SMTP verification:** throttle to ~10/min per Reacher instance
+Upstream caps (LinkedIn, GitHub, SMTP) and Hyrepath ingress limits are documented in one operator matrix: **[Upstream source limits](LEGAL.md#appendix-upstream-source-limits)** in `docs/LEGAL.md`. Summary:
+
+- **LinkedIn:** ~20–25 profile views/day per Multilogin profile (`MULTILOGIN_DAILY_VIEW_LIMIT`)
+- **GitHub API:** 5,000 req/hour authenticated — operator monitors beyond gitrecon throttles
+- **SMTP verification:** ~10/min per Reacher instance (`EMAIL_VERIFY_SMTP_DELAY_SECONDS`)
+- **API ingress:** 10 sync / 30 async / 20 compliance req/min (`MAX_*_REQUESTS_PER_MINUTE`)
 
 ---
 

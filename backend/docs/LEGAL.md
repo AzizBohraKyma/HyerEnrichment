@@ -124,3 +124,19 @@ Tier 1 (LinkedIn profile photo) is the only path that drives a browser against L
 | **Gated by `ENABLE_TIER1`** | Tier 1 is **off by default**. Set `ENABLE_TIER1=true` on the **worker** only when Multilogin and bot credentials are configured. The API should keep `ENABLE_TIER1=false`. `/enrich/sync` never runs Tier 1 even when `tier1` is requested. |
 
 **Default posture:** leave Tier 1 disabled unless you accept LinkedIn automation risk and have Multilogin + rate limits operational.
+
+---
+
+## Appendix: Upstream source limits
+
+Single operator reference for **external** rate limits and the Hyrepath env vars that tune them. Ingress limits (this API) are enforced in Redis; upstream limits are enforced in enricher code where hooks exist, or are **operator responsibility** when doc-only.
+
+| Source | Typical cap | Enforced by | Config / env vars | Notes |
+|--------|-------------|-------------|-------------------|-------|
+| **LinkedIn / Multilogin** (Tier 1) | ~20–25 profile views/day per MLX profile | Code — profile pool + daily counter | `MULTILOGIN_DAILY_VIEW_LIMIT` (default 22), `MULTILOGIN_PROFILE_COOLDOWN_SECONDS`, `MULTILOGIN_RATE_LIMIT_COOLDOWN_SECONDS`, `MULTILOGIN_PROFILE_POOL_SIZE`, `MULTILOGIN_PROFILE_ID`, `MULTILOGIN_FOLDER_ID`, `MULTILOGIN_EMAIL`, `MULTILOGIN_PASSWORD`, `MULTILOGIN_WORKSPACE_ID`, `MULTILOGIN_LAUNCHER_URL`, `MULTILOGIN_SELENIUM_HOST`, `ENABLE_TIER1` | One customer-initiated enrich → at most one profile view. See [LinkedIn scraping considerations](#linkedin-scraping-considerations) and `docs/TESTING_TIER1.md`. |
+| **GitHub / gitrecon** (Tier 3) | GitHub 403/429 on abuse or quota | Code — Redis throttle + cooldown after rate-limit stderr | `GITRECON_SCRIPT`, `GITRECON_MAX_PER_MINUTE`, `GITRECON_RATE_LIMIT_BACKOFF_SECONDS`, `GITRECON_COOLDOWN_SECONDS`, `GITHUB_TOKEN` | Soft-fails to empty fragment on limit; prefer authenticated token. |
+| **SMTP / Reacher** (Tier 3, `EMAIL_VERIFY_LEVEL=smtp`) | ~10 verifications/min per Reacher instance | Code — inter-check delay in runner | `EMAIL_VERIFY_SMTP_DELAY_SECONDS` (default 6 ≈ 10/min), `EMAIL_VERIFY_LEVEL`, `EMAIL_VERIFY_MAX_PER_JOB`, `REACHER_URL`, `REACHER_FROM_EMAIL` | Requires clean IP and port 25; basic mode uses AfterShip sidecar instead. |
+| **Hyrepath API ingress** | 10 sync / 30 async / 20 compliance req/min | Code — Redis fixed-window per route | `MAX_SYNC_REQUESTS_PER_MINUTE`, `MAX_ASYNC_REQUESTS_PER_MINUTE`, `MAX_COMPLIANCE_REQUESTS_PER_MINUTE` | Scoped per API token (enrich) or client IP (opt-out/DSAR). Returns `429` over limit; fails open if Redis unavailable. |
+| **GitHub REST API** (general) | 5,000 req/hour authenticated | **Doc-only — operator** | `GITHUB_TOKEN` (recommended) | Applies to gitrecon, theHarvester, and any direct GitHub API use. Unauthenticated limit is much lower. Monitor usage outside Hyrepath throttles. |
+
+**Where to read more:** architecture and Redis counter wiring — `backend/docs/ARCHITECTURE.md` (production rate limits). Tier-specific runbooks — `docs/TESTING_TIER1.md`, `backend/docs/TESTING_TIER234.md`.
