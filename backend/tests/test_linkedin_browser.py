@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
 
 from app.providers.linkedin_browser import (
@@ -17,7 +16,6 @@ from app.providers.linkedin_browser import (
     _wait_for_profile_photo_ready,
     detect_page_state,
     extract_photo_url,
-    is_placeholder_image_url,
     login_linkedin,
     scrape_photo,
 )
