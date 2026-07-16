@@ -106,6 +106,23 @@ All incomplete until there is evidence for **`enrich.hyrepath.io`** (or the agre
 
 **Exit:** Guide audit can mark task 90 complete with evidence links (PRs, canary runs, prod acceptance).
 
+See [PROJECT_COMPLETE_AUDIT.md](PROJECT_COMPLETE_AUDIT.md) for the 2026-07-16 launch gate status.
+
+---
+
+## Phase 6–7 progress (2026-07-16)
+
+Repo-side deliverables landed in open PRs (not yet on `main`):
+
+| Task | PR | Status |
+|------|-----|--------|
+| 87 | [#65](https://github.com/1Touch-dev/HyerPathEnrichment/pull/65) | Open — prod compose, deployment docs, `/ready` probes |
+| 88 | [#68](https://github.com/1Touch-dev/HyerPathEnrichment/pull/68) | Open — smoke + boundary harness |
+| 89 | [#70](https://github.com/1Touch-dev/HyerPathEnrichment/pull/70) | Open — full acceptance runner + OPS runbook |
+| 90 | TBD | Audit doc only — **gate blocked** |
+
+**Blockers for Task 90:** Task 86 (prod host — `enrich.hyrepath.io` DNS unresolved 2026-07-16), gaps **71**, **76**, **78** not on `main`, PRs 65/68/70 not merged.
+
 ---
 
 ## Parallel workstreams (Wave trackers)
