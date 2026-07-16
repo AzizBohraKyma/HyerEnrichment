@@ -121,6 +121,7 @@ class Settings(BaseSettings):
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
     changedetection_url: str = Field(default="", alias="CHANGEDETECTION_URL")
     changedetection_api_key: str = Field(default="", alias="CHANGEDETECTION_API_KEY")
+    notify_webhook_url: str = Field(default="", alias="NOTIFY_WEBHOOK_URL")
 
     # Compliance
     audit_log_retention_years: int = Field(default=5, alias="AUDIT_LOG_RETENTION_YEARS")
