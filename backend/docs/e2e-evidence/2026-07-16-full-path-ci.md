@@ -1,38 +1,72 @@
-# Full-path E2E CI evidence — 2026-07-16
+# Full-path E2E evidence (CI mode)
 
-## Command
+Developer Guide **Task 78** / DEVPLAN gap **78**.
+
+## Run
+
+- **Date (UTC):** 2026-07-16
+- **Harness:** `backend/scripts/e2e_full_path_runner.py --ci`
+- **Make target:** `make e2e-full-path` (repo root)
+- **Host:** Windows 10; **Docker:** WSL2 (native Windows `docker` not on PATH)
+- **Command:**
 
 ```bash
-make e2e-full-path
-# equivalent:
-cd backend && python scripts/e2e_full_path_runner.py --ci
+wsl bash -lc 'cd /mnt/g/ThunderMarketingCorp/HyerEnrichment/backend && export DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 && python3 scripts/e2e_full_path_runner.py --ci'
 ```
 
-## Environment
+## Aggregate report
 
-- OS: Windows 10 (WSL2)
-- Runner: `backend/scripts/e2e_full_path_runner.py` (WSL bash path fix applied)
-- Docker: WSL socket permission denied (`/var/run/docker.sock`)
+Generated at `2026-07-16T09:52:42Z` (mode `ci`).
 
-## Report summary
+| Metric | Value |
+|--------|-------|
+| passed | 2 |
+| failed | 0 |
+| skipped | 0 |
 
-Source: `backend/.e2e-results/full-path-report.json` (gitignored)
+### Stages
 
-| Field | Value |
-|-------|-------|
-| `generated_at` | 2026-07-16T09:18:56Z |
-| `mode` | ci |
-| `passed` | 0 |
-| `failed` | 2 |
-| `skipped` | 0 |
+| Stage | Script | OK | Exit | Duration (s) |
+|-------|--------|----|------|--------------|
+| compose_test | e2e_compose_test.sh | True | 0 | 731.49 |
+| fake_sidecars | e2e_fake_sidecars.sh | True | 0 | 618.73 |
 
-## Stages
+## Path covered
 
-| Stage | Script | OK | Exit | Duration (s) | Notes |
-|-------|--------|----|------|--------------|-------|
-| compose_test | e2e_compose_test.sh | false | 1 | 88.44 | Docker daemon permission denied in WSL |
-| fake_sidecars | e2e_fake_sidecars.sh | false | 1 | 93.94 | Docker daemon permission denied in WSL |
+1. **compose_test** — API health, async enqueue/poll (queue + worker), opt-out suppression/purge, Postgres durability after worker restart.
+2. **fake_sidecars** — Compose fake sidecar stack, tier integration probes, async tier-4 job with fixture business data.
 
-## Verdict
+## Raw JSON
 
-Harness and Makefile target are in place; **green CI run blocked** on this host until Docker Desktop WSL integration grants socket access. Re-run after `docker info` succeeds inside WSL.
+```json
+{
+  "generated_at": "2026-07-16T09:52:42Z",
+  "mode": "ci",
+  "stages": [
+    {
+      "name": "compose_test",
+      "script": "e2e_compose_test.sh",
+      "ok": true,
+      "exit_code": 0,
+      "duration_seconds": 731.49,
+      "skipped": false,
+      "skip_reason": null,
+      "child_report": null
+    },
+    {
+      "name": "fake_sidecars",
+      "script": "e2e_fake_sidecars.sh",
+      "ok": true,
+      "exit_code": 0,
+      "duration_seconds": 618.73,
+      "skipped": false,
+      "skip_reason": null,
+      "child_report": "fake-sidecars-report.json"
+    }
+  ],
+  "passed": 2,
+  "failed": 0,
+  "skipped": 0
+}
+```
+

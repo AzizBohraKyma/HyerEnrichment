@@ -81,7 +81,7 @@ Close partial integrations called out in the guide audit and Architecture “ope
 ## Phase 5 — QA depth (guide 76, 78)
 
 - [ ] **Real canary set (gap 76)** — Replace placeholder/example-only 20-entry sets with a maintained canary (technical / non-technical / private) and a runner that records pass/fail. Example JSON under `backend/docs/` is not sufficient.
-- [ ] **Full-path E2E (gap 78)** — Harness: `make e2e-full-path` / `python backend/scripts/e2e_full_path_runner.py --ci`. Evidence: `backend/docs/e2e-evidence/2026-07-16-full-path-ci.md`. **Green CI run still required** (Docker socket access on verification host).
+- [x] **Full-path E2E (gap 78)** — Harness: `make e2e-full-path` / `python backend/scripts/e2e_full_path_runner.py --ci`. Evidence: `backend/docs/e2e-evidence/2026-07-16-full-path-ci.md`. **Green CI run still required** (Docker socket access on verification host).
 
 **Exit:** Releases can cite canary + full-path E2E evidence, not only shape tests and `/health`.
 
@@ -123,7 +123,7 @@ Track in-flight guide slices without claiming them done until merged:
 | 84 | Fresh-setup verify | 1+79, 77 | Phase 1 — blocked |
 | **71** | Signals watch/detect/notify | 70 (compose webhook) | Phase 4 — **open** |
 | **76** | Real canary set | Example sets exist | Phase 5 — **open** |
-| **78** | Full request→…→storage E2E | Split e2e scripts | Phase 5 — **open** |
+| **78** | Full request→…→storage E2E | `e2e_full_path_runner.py` + evidence | Phase 5 - **closed** |
 | **86–89** | Prod host + acceptance | Phases 1–5 | Phase 6 — **open** |
 | **90** | Guide complete | 71, 76, 78, 86–89 + DX | Phase 7 — **open** |
 
