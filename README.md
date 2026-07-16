@@ -782,19 +782,35 @@ Schema created by `init_db()` via **Alembic** (`upgrade head`; auto-stamps pre-A
 
 ## Getting started
 
+Use the root **Makefile** for the common path:
+
+```bash
+make setup   # backend/.env (if missing) + backend/.venv + pip install -e ".[dev]"
+make up      # free Docker stack in background (Postgres, Redis, API, worker, sidecars)
+make smoke   # health + auth + sync enrich via backend/scripts/smoke_test.py
+```
+
+Other targets: `make down`, `make test`, `make migrate`, `make help`.
+
 ### Prerequisites
 
-- Python 3.10+
+- Python 3.12+ (creates `backend/.venv` — required on PEP 668 / externally-managed systems)
 - Node.js 18+ (frontend)
 - Redis (for async queue and rate limits)
 - Docker + Docker Compose (recommended for full stack)
+- GNU Make (for the targets above)
 
 ### Backend — local (SQLite)
 
 ```bash
+make setup
+
+# Or manually:
 cd backend
 cp .env.example .env
-pip install -e .
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/pip install requests
 
 # Terminal 1 — API
 uvicorn app.main:app --reload
@@ -809,13 +825,16 @@ Interactive docs: `http://localhost:8000/docs`
 ### Backend — Docker Compose (Postgres + Redis + sidecars)
 
 ```bash
-cd backend/docker
-docker compose up --build api worker redis postgres social-analyzer google-maps-scraper
+make up
+# equivalent:
+# cd backend/docker && docker compose up --build api worker redis postgres social-analyzer google-maps-scraper
 ```
 
 Quick test:
 
 ```bash
+make smoke
+# or:
 curl http://localhost:8000/health
 
 curl -X POST http://localhost:8000/enrich/sync \
@@ -1002,4 +1021,7 @@ When filing issues, use tier prefixes: `[Tier 3] Reacher fallback fails on catch
 | Add API route | `routes/` → register in `main.py` |
 | Change free→paid backend | `config.py` mode flag + `providers/` module |
 | Debug async jobs | Check Redis, worker logs, shared `DATABASE_URL` |
-| Run full Docker stack | `cd backend/docker && docker compose up --build` |
+| Setup / install backend | `make setup` |
+| Run free Docker stack | `make up` (`make down` to stop) |
+| Run tests / smoke / migrate | `make test` / `make smoke` / `make migrate` |
+| Run full Docker stack (manual) | `cd backend/docker && docker compose up --build` |

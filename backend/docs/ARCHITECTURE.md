@@ -521,7 +521,33 @@ Copy `backend/.env.example` → `backend/.env`.
 | `google-maps-scraper` | Local business sidecar (Tier 4); built via `Dockerfile.google-maps-scraper` (Playwright driver from npm — not Hub CDN) |
 | `litellm` | LLM proxy |
 | `langfuse` | LLM observability |
-| `changedetection` | Company change signals via `POST /api/signals/changedetection` |
+| `changedetection` | Company change signals via `POST /api/signals/changedetection` → `NOTIFY_WEBHOOK_URL` |
+
+### Change signals (changedetection.io)
+
+Start the observability profile and set shared secrets in `backend/.env`:
+
+```bash
+cd backend/docker
+docker compose --env-file ../.env --profile observability up -d api changedetection
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `CHANGEDETECTION_URL` | API base for watch management (`http://changedetection:5000` in compose) |
+| `CHANGEDETECTION_API_KEY` | Shared secret for CD REST API and optional `X-Signal-Token` on the webhook |
+| `NOTIFY_WEBHOOK_URL` | Outbound JSON webhook (Slack-compatible custom URL); no-op when unset |
+| `CHANGEDETECTION_SIGNAL_URL` | Apprise `post://` URL used when creating watches (default `post://api:8000/api/signals/changedetection`) |
+
+Create watches that POST non-PII metadata to the API:
+
+```bash
+cd backend
+python scripts/setup_changedetection_watches.py create https://acme.example/careers --title "Acme careers"
+python scripts/setup_changedetection_watches.py list
+```
+
+Flow: changedetection detects a page change → `POST /api/signals/changedetection` → API forwards `{source, watch_id, title, url, timestamp}` to `NOTIFY_WEBHOOK_URL` when configured.
 
 **Current:** compose uses real images/builds. Free-mode sidecars (`social-analyzer`, `google-maps-scraper`, `email-verifier`) start by default; paid/heavy services (`reacher`, `litellm`, `ollama`, `scrapoxy`, `langfuse`, `changedetection`) sit behind compose `profiles:` so a plain `docker compose up` stays free. Default-stack services (`postgres`, `redis`, `api`, `worker`, free sidecars) declare Compose `healthcheck`s; `api`/`worker` wait for `postgres` and `redis` with `condition: service_healthy`. `google-maps-scraper` is built locally (`Dockerfile.google-maps-scraper`) with a pre-assembled Playwright 1.57.0 driver — Hub `:latest` still hits the retired azureedge CDN. Do not volume-mount over `/opt`. Enrichers call real tools (subprocess/library/sidecar) selected by the Phase 0 provider layer (`app/providers/`), and **degrade to a valid empty fragment** when a tool, sidecar, or key is missing — never a crash. Free -> paid is an env flip via the mode flags in `config.py` (`PROXY_MODE`, `BROWSER_MODE`, `LLM_MODE`, `EMAIL_VERIFY_LEVEL`, `ENABLE_TIER1`).
 
@@ -586,7 +612,7 @@ AGPL tools (`social-analyzer`, Reacher) run as **isolated sidecars** called over
 | DSAR flow | `POST/GET /api/dsar` | Implemented |
 | Data erasure | Purge on opt-out/DSAR deletion | Implemented |
 | Scrapoxy proxy pool | Rate-limit hardening | `ProxyProvider` (`PROXY_MODE=none|scrapoxy|paid`, default none = direct) |
-| Change signals | changedetection.io webhook | `POST /api/signals/changedetection` consumer (optional shared-secret header) |
+| Change signals | changedetection.io webhook → notify | `POST /api/signals/changedetection` → `providers/notify.py` (`NOTIFY_WEBHOOK_URL`, optional `X-Signal-Token`) |
 | Prometheus metrics | `/metrics` endpoint | Optional dependency |
 
 Use this table when reviewing PRs, running `GRILLME.md` sessions, or planning the next delivery slice.
@@ -600,7 +626,7 @@ Use this table when reviewing PRs, running `GRILLME.md` sessions, or planning th
 | Shape tests | Every enricher returns valid dossier fragments | `tests/test_pipeline_shape.py` |
 | Integration | Fake sidecars in CI via compose override | Implemented — `docker-compose.fake-sidecars.yml` + `scripts/e2e_fake_sidecars.sh` |
 | Full-path E2E | CI compose + fake sidecars; optional live tier chain | `scripts/e2e_full_path.sh` + `scripts/e2e_full_path_runner.py` → `.e2e-results/full-path-report.json` |
-| Manual QA | 20-profile canary set (technical + non-technical + private) | Target |
+| Manual QA | 20-profile canary run/score (`run_canary_score.py`, `tier*_canary_set.example.json`) | Implemented — Tier 2–4 uses in-repo public identifiers; Tier 1 needs local Multilogin + gitignored `tier1_canary_set.json` |
 
 Run backend tests:
 

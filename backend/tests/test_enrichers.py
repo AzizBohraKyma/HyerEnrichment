@@ -19,16 +19,24 @@ from app.enrichers.social_analyzer import SocialAnalyzerEnricher, extract_social
 from app.models import EnrichmentRequest
 from app.providers import EmailVerifier, ProxyProvider
 from app.providers import sidecar as sidecar_mod
+from tests.conftest import FakeRedis
 
 
 def _cmd(returncode: int, stdout: str):
-    async def _run(args, timeout, env=None):
+    async def _run(args, timeout, env=None, cwd=None):
         return returncode, stdout, ""
 
     return _run
 
 
+def _patch_gitrecon_redis(monkeypatch: pytest.MonkeyPatch) -> FakeRedis:
+    fake = FakeRedis()
+    monkeypatch.setattr(gitrecon_mod, "get_redis_client", lambda: fake)
+    return fake
+
+
 async def test_gitrecon_parses_output_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_gitrecon_redis(monkeypatch)
     monkeypatch.setattr(get_settings(), "gitrecon_script", "")
     payload = {
         "username": "octocat",
@@ -54,6 +62,7 @@ async def test_gitrecon_parses_output_file(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 async def test_gitrecon_degrades_when_tool_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_gitrecon_redis(monkeypatch)
     monkeypatch.setattr(gitrecon_mod, "run_command", _cmd(127, ""))
     fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat"))
     assert fragment == {}
@@ -197,6 +206,93 @@ async def test_email_verifier_rejects_disposable_before_mx(monkeypatch: pytest.M
         "confidence": 0.0,
         "source": "mailchecker",
     }
+
+
+async def test_email_verifier_smtp_skips_aftership_on_conclusive_reacher(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(get_settings(), "email_verify_level", "smtp")
+    monkeypatch.setattr(get_settings(), "reacher_url", "http://reacher:8080")
+
+    async def _no_mx(self, domain: str):
+        return None
+
+    async def _aftership_should_not_run(self, url: str, email: str):
+        raise AssertionError("AfterShip must not run when Reacher is conclusive")
+
+    async def _reacher(self, url: str, email: str):
+        return {"status": "verified", "confidence": 0.95, "source": "Reacher"}
+
+    monkeypatch.setattr(EmailVerifier, "_mx_ok", _no_mx)
+    monkeypatch.setattr(EmailVerifier, "_aftership", _aftership_should_not_run)
+    monkeypatch.setattr(EmailVerifier, "_reacher", _reacher)
+
+    result = await EmailVerifier().verify("user@example.com")
+    assert result["status"] == "verified"
+    assert result["source"] == "Reacher"
+
+
+async def test_email_verifier_smtp_calls_aftership_on_reacher_unknown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(get_settings(), "email_verify_level", "smtp")
+    monkeypatch.setattr(get_settings(), "reacher_url", "http://reacher:8080")
+    monkeypatch.setattr(get_settings(), "email_verifier_url", "http://email-verifier:8080")
+
+    async def _no_mx(self, domain: str):
+        return None
+
+    async def _reacher(self, url: str, email: str):
+        return {"status": "unknown", "confidence": 0.3, "source": "Reacher"}
+
+    aftership_called = False
+
+    async def _aftership(self, url: str, email: str):
+        nonlocal aftership_called
+        aftership_called = True
+        return {
+            "status": "deliverable",
+            "confidence": 0.8,
+            "source": "AfterShip Email Verifier",
+        }
+
+    monkeypatch.setattr(EmailVerifier, "_mx_ok", _no_mx)
+    monkeypatch.setattr(EmailVerifier, "_reacher", _reacher)
+    monkeypatch.setattr(EmailVerifier, "_aftership", _aftership)
+
+    result = await EmailVerifier().verify("user@example.com")
+    assert aftership_called is True
+    assert result["source"] == "AfterShip Email Verifier"
+
+
+async def test_email_verifier_reacher_catch_all_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(get_settings(), "email_verify_level", "smtp")
+    monkeypatch.setattr(get_settings(), "reacher_url", "http://reacher:8080")
+
+    async def _no_mx(self, domain: str):
+        return None
+
+    from app.providers import sidecar as sidecar_mod
+
+    async def _post_json(self, path="", json=None):
+        return {
+            "is_reachable": "risky",
+            "smtp": {"is_catch_all": True},
+        }
+
+    async def _aftership_should_not_run(self, url: str, email: str):
+        raise AssertionError("AfterShip must not run for catch-all verdict")
+
+    monkeypatch.setattr(EmailVerifier, "_mx_ok", _no_mx)
+    monkeypatch.setattr(EmailVerifier, "_aftership", _aftership_should_not_run)
+    monkeypatch.setattr(sidecar_mod.SidecarClient, "post_json", _post_json)
+
+    result = await EmailVerifier().verify("guess@acme.com")
+    assert result["status"] == "catch_all"
+    assert result["source"] == "Reacher"
+    assert result["confidence"] == pytest.approx(0.35)
 
 
 async def test_sherlock_parses_found_urls(monkeypatch: pytest.MonkeyPatch) -> None:

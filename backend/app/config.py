@@ -83,6 +83,12 @@ class Settings(BaseSettings):
     # Tier 3 — OSINT + email
     github_token: str = Field(default="", alias="GITHUB_TOKEN")
     gitrecon_script: str = Field(default="", alias="GITRECON_SCRIPT")
+    # GitHub API throttle around gitrecon CLI (prefer GITHUB_TOKEN for higher limits).
+    gitrecon_max_per_minute: int = Field(default=10, alias="GITRECON_MAX_PER_MINUTE")
+    gitrecon_rate_limit_backoff_seconds: float = Field(
+        default=5.0, alias="GITRECON_RATE_LIMIT_BACKOFF_SECONDS"
+    )
+    gitrecon_cooldown_seconds: int = Field(default=60, alias="GITRECON_COOLDOWN_SECONDS")
     theharvester_timeout_seconds: int = Field(default=120, alias="THEHARVESTER_TIMEOUT_SECONDS")
     crosslinked_timeout_seconds: int = Field(default=120, alias="CROSSLINKED_TIMEOUT_SECONDS")
     crosslinked_search_engines: str = Field(default="yahoo", alias="CROSSLINKED_SEARCH_ENGINES")
@@ -121,6 +127,7 @@ class Settings(BaseSettings):
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
     changedetection_url: str = Field(default="", alias="CHANGEDETECTION_URL")
     changedetection_api_key: str = Field(default="", alias="CHANGEDETECTION_API_KEY")
+    notify_webhook_url: str = Field(default="", alias="NOTIFY_WEBHOOK_URL")
 
     # Compliance
     audit_log_retention_years: int = Field(default=5, alias="AUDIT_LOG_RETENTION_YEARS")
