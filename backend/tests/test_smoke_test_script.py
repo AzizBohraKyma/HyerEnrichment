@@ -49,10 +49,13 @@ def test_smoke_async_polls_until_completed(
     mock_post.side_effect = [
         _mock_response(401, {}),
         _mock_response(200, {"status": "completed", "dossier": _dossier()}),
+        _mock_response(202, {"status": "accepted"}),
+        _mock_response(201, {"id": "dsar-1"}),
         _mock_response(202, {"status": "queued", "id": "job-123"}),
     ]
     mock_get.side_effect = [
         _mock_response(200, {"status": "ok"}),
+        _mock_response(200, {"status": "ready"}),
         _mock_response(200, {"status": "running"}),
         _mock_response(200, {"status": "completed", "dossier": _dossier()}),
     ]
@@ -60,8 +63,8 @@ def test_smoke_async_polls_until_completed(
     with patch.object(smoke.time, "sleep"):
         smoke.main()
 
-    assert mock_post.call_count == 3
-    assert mock_get.call_count == 3
+    assert mock_post.call_count == 5
+    assert mock_get.call_count == 4
     assert mock_get.call_args_list[-1][0][0].endswith("/enrich/job-123")
 
 
@@ -74,13 +77,18 @@ def test_smoke_skip_async(
 ) -> None:
     smoke = _load_smoke(monkeypatch, skip_async="1")
 
-    mock_get.return_value = _mock_response(200, {"status": "ok"})
+    mock_get.side_effect = [
+        _mock_response(200, {"status": "ok"}),
+        _mock_response(200, {"status": "ready"}),
+    ]
     mock_post.side_effect = [
         _mock_response(401, {}),
         _mock_response(200, {"status": "completed", "dossier": _dossier()}),
+        _mock_response(202, {"status": "accepted"}),
+        _mock_response(201, {"id": "dsar-1"}),
     ]
 
     smoke.main()
 
-    assert mock_post.call_count == 2
-    assert mock_get.call_count == 1
+    assert mock_post.call_count == 4
+    assert mock_get.call_count == 2

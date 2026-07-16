@@ -5,6 +5,7 @@ Env:
   API_TOKEN         — Bearer token (default change-me)
   SMOKE_TIMEOUT     — per-request timeout seconds (default 60)
   SMOKE_SKIP_ASYNC  — set to 1 to skip async enrich + poll (sync-only)
+  SMOKE_PROD        — when set to 1, require explicit BASE_URL (production mode)
 
 Exits non-zero on any failure.
 """
@@ -14,6 +15,7 @@ from __future__ import annotations
 import os
 import sys
 import time
+import uuid
 
 import requests
 
@@ -23,6 +25,7 @@ TIMEOUT = float(os.environ.get("SMOKE_TIMEOUT", "60"))
 SKIP_ASYNC = os.environ.get("SMOKE_SKIP_ASYNC", "").strip().lower() in {"1", "true", "yes"}
 POLL_INTERVAL = 2.0
 POLL_DEADLINE = float(os.environ.get("SMOKE_ASYNC_DEADLINE", "60"))
+SMOKE_PROD = os.environ.get("SMOKE_PROD", "").strip() in {"1", "true", "yes"}
 
 
 def fail(msg: str) -> None:
@@ -39,6 +42,9 @@ def auth_headers() -> dict[str, str]:
 
 
 def main() -> None:
+    if SMOKE_PROD and BASE_URL in {"http://localhost:8000", "http://127.0.0.1:8000"}:
+        fail("SMOKE_PROD=1 requires BASE_URL pointing at production/staging host")
+
     # 1. Liveness
     try:
         health = requests.get(f"{BASE_URL}/health", timeout=5)
@@ -51,7 +57,19 @@ def main() -> None:
         fail(f"/health unexpected body: {body}")
     ok("/health")
 
-    # 2. Auth required on enrich
+    # 2. Readiness (Postgres + Redis)
+    try:
+        ready = requests.get(f"{BASE_URL}/ready", timeout=10)
+    except requests.RequestException as exc:
+        fail(f"/ready unreachable: {exc}")
+    if ready.status_code != 200:
+        fail(f"/ready expected 200, got {ready.status_code}: {ready.text[:200]}")
+    ready_body = ready.json()
+    if ready_body.get("status") != "ready":
+        fail(f"/ready unexpected body: {ready_body}")
+    ok("/ready")
+
+    # 3. Auth required on enrich
     try:
         unauth = requests.post(
             f"{BASE_URL}/enrich/sync",
@@ -64,7 +82,7 @@ def main() -> None:
         fail(f"unauth /enrich/sync expected 401, got {unauth.status_code}")
     ok("unauth /enrich/sync → 401")
 
-    # 3. Sync enrich with Bearer
+    # 4. Sync enrich with Bearer
     try:
         enrich = requests.post(
             f"{BASE_URL}/enrich/sync",
@@ -87,11 +105,42 @@ def main() -> None:
             fail(f"/enrich/sync dossier missing {key!r}")
     ok(f"/enrich/sync → {payload['status']}")
 
+    # 5. Opt-out without Bearer (public compliance route)
+    opt_id = f"smoke-optout-{uuid.uuid4().hex}@example.com"
+    try:
+        opt_out = requests.post(
+            f"{BASE_URL}/api/opt-out",
+            json={"identifier": opt_id, "reason": "smoke-test"},
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException as exc:
+        fail(f"/api/opt-out unreachable: {exc}")
+    if opt_out.status_code != 202:
+        fail(f"/api/opt-out expected 202, got {opt_out.status_code}: {opt_out.text[:200]}")
+    ok("unauth /api/opt-out → 202")
+
+    # 6. DSAR without Bearer (public compliance route)
+    dsar_id = f"smoke-dsar-{uuid.uuid4().hex}@example.com"
+    try:
+        dsar = requests.post(
+            f"{BASE_URL}/api/dsar",
+            json={"identifier": dsar_id, "request_type": "access"},
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException as exc:
+        fail(f"/api/dsar unreachable: {exc}")
+    if dsar.status_code != 201:
+        fail(f"/api/dsar expected 201, got {dsar.status_code}: {dsar.text[:200]}")
+    dsar_body = dsar.json()
+    if "id" not in dsar_body:
+        fail(f"/api/dsar missing id: {dsar_body}")
+    ok("unauth /api/dsar → 201")
+
     if SKIP_ASYNC:
         print("smoke ok (async skipped)")
         return
 
-    # 4. Async enrich + poll (requires worker + redis)
+    # 7. Async enrich + poll (requires worker + redis)
     try:
         async_resp = requests.post(
             f"{BASE_URL}/enrich",

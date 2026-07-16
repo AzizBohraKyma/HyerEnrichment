@@ -1,7 +1,7 @@
 # HyerEnrichment — common local-dev targets
 # Free Docker stack: api, worker, redis, postgres, social-analyzer, google-maps-scraper
 
-.PHONY: help setup up down test smoke migrate integration-e2e e2e-full-path
+.PHONY: help setup up down test smoke smoke-prod boundary-checks migrate integration-e2e e2e-full-path
 
 .DEFAULT_GOAL := help
 
@@ -16,6 +16,8 @@ help: ## List available targets
 	@echo "  down     Stop Docker Compose stack (backend/docker)"
 	@echo "  test     Run pytest in backend"
 	@echo "  smoke    Run backend/scripts/smoke_test.py (SMOKE_SKIP_ASYNC=1 for sync-only)"
+	@echo "  smoke-prod  Smoke against BASE_URL (requires BASE_URL + API_TOKEN)"
+	@echo "  boundary-checks  Run compliance/rate-limit boundary pytest bundle"
 	@echo "  migrate  Run Alembic upgrade head in backend"
 	@echo "  integration-e2e  Start backend stack and run frontend Playwright integration tests"
 	@echo "  e2e-full-path     Run backend full-path E2E harness (CI mode)"
@@ -50,6 +52,14 @@ smoke: ## Quick health smoke test
 	else \
 		python3 $(BACKEND_DIR)/scripts/smoke_test.py; \
 	fi
+
+smoke-prod: ## Production smoke (BASE_URL + API_TOKEN required)
+	@if [ -z "$${BASE_URL:-}" ]; then echo "BASE_URL is required" >&2; exit 1; fi
+	@if [ -z "$${API_TOKEN:-}" ]; then echo "API_TOKEN is required" >&2; exit 1; fi
+	@SMOKE_PROD=1 $(MAKE) smoke
+
+boundary-checks: ## Boundary pytest bundle
+	bash $(BACKEND_DIR)/scripts/boundary_checks.sh
 
 migrate: ## Apply Alembic migrations
 	cd $(BACKEND_DIR) && alembic upgrade head
