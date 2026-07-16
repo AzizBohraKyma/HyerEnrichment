@@ -1,121 +1,123 @@
 [
   {
-    "slug": "example-tech-01",
-    "linkedin_url": "https://www.linkedin.com/in/example-tech-01",
+    "slug": "your-tech-slug-01",
+    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-01",
+    "category": "technical",
+    "expect_photo": true,
+    "notes": "Replace slug/URL with a public technical profile you own or have permission to test."
+  },
+  {
+    "slug": "your-tech-slug-02",
+    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-02",
     "category": "technical",
     "expect_photo": true
   },
   {
-    "slug": "example-tech-02",
-    "linkedin_url": "https://www.linkedin.com/in/example-tech-02",
+    "slug": "your-tech-slug-03",
+    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-03",
     "category": "technical",
     "expect_photo": true
   },
   {
-    "slug": "example-tech-03",
-    "linkedin_url": "https://www.linkedin.com/in/example-tech-03",
+    "slug": "your-tech-slug-04",
+    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-04",
     "category": "technical",
     "expect_photo": true
   },
   {
-    "slug": "example-tech-04",
-    "linkedin_url": "https://www.linkedin.com/in/example-tech-04",
+    "slug": "your-tech-slug-05",
+    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-05",
     "category": "technical",
     "expect_photo": true
   },
   {
-    "slug": "example-tech-05",
-    "linkedin_url": "https://www.linkedin.com/in/example-tech-05",
+    "slug": "your-tech-slug-06",
+    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-06",
     "category": "technical",
     "expect_photo": true
   },
   {
-    "slug": "example-tech-06",
-    "linkedin_url": "https://www.linkedin.com/in/example-tech-06",
+    "slug": "your-tech-slug-07",
+    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-07",
     "category": "technical",
     "expect_photo": true
   },
   {
-    "slug": "example-tech-07",
-    "linkedin_url": "https://www.linkedin.com/in/example-tech-07",
-    "category": "technical",
-    "expect_photo": true
-  },
-  {
-    "slug": "example-sales-01",
-    "linkedin_url": "https://www.linkedin.com/in/example-sales-01",
+    "slug": "your-sales-slug-01",
+    "linkedin_url": "https://www.linkedin.com/in/your-sales-slug-01",
     "category": "non-technical",
     "expect_photo": true
   },
   {
-    "slug": "example-sales-02",
-    "linkedin_url": "https://www.linkedin.com/in/example-sales-02",
+    "slug": "your-sales-slug-02",
+    "linkedin_url": "https://www.linkedin.com/in/your-sales-slug-02",
     "category": "non-technical",
     "expect_photo": true
   },
   {
-    "slug": "example-sales-03",
-    "linkedin_url": "https://www.linkedin.com/in/example-sales-03",
+    "slug": "your-sales-slug-03",
+    "linkedin_url": "https://www.linkedin.com/in/your-sales-slug-03",
     "category": "non-technical",
     "expect_photo": true
   },
   {
-    "slug": "example-sales-04",
-    "linkedin_url": "https://www.linkedin.com/in/example-sales-04",
+    "slug": "your-sales-slug-04",
+    "linkedin_url": "https://www.linkedin.com/in/your-sales-slug-04",
     "category": "non-technical",
     "expect_photo": true
   },
   {
-    "slug": "example-sales-05",
-    "linkedin_url": "https://www.linkedin.com/in/example-sales-05",
+    "slug": "your-sales-slug-05",
+    "linkedin_url": "https://www.linkedin.com/in/your-sales-slug-05",
     "category": "non-technical",
     "expect_photo": true
   },
   {
-    "slug": "example-sales-06",
-    "linkedin_url": "https://www.linkedin.com/in/example-sales-06",
+    "slug": "your-sales-slug-06",
+    "linkedin_url": "https://www.linkedin.com/in/your-sales-slug-06",
     "category": "non-technical",
     "expect_photo": true
   },
   {
-    "slug": "example-ops-01",
-    "linkedin_url": "https://www.linkedin.com/in/example-ops-01",
+    "slug": "your-ops-slug-01",
+    "linkedin_url": "https://www.linkedin.com/in/your-ops-slug-01",
     "category": "non-technical",
     "expect_photo": true
   },
   {
-    "slug": "example-private-01",
-    "linkedin_url": "https://www.linkedin.com/in/example-private-01",
+    "slug": "your-private-slug-01",
+    "linkedin_url": "https://www.linkedin.com/in/your-private-slug-01",
+    "category": "private",
+    "expect_photo": false,
+    "notes": "Private/minimal profiles — expect_photo=false means PASS without a photo."
+  },
+  {
+    "slug": "your-private-slug-02",
+    "linkedin_url": "https://www.linkedin.com/in/your-private-slug-02",
     "category": "private",
     "expect_photo": false
   },
   {
-    "slug": "example-private-02",
-    "linkedin_url": "https://www.linkedin.com/in/example-private-02",
+    "slug": "your-private-slug-03",
+    "linkedin_url": "https://www.linkedin.com/in/your-private-slug-03",
     "category": "private",
     "expect_photo": false
   },
   {
-    "slug": "example-private-03",
-    "linkedin_url": "https://www.linkedin.com/in/example-private-03",
+    "slug": "your-private-slug-04",
+    "linkedin_url": "https://www.linkedin.com/in/your-private-slug-04",
     "category": "private",
     "expect_photo": false
   },
   {
-    "slug": "example-private-04",
-    "linkedin_url": "https://www.linkedin.com/in/example-private-04",
+    "slug": "your-private-slug-05",
+    "linkedin_url": "https://www.linkedin.com/in/your-private-slug-05",
     "category": "private",
     "expect_photo": false
   },
   {
-    "slug": "example-private-05",
-    "linkedin_url": "https://www.linkedin.com/in/example-private-05",
-    "category": "private",
-    "expect_photo": false
-  },
-  {
-    "slug": "example-private-06",
-    "linkedin_url": "https://www.linkedin.com/in/example-private-06",
+    "slug": "your-private-slug-06",
+    "linkedin_url": "https://www.linkedin.com/in/your-private-slug-06",
     "category": "private",
     "expect_photo": false
   }

@@ -1,152 +1,133 @@
 [
   {
-    "id": "tech-01",
+    "id": "torvalds-core",
     "category": "technical",
-    "username": "example-tech-01",
-    "email": "dev01@example.com",
-    "company": "ExampleTech",
+    "username": "torvalds",
+    "email": "noreply@github.com",
+    "company": "Microsoft",
     "job_search": "software engineer remote",
     "business": "coffee shop San Francisco",
-    "enrichers": ["sherlock", "maigret", "social_analyzer", "gitrecon", "email_discover", "email_verify"]
+    "enrichers": ["sherlock", "maigret", "social_analyzer", "gitrecon", "theharvester", "email_discover", "email_verify", "crosslinked", "jobspy", "local_business"]
   },
   {
-    "id": "tech-02",
+    "id": "torvalds-t2",
     "category": "technical",
-    "username": "example-tech-02",
-    "email": "dev02@example.com",
-    "company": "ExampleTech",
-    "enrichers": ["sherlock", "maigret", "gitrecon", "crosslinked"]
+    "username": "torvalds",
+    "enrichers": ["sherlock", "maigret", "social_analyzer"]
   },
   {
-    "id": "tech-03",
+    "id": "satyanadella-t2",
     "category": "technical",
-    "username": "example-tech-03",
-    "company": "OpenSourceCo",
-    "enrichers": ["sherlock", "maigret", "social_analyzer", "theharvester"]
-  },
-  {
-    "id": "tech-04",
-    "category": "technical",
-    "username": "example-tech-04",
-    "email": "dev04@example.org",
-    "enrichers": ["sherlock", "gitrecon", "email_verify"]
-  },
-  {
-    "id": "tech-05",
-    "category": "technical",
-    "username": "example-tech-05",
-    "company": "CloudLabs",
-    "job_search": "backend engineer",
-    "enrichers": ["sherlock", "maigret", "email_discover", "jobspy"]
-  },
-  {
-    "id": "tech-06",
-    "category": "technical",
-    "username": "example-tech-06",
-    "email": "hex06@example.com",
-    "company": "DevTools Inc",
-    "enrichers": ["social_analyzer", "gitrecon", "theharvester", "crosslinked"]
-  },
-  {
-    "id": "tech-07",
-    "category": "technical",
-    "username": "example-tech-07",
-    "company": "DataSystems",
-    "enrichers": ["sherlock", "maigret", "email_discover"]
-  },
-  {
-    "id": "sales-01",
-    "category": "non-technical",
-    "username": "example-sales-01",
-    "email": "sales01@example.com",
-    "company": "Acme Sales",
-    "enrichers": ["sherlock", "email_verify", "crosslinked", "theharvester"]
-  },
-  {
-    "id": "sales-02",
-    "category": "non-technical",
-    "username": "example-sales-02",
-    "company": "Acme Sales",
-    "enrichers": ["email_discover", "crosslinked"]
-  },
-  {
-    "id": "sales-03",
-    "category": "non-technical",
-    "username": "example-sales-03",
-    "email": "rep03@example.com",
-    "company": "Northwind",
-    "enrichers": ["sherlock", "maigret", "email_verify"]
-  },
-  {
-    "id": "sales-04",
-    "category": "non-technical",
-    "username": "example-sales-04",
-    "company": "Contoso",
-    "job_search": "account executive",
-    "enrichers": ["crosslinked", "jobspy", "theharvester"]
-  },
-  {
-    "id": "sales-05",
-    "category": "non-technical",
-    "username": "example-sales-05",
-    "email": "ae05@example.com",
-    "company": "Fabrikam",
-    "enrichers": ["sherlock", "email_discover", "email_verify"]
-  },
-  {
-    "id": "ops-01",
-    "category": "non-technical",
-    "username": "example-ops-01",
-    "company": "LogisticsCo",
-    "business": "warehouse Austin TX",
-    "enrichers": ["crosslinked", "local_business", "theharvester"]
-  },
-  {
-    "id": "ops-02",
-    "category": "non-technical",
-    "username": "example-ops-02",
-    "email": "ops02@example.com",
-    "company": "RetailCo",
-    "business": "grocery store Seattle",
-    "enrichers": ["email_verify", "local_business"]
-  },
-  {
-    "id": "sparse-01",
-    "category": "sparse",
-    "username": "example-sparse-01",
+    "username": "satyanadella",
     "enrichers": ["sherlock", "maigret"]
   },
   {
-    "id": "sparse-02",
-    "category": "sparse",
-    "email": "only-email@example.com",
-    "enrichers": ["email_verify", "gitrecon"]
+    "id": "torvalds-t3",
+    "category": "technical",
+    "username": "torvalds",
+    "email": "torvalds@example.com",
+    "company": "Microsoft",
+    "enrichers": ["gitrecon", "theharvester", "email_discover", "email_verify", "crosslinked"]
   },
   {
-    "id": "sparse-03",
-    "category": "sparse",
-    "company": "OnlyCompany LLC",
+    "id": "microsoft-corp",
+    "category": "technical",
+    "company": "Microsoft",
     "enrichers": ["theharvester", "crosslinked", "email_discover"]
   },
   {
-    "id": "sparse-04",
+    "id": "github-email",
+    "category": "technical",
+    "email": "noreply@github.com",
+    "enrichers": ["email_verify", "gitrecon"]
+  },
+  {
+    "id": "torvalds-jobs",
+    "category": "technical",
+    "job_search": "software engineer remote",
+    "enrichers": ["jobspy"]
+  },
+  {
+    "id": "sf-coffee",
+    "category": "technical",
+    "business": "coffee shop San Francisco",
+    "enrichers": ["local_business"]
+  },
+  {
+    "id": "satyanadella-ms",
+    "category": "non-technical",
+    "username": "satyanadella",
+    "company": "Microsoft",
+    "enrichers": ["crosslinked", "theharvester"]
+  },
+  {
+    "id": "account-exec-jobs",
+    "category": "non-technical",
+    "job_search": "account executive",
+    "enrichers": ["jobspy", "crosslinked"]
+  },
+  {
+    "id": "austin-warehouse",
+    "category": "non-technical",
+    "business": "warehouse Austin TX",
+    "enrichers": ["local_business", "theharvester"]
+  },
+  {
+    "id": "seattle-grocery",
+    "category": "non-technical",
+    "business": "grocery store Seattle",
+    "enrichers": ["local_business"]
+  },
+  {
+    "id": "noreply-verify",
+    "category": "non-technical",
+    "email": "noreply@github.com",
+    "company": "Microsoft",
+    "enrichers": ["email_verify", "email_discover"]
+  },
+  {
+    "id": "ms-sales",
+    "category": "non-technical",
+    "company": "Microsoft",
+    "enrichers": ["crosslinked", "email_discover"]
+  },
+  {
+    "id": "torvalds-sparse",
+    "category": "sparse",
+    "username": "torvalds",
+    "enrichers": ["sherlock", "maigret"]
+  },
+  {
+    "id": "email-sparse",
+    "category": "sparse",
+    "email": "noreply@github.com",
+    "enrichers": ["email_verify"]
+  },
+  {
+    "id": "company-sparse",
+    "category": "sparse",
+    "company": "Microsoft",
+    "enrichers": ["theharvester", "crosslinked"]
+  },
+  {
+    "id": "job-sparse",
     "category": "sparse",
     "job_search": "remote customer success",
     "enrichers": ["jobspy"]
   },
   {
-    "id": "sparse-05",
+    "id": "business-sparse",
     "category": "sparse",
     "business": "pizza restaurant Chicago",
     "enrichers": ["local_business"]
   },
   {
-    "id": "mixed-01",
+    "id": "satyanadella-mixed",
     "category": "technical",
-    "username": "example-mixed-01",
-    "email": "mixed01@example.com",
-    "company": "MixedWorks",
-    "job_search": "platform engineer",
+    "username": "satyanadella",
+    "email": "noreply@github.com",
+    "company": "Microsoft",
+    "job_search": "backend engineer",
     "business": "coworking space Denver",
     "enrichers": ["sherlock", "maigret", "social_analyzer", "gitrecon", "theharvester", "email_discover", "email_verify", "crosslinked", "jobspy", "local_business"]
   }

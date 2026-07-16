@@ -599,7 +599,7 @@ Use this table when reviewing PRs, running `GRILLME.md` sessions, or planning th
 |-------|------|-------|
 | Shape tests | Every enricher returns valid dossier fragments | `tests/test_pipeline_shape.py` |
 | Integration | Fake sidecars in CI via compose override | Implemented — `docker-compose.fake-sidecars.yml` + `scripts/e2e_fake_sidecars.sh` |
-| Manual QA | 20-profile canary set (technical + non-technical + private) | Target |
+| Manual QA | 20-profile canary run/score (`run_canary_score.py`, `tier*_canary_set.example.json`) | Implemented — Tier 2–4 uses in-repo public identifiers; Tier 1 needs local Multilogin + gitignored `tier1_canary_set.json` |
 
 Run backend tests:
 
