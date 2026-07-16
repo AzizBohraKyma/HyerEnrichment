@@ -61,7 +61,7 @@ class EnrichmentRequest(BaseModel):
     company: str | None = None
     business: str | None = None
     job_search: str | None = None
-    requested_tiers: list[RequestedTier] = Field(default_factory=list)
+    requested_tiers: list[RequestedTier] = Field(default_factory=lambda: list(RequestedTier))
 
     @model_validator(mode="after")
     def ensure_identifier(self) -> "EnrichmentRequest":
@@ -75,19 +75,19 @@ class EnrichmentRequest(BaseModel):
         ]):
             raise ValueError("at least one identifier is required")
 
-        for tier in self.requested_tiers:
-            if tier == RequestedTier.tier1 and not self.linkedin_url:
-                raise ValueError("tier1 requires linkedin_url")
-            if tier == RequestedTier.tier2 and not self.username:
-                raise ValueError("tier2 requires username")
-            if tier == RequestedTier.tier3 and not any([
-                self.username,
-                self.email,
-                self.company,
-            ]):
-                raise ValueError("tier3 requires at least one of username, email, or company")
-            if tier == RequestedTier.tier4 and not any([self.job_search, self.business]):
-                raise ValueError("tier4 requires at least one of job_search or business")
+        tiers = self.requested_tiers or list(RequestedTier)
+        if RequestedTier.tier1 in tiers and not self.linkedin_url:
+            raise ValueError("tier1 requires linkedin_url")
+        if RequestedTier.tier2 in tiers and not self.username:
+            raise ValueError("tier2 requires username")
+        if RequestedTier.tier3 in tiers and not any([
+            self.username,
+            self.email,
+            self.company,
+        ]):
+            raise ValueError("tier3 requires at least one of username, email, or company")
+        if RequestedTier.tier4 in tiers and not any([self.job_search, self.business]):
+            raise ValueError("tier4 requires at least one of job_search or business")
 
         return self
 

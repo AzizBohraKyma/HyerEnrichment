@@ -17,13 +17,17 @@ def _validation_message(exc: ValidationError) -> str:
 
 
 class TestEnrichmentRequestTierValidation:
-    def test_default_tiers_skip_per_tier_validation(self) -> None:
-        request = EnrichmentRequest(username="jane")
-        assert request.requested_tiers == []
+    def test_default_tiers_require_all_identifiers(self) -> None:
+        with pytest.raises(ValidationError) as exc_info:
+            EnrichmentRequest(email="user@example.com")
+        message = _validation_message(exc_info.value)
+        assert "tier1 requires linkedin_url" in message
 
-    def test_empty_requested_tiers_skip_per_tier_validation(self) -> None:
-        request = EnrichmentRequest(username="jane", requested_tiers=[])
-        assert request.requested_tiers == []
+    def test_empty_requested_tiers_validates_all_tier_rules(self) -> None:
+        with pytest.raises(ValidationError) as exc_info:
+            EnrichmentRequest(username="jane", requested_tiers=[])
+        message = _validation_message(exc_info.value)
+        assert "tier1 requires linkedin_url" in message
 
     def test_tier1_requires_linkedin_url(self) -> None:
         with pytest.raises(ValidationError) as exc_info:
@@ -91,7 +95,6 @@ class TestEnrichmentRequestTierValidation:
             company="Acme",
             job_search="Engineer",
             business="Acme HQ",
-            requested_tiers=list(RequestedTier),
         )
         assert set(request.requested_tiers) == set(RequestedTier)
 
