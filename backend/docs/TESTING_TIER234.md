@@ -199,6 +199,55 @@ Stable test subjects: `torvalds` / `satyanadella` (GitHub), company `Microsoft`,
 
 ---
 
+## Layer 3.5 — 20-profile canary (run/score)
+
+### Canary file schema (20 rows)
+
+The committed example uses **public identifiers already exercised in this repo** (no random people's LinkedIn URLs). Copy to a local override only when you need custom rows:
+
+```bash
+cd backend
+cp docs/tier234_canary_set.example.json docs/tier234_canary_set.json   # optional; gitignored
+```
+
+| Field | Required | Purpose |
+|-------|----------|---------|
+| `id` | yes | Stable row id for reports |
+| `category` | yes | `technical`, `non-technical`, or `sparse` |
+| `username` | no | OSINT handle (e.g. `torvalds`, `satyanadella`) |
+| `email` | no | Public mailbox (e.g. `noreply@github.com`) |
+| `company` | no | Company name (e.g. `Microsoft`) |
+| `job_search` | no | JobSpy query string |
+| `business` | no | GMaps query string |
+| `enrichers` | yes | List of enricher slugs to probe for this row |
+
+### Copy → fill → run
+
+```bash
+cd backend
+
+# 1) Use the committed example as-is, or copy and edit locally
+cp docs/tier234_canary_set.example.json docs/tier234_canary_set.json   # optional
+
+# 2) Isolation probe + PASS/FAIL/SKIP scorecard
+python scripts/probe_enrichers.py --canary docs/tier234_canary_set.example.json --json
+# or with local override:
+python scripts/probe_enrichers.py --canary docs/tier234_canary_set.json --json
+
+# 3) Combined ops runner (copies example when local file missing)
+python scripts/run_canary_score.py --tier tier234 --json
+python scripts/run_canary_score.py --tier all --dry-run    # plan only
+python scripts/run_canary_score.py --tier all --limit 3 --json
+```
+
+Reports: `backend/.e2e-results/tier234-canary.json`, `canary-run-score.json`.
+
+**SKIP notes:** `JobSpy` auto-skips on native Windows unless `--include-jobspy`. `local_business` and `social_analyzer` return `EMPTY`/`SKIP` when sidecars are down — that is expected outside Docker.
+
+Unit tests (no live CLIs): `pytest tests/test_probe_enrichers_canary.py tests/test_canary_sets.py -v`
+
+---
+
 ## Layer 4 â€” Tier-by-tier API (`/enrich/sync`)
 
 **Tier 2:**

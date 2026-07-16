@@ -115,8 +115,8 @@ def test_sync_guard_accepts_empty() -> None:
 @pytest.mark.asyncio
 async def test_run_profile_happy_path_mocked(monkeypatch: pytest.MonkeyPatch) -> None:
     profile = canary.CanaryProfile(
-        slug="example-tech-01",
-        linkedin_url="https://www.linkedin.com/in/example-tech-01",
+        slug="your-tech-slug-01",
+        linkedin_url="https://www.linkedin.com/in/your-tech-slug-01",
         category="technical",
         expect_photo=True,
     )

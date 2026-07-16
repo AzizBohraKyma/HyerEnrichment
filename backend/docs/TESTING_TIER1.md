@@ -172,19 +172,50 @@ curl -s http://localhost:8000/metrics | grep tier1_
 
 ## Layer 6 — Canary QA (Phase 3.7)
 
-Copy the example canary file and fill with ~20 real public profiles:
+### Canary file schema (20 rows)
+
+Copy `docs/tier1_canary_set.example.json` → `docs/tier1_canary_set.json` (gitignored).
+**Do not commit** real LinkedIn URLs — keep the filled file local only.
+
+| Field | Required | Values |
+|-------|----------|--------|
+| `slug` | yes | Normalized `/in/{slug}` (must match URL) |
+| `linkedin_url` | yes | Full `https://www.linkedin.com/in/{slug}` |
+| `category` | yes | `technical` (7), `non-technical` (7), `private` (6) |
+| `expect_photo` | no | Default: `true` for technical/non-technical, `false` for private |
+| `notes` | no | Operator notes (ignored by scripts) |
+
+Example placeholders use `your-*-slug-*` — replace every row with real public profiles you are allowed to test.
+
+### Copy → fill → run
 
 ```bash
+cd backend
+
+# 1) Copy example (or let the ops runner do it)
 cp docs/tier1_canary_set.example.json docs/tier1_canary_set.json
-# edit slugs/URLs — technical, non-technical, private
+
+# 2) Edit docs/tier1_canary_set.json — 20 real public profile URLs
+
+# 3) Isolation scrape (MLX on host; worker or local with Tier 1 env)
 python scripts/probe_tier1_canary.py --file docs/tier1_canary_set.json --pool-status --json
+
+# 4) Full API path (API + Redis + RQ worker with ENABLE_TIER1=true)
+python scripts/e2e_tier1_canary.py --file docs/tier1_canary_set.json --json
+
+# 5) Combined ops runner (Tier 1 SKIP when MLX missing or placeholders remain)
+python scripts/run_canary_score.py --tier tier1 --json
 ```
+
+**SKIP when unavailable:** If Multilogin prerequisites are missing (`python scripts/probe_tier1.py --prereqs`) or `tier1_canary_set.json` still contains `your-*` placeholders, `run_canary_score.py` records Tier 1 as `SKIP` instead of failing the whole run.
+
+Reports: `backend/.e2e-results/probe-tier1-canary.json`, `tier1-canary.json` (API path), `canary-run-score.json` (combined).
 
 | Column | Track |
 |--------|--------|
 | `slug` | Normalized `/in/{slug}` |
 | `category` | `technical` / `non-technical` / `private` |
-| `status` | `OK`, `CACHE_HIT`, `FAIL`, `SKIP` |
+| `status` | `OK`, `CACHE_HIT`, `FAIL`, `SKIP` (probe) or `PASS`, `FAIL`, `SKIP` (API) |
 | `outcome` | `success`, `captcha`, `placeholder_image`, etc. |
 
 ### Rate limit tuning
