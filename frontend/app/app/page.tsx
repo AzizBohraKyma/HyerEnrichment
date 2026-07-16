@@ -1,78 +1,44 @@
-'use client';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo } from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { DossierView } from '@/components/console/DossierView';
-import { EnrichModeToggle } from '@/components/console/EnrichModeToggle';
-import { IntakeForm } from '@/components/console/IntakeForm';
-import { JobProgress } from '@/components/console/JobProgress';
-import { EmptyState } from '@/components/console/EmptyState';
-import { useEnrichMode } from '@/hooks/useEnrichMode';
-import { useEnrichmentJob } from '@/hooks/useEnrichmentJob';
-import { parseTiersFromQuery } from '@/src/lib/tier-utils';
-
-function ConsolePageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { mode, setMode, ready } = useEnrichMode();
-  const initialTiers = useMemo(() => parseTiersFromQuery(searchParams.get('tiers')), [searchParams]);
-  const jobIdParam = searchParams.get('jobId');
-
-  const { job, loading, polling, pollTimedOut, error, submit } = useEnrichmentJob();
-
-  useEffect(() => {
-    if (jobIdParam) {
-      router.replace(`/app/jobs/${jobIdParam}`);
-    }
-  }, [jobIdParam, router]);
-
-  const handleSubmit = async (input: Parameters<typeof submit>[0]) => {
-    const created = await submit(input, mode);
-    if (created) {
-      router.push(`/app/jobs/${created.id}`);
-    }
-  };
-
-  if (!ready) {
-    return null;
-  }
-
+export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Enrichment workspace</h1>
-        <p className="text-sm text-muted-foreground">Async default with live polling. Sync for Tier 2–4 quick runs.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">Pipeline overview and recent enrichment activity.</p>
       </div>
 
-      <EnrichModeToggle mode={mode} onChange={setMode} />
-      <IntakeForm mode={mode} initialTiers={initialTiers} onSubmit={handleSubmit} loading={loading || polling} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[
+          { label: 'Jobs today', value: '—' },
+          { label: 'Success rate', value: '—' },
+          { label: 'Avg. duration', value: '—' },
+        ].map((kpi) => (
+          <Card key={kpi.label}>
+            <CardHeader className="pb-2">
+              <CardDescription>{kpi.label}</CardDescription>
+              <CardTitle className="text-3xl">{kpi.value}</CardTitle>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
 
-      {error ? (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      ) : null}
-
-      {job ? (
-        <>
-          <JobProgress job={job} polling={polling} pollTimedOut={pollTimedOut} />
-          <DossierView job={job} />
-        </>
-      ) : (
-        <EmptyState
-          title="No active job"
-          description="Submit an identifier to run the enrichment pipeline. Results appear here with live updates."
-        />
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick actions</CardTitle>
+          <CardDescription>Start a new enrichment run or review past jobs.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <Button asChild>
+            <Link href="/app/enrich">New enrichment</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/app/history">View history</Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
-  );
-}
-
-export default function ConsolePage() {
-  return (
-    <Suspense fallback={null}>
-      <ConsolePageContent />
-    </Suspense>
   );
 }
