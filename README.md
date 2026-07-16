@@ -785,16 +785,16 @@ Schema created by `init_db()` via **Alembic** (`upgrade head`; auto-stamps pre-A
 Use the root **Makefile** for the common path:
 
 ```bash
-make setup   # backend/.env from .env.example (if missing) + pip install -e .
-make up      # free Docker stack (Postgres, Redis, API, worker, sidecars)
-make smoke   # GET /health via backend/scripts/smoke_test.py
+make setup   # backend/.env (if missing) + backend/.venv + pip install -e ".[dev]"
+make up      # free Docker stack in background (Postgres, Redis, API, worker, sidecars)
+make smoke   # health + auth + sync enrich via backend/scripts/smoke_test.py
 ```
 
 Other targets: `make down`, `make test`, `make migrate`, `make help`.
 
 ### Prerequisites
 
-- Python 3.10+
+- Python 3.12+ (creates `backend/.venv` — required on PEP 668 / externally-managed systems)
 - Node.js 18+ (frontend)
 - Redis (for async queue and rate limits)
 - Docker + Docker Compose (recommended for full stack)
@@ -808,7 +808,9 @@ make setup
 # Or manually:
 cd backend
 cp .env.example .env
-pip install -e .
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/pip install requests
 
 # Terminal 1 — API
 uvicorn app.main:app --reload
