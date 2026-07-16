@@ -16,7 +16,15 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: '**/integration/**',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'integration',
+      testMatch: 'integration/**/*.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
     },
   ],
   webServer: {
@@ -26,7 +34,9 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       ...process.env,
-      FRONTEND_USE_MOCKS: 'true',
+      FRONTEND_USE_MOCKS: process.env.FRONTEND_USE_MOCKS ?? 'true',
+      BACKEND_API_URL: process.env.BACKEND_API_URL ?? 'http://localhost:8000',
+      BACKEND_API_TOKEN: process.env.BACKEND_API_TOKEN ?? 'change-me',
     },
   },
 });
