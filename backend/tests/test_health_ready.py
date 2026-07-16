@@ -9,8 +9,13 @@ from app.main import app
 
 
 def test_ready_returns_200_when_db_and_redis_ok() -> None:
-    client = TestClient(app)
-    response = client.get("/ready")
+    redis = AsyncMock()
+    redis.ping = AsyncMock(return_value=True)
+
+    with patch("app.routes.health.get_redis_client", return_value=redis):
+        client = TestClient(app)
+        response = client.get("/ready")
+
     assert response.status_code == 200
     assert response.json()["status"] == "ready"
 
