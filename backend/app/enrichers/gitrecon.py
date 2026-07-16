@@ -1,18 +1,32 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
+import re
 import tempfile
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger(__name__)
+from redis.exceptions import RedisError
 
 from app.config import get_settings
 from app.enrichers.base import Enricher
 from app.models import EnrichmentRequest
 from app.providers import run_command
+from app.storage.redis_client import check_rate_limit, get_redis_client
+
+logger = logging.getLogger(__name__)
+
+_COOLDOWN_KEY = "gitrecon:github:cooldown"
+_RATE_LIMIT_SCOPE = "gitrecon:github"
+
+# Match HTTP 403/429 and common GitHub rate-limit phrasing in CLI stderr.
+_RATE_LIMIT_RE = re.compile(
+    r"(?:\b403\b|\b429\b|rate[\s_-]?limit|too many requests|abuse detection)",
+    re.IGNORECASE,
+)
 
 
 def fragment_from_gitrecon_data(
@@ -65,6 +79,46 @@ def fragment_from_gitrecon_data(
     return fragment
 
 
+def _looks_like_github_rate_limit(stderr: str) -> bool:
+    return bool(_RATE_LIMIT_RE.search(stderr or ""))
+
+
+async def _throttle_allows_call() -> bool:
+    """Return False when cooldown is active or the per-minute budget is exhausted.
+
+    Fails open on Redis errors so a Redis outage does not block enrichment.
+    """
+    settings = get_settings()
+    try:
+        redis = get_redis_client()
+        if await redis.get(_COOLDOWN_KEY):
+            logger.warning("gitrecon skipped: GitHub cooldown active")
+            return False
+        limit = max(1, settings.gitrecon_max_per_minute)
+        allowed = await check_rate_limit(redis, _RATE_LIMIT_SCOPE, limit, window_seconds=60)
+        if not allowed:
+            logger.warning("gitrecon skipped: per-minute throttle exhausted")
+            return False
+    except RedisError:
+        logger.warning("redis unavailable during gitrecon throttle; allowing call", exc_info=True)
+    return True
+
+
+async def _apply_rate_limit_backoff() -> None:
+    """Brief sleep + Redis cooldown after GitHub 403/429 from the CLI."""
+    settings = get_settings()
+    backoff = max(0.0, float(settings.gitrecon_rate_limit_backoff_seconds))
+    cooldown = max(0, int(settings.gitrecon_cooldown_seconds))
+    logger.warning("gitrecon hit GitHub rate limit; backing off %.1fs", backoff)
+    try:
+        if cooldown > 0:
+            await get_redis_client().set(_COOLDOWN_KEY, "1", ex=cooldown)
+    except RedisError:
+        logger.warning("failed to set gitrecon cooldown", exc_info=True)
+    if backoff > 0:
+        await asyncio.sleep(backoff)
+
+
 class GitReconEnricher(Enricher):
     source_name = "GitRecon"
 
@@ -75,6 +129,9 @@ class GitReconEnricher(Enricher):
         settings = get_settings()
         username = request.username or (request.email or "").split("@")[0]
         if not username:
+            return {}
+
+        if not await _throttle_allows_call():
             return {}
 
         script = settings.gitrecon_script.strip()
@@ -91,6 +148,11 @@ class GitReconEnricher(Enricher):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "results").mkdir(parents=True, exist_ok=True)
             returncode, _, stderr = await run_command(command, timeout=120.0, env=env, cwd=tmp)
+
+            if _looks_like_github_rate_limit(stderr):
+                await _apply_rate_limit_backoff()
+                return {}
+
             result_file = Path(tmp) / "results" / username / f"{username}_github.json"
             if returncode != 0 or not result_file.exists():
                 hint = (stderr or "").strip().splitlines()
