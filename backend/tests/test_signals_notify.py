@@ -15,7 +15,8 @@ from app.providers.notify import notify_change_signal
 
 @pytest.fixture
 def client() -> TestClient:
-    return TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 def test_changedetection_webhook_accepts_without_token_when_key_unset(
