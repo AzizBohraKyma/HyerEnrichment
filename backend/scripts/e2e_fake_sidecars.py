@@ -28,7 +28,7 @@ from app.config import get_settings
 from app.enrichers.local_business import LocalBusinessEnricher
 from app.enrichers.social_analyzer import SocialAnalyzerEnricher
 from app.enrichers.email_verify import EmailVerifyEnricher
-from app.models import EnrichmentRequest
+from app.models import EnrichmentRequest, RequestedTier
 from app.providers import EmailVerifier, SidecarClient
 
 RESULTS_DIR = ROOT / ".e2e-results"
@@ -136,7 +136,9 @@ class FakeSidecarProbe:
             self.record(name, predicate(payload), f"{method} {path}")
 
     async def check_enrichers(self) -> None:
-        social = await SocialAnalyzerEnricher().run(EnrichmentRequest(username="torvalds"))
+        social = await SocialAnalyzerEnricher().run(
+            EnrichmentRequest(username="torvalds", requested_tiers=[RequestedTier.tier2])
+        )
         sa_handles = social.get("handles") or []
         sa_platforms = {h.get("platform") for h in sa_handles}
         self.record(
@@ -146,7 +148,10 @@ class FakeSidecarProbe:
         )
 
         business = await LocalBusinessEnricher().run(
-            EnrichmentRequest(business="coffee shop San Francisco")
+            EnrichmentRequest(
+                business="coffee shop San Francisco",
+                requested_tiers=[RequestedTier.tier4],
+            )
         )
         biz = business.get("business") or {}
         self.record(
@@ -166,7 +171,9 @@ class FakeSidecarProbe:
             f"source={basic.get('source') if basic else None}",
         )
 
-        smtp = await EmailVerifyEnricher().run(EnrichmentRequest(email="user@example.com"))
+        smtp = await EmailVerifyEnricher().run(
+            EnrichmentRequest(email="user@example.com", requested_tiers=[RequestedTier.tier3])
+        )
         verified = smtp.get("verified_emails") or []
         reacher_hits = [v for v in verified if v.get("source") == "Reacher"]
         self.record(
