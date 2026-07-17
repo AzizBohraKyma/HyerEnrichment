@@ -28,7 +28,11 @@ async def main() -> None:
     assert settings.ollama_base_url.strip(), "OLLAMA_BASE_URL required"
 
     orch = PipelineOrchestrator(db=AsyncMock())
-    request = EnrichmentRequest(username="jane-doe", email="jane.doe@acme.com")
+    request = EnrichmentRequest(
+        username="jane-doe",
+        email="jane.doe@acme.com",
+        requested_tiers=["tier2", "tier3"],
+    )
     handles = [
         SocialHandle(
             platform="X",

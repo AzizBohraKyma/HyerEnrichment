@@ -240,7 +240,8 @@ services:
     image: langfuse/langfuse:2
     profiles: ["observability"]
     environment:
-      DATABASE_URL: postgresql://hyrepath:hyrepath@postgres:5432/hyrepath
+      # Dedicated DB — do not share the app schema (hyrepath).
+      DATABASE_URL: ${LANGFUSE_DATABASE_URL:-postgresql://hyrepath:hyrepath@postgres:5432/langfuse}
       NEXTAUTH_SECRET: change-me
       SALT: change-me
       NEXTAUTH_URL: http://localhost:3000

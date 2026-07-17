@@ -18,7 +18,7 @@ def orchestrator() -> PipelineOrchestrator:
 
 @pytest.mark.asyncio
 async def test_merge_prefers_higher_handle_confidence(orchestrator: PipelineOrchestrator) -> None:
-    request = EnrichmentRequest(username="jane")
+    request = EnrichmentRequest(username="jane", requested_tiers=["tier2"])
     payloads: list[dict[str, Any]] = [
         {
             "handles": [
@@ -58,7 +58,7 @@ async def test_merge_prefers_higher_handle_confidence(orchestrator: PipelineOrch
 async def test_merge_keeps_first_when_incoming_confidence_lower(
     orchestrator: PipelineOrchestrator,
 ) -> None:
-    request = EnrichmentRequest(username="jane")
+    request = EnrichmentRequest(username="jane", requested_tiers=["tier2"])
     payloads: list[dict[str, Any]] = [
         {
             "handles": [

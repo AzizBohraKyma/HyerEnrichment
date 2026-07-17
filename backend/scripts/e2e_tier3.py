@@ -350,7 +350,9 @@ class Tier3Probe:
             return
 
         enricher = EmailVerifyEnricher()
-        fragment = await enricher.run(EnrichmentRequest(email="noreply@github.com"))
+        fragment = await enricher.run(
+            EnrichmentRequest(email="noreply@github.com", requested_tiers=["tier3"])
+        )
         verified = fragment.get("verified_emails") or []
         reacher_hits = [v for v in verified if v.get("source") == "Reacher"]
         if reacher_hits:

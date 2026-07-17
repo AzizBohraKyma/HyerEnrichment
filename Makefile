@@ -11,7 +11,7 @@ FREE_STACK := api worker redis postgres social-analyzer google-maps-scraper
 
 help: ## List available targets
 	@echo "Targets:"
-	@echo "  setup    Copy backend/.env if missing; create backend/.venv; pip install -e . + requests"
+	@echo "  setup    Copy backend/.env if missing; create backend/.venv; pip install -e .[dev] + requests"
 	@echo "  up       Start free Docker stack detached (backend/docker)"
 	@echo "  down     Stop Docker Compose stack (backend/docker)"
 	@echo "  test     Run pytest in backend"
@@ -34,7 +34,7 @@ setup: ## Env file + editable backend install (venv; avoids PEP 668)
 		python3 -m venv $(BACKEND_DIR)/.venv; \
 		echo "Created $(BACKEND_DIR)/.venv"; \
 	fi
-	$(BACKEND_DIR)/.venv/bin/pip install -e $(BACKEND_DIR)
+	$(BACKEND_DIR)/.venv/bin/pip install -e "$(BACKEND_DIR)[dev]"
 	$(BACKEND_DIR)/.venv/bin/pip install requests
 
 up: ## Start documented free Compose stack

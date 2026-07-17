@@ -231,7 +231,11 @@ class StrictProbe:
 
     async def check_enrichers_live(self) -> None:
         discover = await EmailDiscoverEnricher().run(
-            EnrichmentRequest(username="jane", company="Example Corp")
+            EnrichmentRequest(
+                username="jane",
+                company="Example Corp",
+                requested_tiers=["tier3"],
+            )
         )
         self.record(
             "enricher_email_discover",
@@ -239,7 +243,9 @@ class StrictProbe:
             f"emails={discover.get('emails', [])}",
         )
 
-        verify = await EmailVerifyEnricher().run(EnrichmentRequest(email="jane.doe@example.com"))
+        verify = await EmailVerifyEnricher().run(
+            EnrichmentRequest(email="jane.doe@example.com", requested_tiers=["tier3"])
+        )
         self.record(
             "enricher_email_verify",
             bool(verify.get("verified_emails")),
@@ -247,7 +253,9 @@ class StrictProbe:
         )
 
         if self.settings.gitrecon_script.strip() or os.getenv("GITRECON_SCRIPT"):
-            gitrecon = await GitReconEnricher().run(EnrichmentRequest(username="torvalds"))
+            gitrecon = await GitReconEnricher().run(
+                EnrichmentRequest(username="torvalds", requested_tiers=["tier3"])
+            )
             self.record(
                 "enricher_gitrecon",
                 bool(gitrecon.get("handles")),
@@ -257,7 +265,9 @@ class StrictProbe:
             self.record("enricher_gitrecon", False, "GITRECON_SCRIPT unset — install gitrecon for strict run")
 
         if self.settings.social_analyzer_url.strip():
-            social = await SocialAnalyzerEnricher().run(EnrichmentRequest(username="torvalds"))
+            social = await SocialAnalyzerEnricher().run(
+                EnrichmentRequest(username="torvalds", requested_tiers=["tier2"])
+            )
             self.record(
                 "enricher_social_analyzer",
                 bool(social.get("handles")),
@@ -266,7 +276,10 @@ class StrictProbe:
 
         if self.settings.gmaps_scraper_url.strip():
             business = await LocalBusinessEnricher().run(
-                EnrichmentRequest(business="coffee shop San Francisco")
+                EnrichmentRequest(
+                    business="coffee shop San Francisco",
+                    requested_tiers=["tier4"],
+                )
             )
             self.record(
                 "enricher_local_business",

@@ -21,6 +21,7 @@ import argparse
 import asyncio
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -29,24 +30,24 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
-ROOT = Path(__file__).resolve().parents[1]
+_env_root = os.environ.get("E2E_BACKEND_ROOT")
+ROOT = Path(_env_root) if _env_root else Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+os.chdir(ROOT)
 
 from app.config import get_settings
-from app.enrichers import (
-    CrossLinkedEnricher,
-    EmailDiscoverEnricher,
-    EmailVerifyEnricher,
-    GitReconEnricher,
-    JobSpyEnricher,
-    LocalBusinessEnricher,
-    MaigretEnricher,
-    SherlockEnricher,
-    SocialAnalyzerEnricher,
-    TheHarvesterEnricher,
-)
 from app.enrichers.base import Enricher
+from app.enrichers.crosslinked import CrossLinkedEnricher
+from app.enrichers.email_discover import EmailDiscoverEnricher
+from app.enrichers.email_verify import EmailVerifyEnricher
+from app.enrichers.gitrecon import GitReconEnricher
+from app.enrichers.jobspy import JobSpyEnricher
+from app.enrichers.local_business import LocalBusinessEnricher
+from app.enrichers.maigret import MaigretEnricher
+from app.enrichers.sherlock import SherlockEnricher
+from app.enrichers.social_analyzer import SocialAnalyzerEnricher
+from app.enrichers.theharvester import TheHarvesterEnricher
 from app.models import EnrichmentRequest
 
 RESULTS_DIR = ROOT / ".e2e-results"
@@ -69,21 +70,30 @@ ENRICHER_SPECS: list[tuple[str, str, str, EnricherFactory, RequestBuilder]] = [
         "Sherlock",
         "2",
         SherlockEnricher,
-        lambda p: EnrichmentRequest(username=p.get("username") or None),
+        lambda p: EnrichmentRequest(
+            username=p.get("username") or None,
+            requested_tiers=["tier2"],
+        ),
     ),
     (
         "maigret",
         "Maigret",
         "2",
         MaigretEnricher,
-        lambda p: EnrichmentRequest(username=p.get("username") or None),
+        lambda p: EnrichmentRequest(
+            username=p.get("username") or None,
+            requested_tiers=["tier2"],
+        ),
     ),
     (
         "social_analyzer",
         "Social Analyzer",
         "2",
         SocialAnalyzerEnricher,
-        lambda p: EnrichmentRequest(username=p.get("username") or None),
+        lambda p: EnrichmentRequest(
+            username=p.get("username") or None,
+            requested_tiers=["tier2"],
+        ),
     ),
     (
         "gitrecon",
@@ -93,6 +103,7 @@ ENRICHER_SPECS: list[tuple[str, str, str, EnricherFactory, RequestBuilder]] = [
         lambda p: EnrichmentRequest(
             username=p.get("username") or None,
             email=p.get("email") or None,
+            requested_tiers=["tier3"],
         ),
     ),
     (
@@ -103,6 +114,7 @@ ENRICHER_SPECS: list[tuple[str, str, str, EnricherFactory, RequestBuilder]] = [
         lambda p: EnrichmentRequest(
             company=p.get("company") or None,
             email=p.get("email") or None,
+            requested_tiers=["tier3"],
         ),
     ),
     (
@@ -113,6 +125,7 @@ ENRICHER_SPECS: list[tuple[str, str, str, EnricherFactory, RequestBuilder]] = [
         lambda p: EnrichmentRequest(
             username=p.get("username") or None,
             company=p.get("company") or None,
+            requested_tiers=["tier3"],
         ),
     ),
     (
@@ -123,6 +136,7 @@ ENRICHER_SPECS: list[tuple[str, str, str, EnricherFactory, RequestBuilder]] = [
         lambda p: EnrichmentRequest(
             email=p.get("email") or None,
             username=p.get("username") or None,
+            requested_tiers=["tier3"],
         ),
     ),
     (
@@ -130,21 +144,30 @@ ENRICHER_SPECS: list[tuple[str, str, str, EnricherFactory, RequestBuilder]] = [
         "CrossLinked",
         "3",
         CrossLinkedEnricher,
-        lambda p: EnrichmentRequest(company=p.get("company") or None),
+        lambda p: EnrichmentRequest(
+            company=p.get("company") or None,
+            requested_tiers=["tier3"],
+        ),
     ),
     (
         "jobspy",
         "JobSpy",
         "4",
         JobSpyEnricher,
-        lambda p: EnrichmentRequest(job_search=p.get("job_search") or None),
+        lambda p: EnrichmentRequest(
+            job_search=p.get("job_search") or None,
+            requested_tiers=["tier4"],
+        ),
     ),
     (
         "local_business",
         "Local Business",
         "4",
         LocalBusinessEnricher,
-        lambda p: EnrichmentRequest(business=p.get("business") or None),
+        lambda p: EnrichmentRequest(
+            business=p.get("business") or None,
+            requested_tiers=["tier4"],
+        ),
     ),
 ]
 

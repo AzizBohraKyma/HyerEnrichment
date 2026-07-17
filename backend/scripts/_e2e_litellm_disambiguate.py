@@ -19,7 +19,11 @@ async def main() -> None:
     assert "litellm" in settings.litellm_api_base, settings.litellm_api_base
 
     orch = PipelineOrchestrator(db=AsyncMock())
-    request = EnrichmentRequest(username="jane-doe", email="jane.doe@acme.com")
+    request = EnrichmentRequest(
+        username="jane-doe",
+        email="jane.doe@acme.com",
+        requested_tiers=["tier2", "tier3"],
+    )
     handles = [
         SocialHandle(
             platform="X",

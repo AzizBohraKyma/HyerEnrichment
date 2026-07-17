@@ -89,6 +89,31 @@ def _load_json(name: str) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _detail(out: str, *, max_lines: int = 8) -> str:
+    lines = [ln for ln in (out or "").splitlines() if ln.strip()]
+    if not lines:
+        return ""
+    interesting = [
+        ln
+        for ln in lines
+        if any(
+            token in ln
+            for token in (
+                "FAIL",
+                "Error",
+                "error",
+                "Traceback",
+                "value_error",
+                "ValidationError",
+                "ModuleNotFoundError",
+                "PASS  ",
+            )
+        )
+    ]
+    chosen = interesting[-max_lines:] if interesting else lines[-max_lines:]
+    return " | ".join(chosen)[:500]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run Tier 2–4 live proof matrix")
     parser.add_argument("--skip-live", action="store_true")
@@ -120,7 +145,7 @@ def main() -> int:
         "-q",
     ]
     code, out = _run(unit_cmd)
-    record("unit_tests", unit_cmd, code, out.splitlines()[-1] if out else "")
+    record("unit_tests", unit_cmd, code, _detail(out) or (out.splitlines()[-1] if out else ""))
 
     if args.skip_live:
         report = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "mode": "skip-live", "steps": [asdict(s) for s in steps], "exit_code": exit_code}
@@ -134,17 +159,25 @@ def main() -> int:
         ("tier3_e2e", _bash("e2e_tier3.sh")),
         ("strict_e2e", _bash("e2e_realworld_strict.sh")),
         ("full_path_live", _bash("e2e_full_path.sh", "--live")),
+        ("canary_score", _bash("e2e_canary_tier234.sh")),
     ]
     for name, cmd in live_steps:
         code, out = _run(cmd)
-        record(name, cmd, code, out.splitlines()[-1] if out else "")
-
-    score_cmd = [_python(), "scripts/run_canary_score.py", "--tier", "tier234", "--json"]
-    code, out = _run(score_cmd)
-    record("canary_score", score_cmd, code, out.splitlines()[-1] if out else "")
+        record(name, cmd, code, _detail(out) or (out.splitlines()[-1] if out else ""))
 
     strict = _load_json("strict-report.json")
-    if strict and strict.get("failed", 1) != 0:
+    if not strict:
+        exit_code = 1
+        steps.append(
+            StepResult(
+                name="strict_report_gate",
+                command="strict-report.json failed==0",
+                exit_code=1,
+                status="fail",
+                detail="report missing",
+            )
+        )
+    elif strict.get("failed", 1) != 0:
         exit_code = 1
         steps.append(
             StepResult(
@@ -162,7 +195,7 @@ def main() -> int:
                 command="strict-report.json failed==0",
                 exit_code=0,
                 status="pass",
-                detail="failed=0" if strict else "report missing",
+                detail="failed=0",
             )
         )
 
