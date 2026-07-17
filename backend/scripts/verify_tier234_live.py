@@ -153,12 +153,13 @@ def main() -> int:
         REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
         return exit_code
 
+    # Do not re-run e2e_full_path.sh --live here: it duplicates tier2/tier3/strict
+    # and exhausts GitHub API budget (gitrecon) after those steps already passed.
     live_steps: list[tuple[str, list[str]]] = [
         ("probe_sidecars", _bash("probe_sidecars.sh")),
         ("tier2_e2e", _bash("e2e_tier2.sh")),
         ("tier3_e2e", _bash("e2e_tier3.sh")),
         ("strict_e2e", _bash("e2e_realworld_strict.sh")),
-        ("full_path_live", _bash("e2e_full_path.sh", "--live")),
         ("canary_score", _bash("e2e_canary_tier234.sh")),
     ]
     for name, cmd in live_steps:

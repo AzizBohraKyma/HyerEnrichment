@@ -2,19 +2,16 @@
 
 **Date (UTC):** 2026-07-17  
 **Runner:** `backend/scripts/e2e_scrapoxy.sh` via GitHub Actions `Local verification (Task 90)`  
-**CI run:** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
+**CI run (PASS):** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134  
+**Prior fail:** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
 
-## Status (2026-07-17 first CI pass)
+## Status
 
 | Step | Status | Notes |
 |------|--------|-------|
-| Compose paid profile + scrapoxy image | **PASS** | Container created/started |
-| Commander readiness (`:8890`) | **FAIL** | Script grepped compose `ps` for legacy `Up`; fixed to `State.Running` + wget health |
-| Report artifact | **MISSING** | Script exited before writing JSON |
-
-## Follow-up
-
-Health check rewritten to use `docker inspect` Running + `wget` against commander. Re-run via Task 90 workflow after merge; expect `scrapoxy-report.json` artifact on success.
+| Compose paid profile + scrapoxy image | **PASS** | Post-#92 |
+| Commander readiness (`:8890`) | **PASS** | `docker inspect` Running + wget |
+| Report artifact | **PASS** | `scrapoxy-report.json` uploaded under `staging-proofs` |
 
 ## Pass criteria
 

@@ -31,7 +31,9 @@ Expected report: `backend/.e2e-results/prod-acceptance-report.json` with `"statu
 | Opt-out no Bearer 202 | PENDING CI | | | |
 | DSAR no Bearer 201 | PENDING CI | | | |
 | Boundary pytest bundle | PENDING CI | | | |
-| Full-path E2E | PASS (GHA 29557737182) | | 2026-07-17 | CI |
+| Full-path E2E | PASS (GHA 29559236134) | | 2026-07-17 | CI |
+| Staging Scrapoxy | PASS (GHA 29559236134) | | 2026-07-17 | CI |
+| Staging Langfuse | PASS (GHA 29559236134) | | 2026-07-17 | CI |
 | Ops runbook reviewed ([OPS.md](OPS.md)) | PASS (docs on main) | | 2026-07-17 | |
 
 ## Production evidence (fill when host live)
@@ -44,4 +46,6 @@ Expected report: `backend/.e2e-results/prod-acceptance-report.json` with `"statu
 | Report JSON path | |
 | PR links | #65 (87), #68 (88), #70 (89) |
 
-**Status:** Local/staging path in progress via Task 90 GHA workflow. **Production BLOCKED** — no prod host / DNS as of 2026-07-17 (operator deferred VPS).
+**Status:** Local/staging path in progress via Task 90 GHA workflow (`tier234-live` residual fix pending; staging proofs green). **Production BLOCKED** — no prod host / DNS as of 2026-07-17 (operator deferred VPS).
+
+**Remaining live gates:** Multilogin Tier 1 canary ([SKIP](../backend/docs/evidence/tier1-multilogin-canary-skip.md)); prod VPS cutover (86–89).

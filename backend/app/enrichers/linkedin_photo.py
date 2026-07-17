@@ -13,7 +13,7 @@ from app.observability.tier1_metrics import (
     tier1_scrape_total,
     tier1_upload_total,
 )
-from app.providers.linkedin_browser import LinkedInBrowserClient, extract_linkedin_slug
+from app.providers.linkedin.urls import extract_linkedin_slug
 from app.storage.photo_cache import PhotoCache
 from app.storage.r2 import R2StorageClient, R2StorageError, object_key_with_extension
 
@@ -23,8 +23,17 @@ class LinkedInPhotoEnricher(Enricher):
 
     def __init__(self) -> None:
         self.storage = R2StorageClient()
-        self.browser = LinkedInBrowserClient()
+        self._browser: Any | None = None
         self.photo_cache = PhotoCache()
+
+    @property
+    def browser(self) -> Any:
+        # Lazy: selenium lives in linkedin_browser; unit tests must not need it.
+        if self._browser is None:
+            from app.providers.linkedin_browser import LinkedInBrowserClient
+
+            self._browser = LinkedInBrowserClient()
+        return self._browser
 
     async def validate(self, request: EnrichmentRequest) -> bool:
         # Tier 1 is off by default: LinkedIn is the hardest to do free/safely.
