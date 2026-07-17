@@ -35,7 +35,7 @@ def _job(
 
 @pytest.mark.asyncio
 async def test_merge_dedupes_same_role_across_boards(orchestrator: PipelineOrchestrator) -> None:
-    request = EnrichmentRequest(job_search="software engineer")
+    request = EnrichmentRequest(job_search="software engineer", requested_tiers=["tier4"])
     payloads: list[dict[str, Any]] = [
         {
             "jobs": [
@@ -71,7 +71,7 @@ async def test_merge_dedupes_same_role_across_boards(orchestrator: PipelineOrche
 async def test_merge_keeps_different_locations_as_separate_jobs(
     orchestrator: PipelineOrchestrator,
 ) -> None:
-    request = EnrichmentRequest(job_search="software engineer")
+    request = EnrichmentRequest(job_search="software engineer", requested_tiers=["tier4"])
     payloads: list[dict[str, Any]] = [
         {
             "jobs": [
@@ -101,7 +101,7 @@ async def test_merge_keeps_different_locations_as_separate_jobs(
 
 @pytest.mark.asyncio
 async def test_merge_dedupes_exact_duplicate(orchestrator: PipelineOrchestrator) -> None:
-    request = EnrichmentRequest(job_search="software engineer")
+    request = EnrichmentRequest(job_search="software engineer", requested_tiers=["tier4"])
     job = _job(
         title="Backend Developer",
         company="Globex",

@@ -65,7 +65,7 @@ async def test_fake_social_analyzer_enricher_integration(monkeypatch: pytest.Mon
     monkeypatch.setattr(get_settings(), "social_analyzer_url", "http://test")
     monkeypatch.setattr(sidecar_mod.SidecarClient, "post_json", _post_json)
 
-    fragment = await SocialAnalyzerEnricher().run(EnrichmentRequest(username="torvalds"))
+    fragment = await SocialAnalyzerEnricher().run(EnrichmentRequest(username="torvalds", requested_tiers=["tier2"]))
     platforms = {h["platform"] for h in fragment["handles"]}
     assert platforms == {"GitHub", "Twitter"}
     assert len(fragment["handles"]) == 2
@@ -122,7 +122,7 @@ async def test_fake_gmaps_enricher_integration(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(sidecar_mod.SidecarClient, "get_text", _get_text)
 
     fragment = await LocalBusinessEnricher().run(
-        EnrichmentRequest(business="coffee shop San Francisco")
+        EnrichmentRequest(business="coffee shop San Francisco", requested_tiers=["tier4"])
     )
     business = fragment["business"]
     assert business["name"] == "Hey Neighbor Cafe"

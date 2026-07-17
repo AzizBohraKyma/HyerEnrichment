@@ -47,15 +47,19 @@ docker compose \
   up -d --build api worker redis postgres scrapoxy
 
 echo "== wait for scrapoxy commander =="
+scrapoxy_ok=0
 for i in $(seq 1 40); do
-  code="$(docker compose -f docker-compose.yml -f docker-compose.staging.yml exec -T scrapoxy \
-    wget -q -O /dev/null -S http://localhost:8890 2>&1 | head -1 || true)"
-  if docker compose -f docker-compose.yml -f docker-compose.staging.yml ps scrapoxy 2>/dev/null | grep -q "Up"; then
-    break
+  cid="$(docker compose -f docker-compose.yml -f docker-compose.staging.yml ps -q scrapoxy 2>/dev/null || true)"
+  if [ -n "$cid" ] && [ "$(docker inspect -f '{{.State.Running}}' "$cid" 2>/dev/null || echo false)" = "true" ]; then
+    if docker compose -f docker-compose.yml -f docker-compose.staging.yml exec -T scrapoxy \
+      wget -q -O /dev/null http://localhost:8890 2>/dev/null; then
+      scrapoxy_ok=1
+      break
+    fi
   fi
   sleep 3
 done
-docker compose -f docker-compose.yml -f docker-compose.staging.yml ps scrapoxy | grep -q "Up" || fail "scrapoxy not running"
+[ "$scrapoxy_ok" = "1" ] || fail "scrapoxy not running or commander :8890 not ready"
 pass "scrapoxy container up"
 
 echo "== ProxyProvider endpoint inside worker =="

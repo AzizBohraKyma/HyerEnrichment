@@ -153,7 +153,7 @@ class Tier2Probe:
         )
 
     async def check_enrichers_live(self) -> None:
-        request = EnrichmentRequest(username=USERNAME)
+        request = EnrichmentRequest(username=USERNAME, requested_tiers=["tier2"])
 
         sherlock = await SherlockEnricher().run(request)
         sherlock_ok = bool(sherlock.get("handles"))
@@ -281,7 +281,11 @@ class Tier2Probe:
             return
 
         orch = PipelineOrchestrator(db=AsyncMock())
-        request = EnrichmentRequest(username="jane-doe", email="jane.doe@acme.com")
+        request = EnrichmentRequest(
+            username="jane-doe",
+            email="jane.doe@acme.com",
+            requested_tiers=["tier2", "tier3"],
+        )
         handles = [
             SocialHandle(
                 platform="X",

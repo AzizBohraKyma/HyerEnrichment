@@ -1,53 +1,23 @@
- Evidence: Scrapoxy staging (Task 62)
+# Evidence: Scrapoxy staging (Task 62)
 
-**Branch:** `feat/scrapoxy-staging-62`  
-**Date (UTC):** 2026-07-16  
-**Runner:** `backend/scripts/e2e_scrapoxy.sh`  
-**Overall status:** **BLOCKED** (Docker unavailable on proof host)
+**Date (UTC):** 2026-07-17  
+**Runner:** `backend/scripts/e2e_scrapoxy.sh` via GitHub Actions `Local verification (Task 90)`  
+**CI run:** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
 
-## Deliverables
-
-- [`backend/docker/docker-compose.staging.yml`](../../docker/docker-compose.staging.yml) — Scrapoxy ports + healthcheck
-- [`backend/scripts/e2e_scrapoxy.sh`](../../scripts/e2e_scrapoxy.sh) — staging proof script
-- [`backend/docs/env.staging.example`](../../env.staging.example) — `PROXY_MODE=scrapoxy` template
-
-## Commands
-
-```bash
-# Set in backend/.env:
-# PROXY_MODE=scrapoxy
-# SCRAPOXY_URL=http://scrapoxy:8888
-
-bash backend/scripts/e2e_scrapoxy.sh
-pytest tests/test_enrichers.py -k scrapoxy -v
-```
-
-## Results (Sub-agent C — Windows host)
+## Status (2026-07-17 first CI pass)
 
 | Step | Status | Notes |
 |------|--------|-------|
-| Docker CLI / daemon | **BLOCKED** | `docker` not recognized in PATH; e2e compose not executed |
-| `test_proxy_provider_scrapoxy_builds_authenticated_url` | **PASS** | `python -m pytest tests/test_enrichers.py -k scrapoxy -v` (host, no Docker) |
-| Scrapoxy container up | **NOT RUN** | Requires Docker |
-| `ProxyProvider.get()` in worker | **NOT RUN** | Requires `docker compose` + staging overlay |
-| Live sherlock via proxy | **OPTIONAL** | EMPTY OK without Scrapoxy proxy fleet in commander |
+| Compose paid profile + scrapoxy image | **PASS** | Container created/started |
+| Commander readiness (`:8890`) | **FAIL** | Script grepped compose `ps` for legacy `Up`; fixed to `State.Running` + wget health |
+| Report artifact | **MISSING** | Script exited before writing JSON |
 
-## Pass criteria (full PASS requires Docker)
+## Follow-up
+
+Health check rewritten to use `docker inspect` Running + `wget` against commander. Re-run via Task 90 workflow after merge; expect `scrapoxy-report.json` artifact on success.
+
+## Pass criteria
 
 - `e2e_scrapoxy.sh` exit 0
-- `scrapoxy-report.json` written under `.e2e-results/`
-- `ProxyProvider` returns non-empty URL when `PROXY_MODE=scrapoxy` inside worker container
-
-## Unblock
-
-Install/start Docker Desktop (or Podman with compose compatibility), then from repo root:
-
-```bash
-bash backend/scripts/e2e_scrapoxy.sh
-```
-
-Re-run on CI or a Linux staging host with Docker to move status from **BLOCKED** to **PASS**.
-
-## Note
-
-Scrapoxy commander must have an active **proxy project** for egress. Wiring proof (this script) is separate from fleet-backed enrichment volume.
+- `scrapoxy-report.json` under `.e2e-results/`
+- `ProxyProvider.get()` non-empty with `PROXY_MODE=scrapoxy`

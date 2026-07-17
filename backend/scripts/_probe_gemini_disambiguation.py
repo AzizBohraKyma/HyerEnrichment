@@ -53,6 +53,7 @@ async def main() -> None:
         username="jane-doe",
         email="jane.doe@acme.com",
         linkedin_url="https://linkedin.com/in/jane-doe",
+        requested_tiers=["tier1", "tier2", "tier3"],
     )
     handles = [
         SocialHandle(

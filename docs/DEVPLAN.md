@@ -80,8 +80,8 @@ Close partial integrations called out in the guide audit and Architecture “ope
 
 ## Phase 5 — QA depth (guide 76, 78)
 
-- [ ] **Real canary set (gap 76)** — Replace placeholder/example-only 20-entry sets with a maintained canary (technical / non-technical / private) and a runner that records pass/fail. Example JSON under `backend/docs/` is not sufficient.
-- [ ] **Full-path E2E (gap 78)** — Harness: `make e2e-full-path` / `python backend/scripts/e2e_full_path_runner.py --ci`. Evidence: `backend/docs/e2e-evidence/2026-07-16-full-path-ci.md`. **Green CI run still required** (Docker socket access on verification host).
+- [ ] **Real canary set (gap 76)** — Example 20-entry sets + `run_canary_score.py` / in-container `e2e_canary_tier234.sh` exist. Still open: maintained real profiles (esp. Tier 1 Multilogin) beyond example JSON.
+- [x] **Full-path E2E (gap 78)** — Harness green. Evidence: [`backend/docs/e2e-evidence/2026-07-17-full-path-ci.md`](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md) (local Podman + GHA run [29557737182](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182)).
 
 **Exit:** Releases can cite canary + full-path E2E evidence, not only shape tests and `/health`.
 
@@ -89,12 +89,12 @@ Close partial integrations called out in the guide audit and Architecture “ope
 
 ## Phase 6 — Production launch (guide 86–89)
 
-All incomplete until there is evidence for **`enrich.hyrepath.io`** (or the agreed production host).
+All incomplete until there is evidence for **`enrich.hyrepath.io`** (or the agreed production host). **No prod VPS chosen yet (2026-07-17) — deferred.**
 
-- [ ] **86** — Production deploy of API + worker + Postgres + Redis + required free sidecars
-- [ ] **87** — Secrets, TLS, and env parity with staging (tokens, `DATABASE_URL`, `REDIS_URL`, R2 when used)
-- [ ] **88** — Production acceptance: health/ready, authenticated enrich, opt-out/DSAR reachable without Bearer, smoke against prod base URL
-- [ ] **89** — Ops runbook: rollback, audit purge cron, rate-limit/incident notes; link LEGAL product boundaries
+- [ ] **86** — Production deploy of API + worker + Postgres + Redis + required free sidecars — **PENDING** awaiting VPS
+- [ ] **87** — Secrets, TLS, and env parity with staging (tokens, `DATABASE_URL`, `REDIS_URL`, R2 when used) — repo deliverables on `main`; live apply **PENDING** VPS
+- [ ] **88** — Production acceptance: health/ready, authenticated enrich, opt-out/DSAR reachable without Bearer, smoke against prod base URL — **PENDING** VPS
+- [ ] **89** — Ops runbook: rollback, audit purge cron, rate-limit/incident notes; link LEGAL product boundaries — docs on `main`; live drill **PENDING** VPS
 
 **Exit:** Signed-off production acceptance checklist with URLs and dates — not “compose works locally.”
 
@@ -102,26 +102,35 @@ All incomplete until there is evidence for **`enrich.hyrepath.io`** (or the agre
 
 ## Phase 7 — Guide completion gate (guide 90)
 
-- [ ] **90 — Project complete under this Developer Guide** — Only after Phases 1–6 acceptance criteria are met on `main`, including gaps **71, 76, 78, 86–89**. Writing this DEVPLAN (82) does **not** complete 90.
+- [ ] **90 — Project complete under this Developer Guide** — **PARTIAL (local/staging)** as of 2026-07-17. Not fully complete until Multilogin live canary + prod 86–89.
+
+**Local/staging completion evidence**
+
+| Item | Status | Link |
+|------|--------|------|
+| Full-path E2E (78) | PASS | [2026-07-17 evidence](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md), [GHA 29557737182](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182) |
+| Tier 2–4 live CI | In repair / re-run | [tier234 evidence](../backend/docs/evidence/tier234-live-m4.md) |
+| Staging Scrapoxy / Langfuse | In repair / re-run | [scrapoxy](../backend/docs/evidence/scrapoxy-staging-62.md), [langfuse](../backend/docs/evidence/langfuse-staging-49.md) |
+| Local prod acceptance | Pending green `local-acceptance` job | [`PROD_ACCEPTANCE.md`](PROD_ACCEPTANCE.md) |
+| Tier 1 Multilogin live canary | **SKIP** — creds not configured | [skip evidence](../backend/docs/evidence/tier1-multilogin-canary-skip.md) |
+| Prod host 86–89 | **DEFERRED** — no VPS yet | — |
 
 **Exit:** Guide audit can mark task 90 complete with evidence links (PRs, canary runs, prod acceptance).
 
-See [PROJECT_COMPLETE_AUDIT.md](PROJECT_COMPLETE_AUDIT.md) for the 2026-07-16 launch gate status.
+See [PROJECT_COMPLETE_AUDIT.md](PROJECT_COMPLETE_AUDIT.md) for the launch gate status.
 
 ---
 
-## Phase 6–7 progress (2026-07-16)
+## Phase 6–7 progress (2026-07-17)
 
-Repo-side deliverables landed in open PRs (not yet on `main`):
+| Task | Status |
+|------|--------|
+| 78 full-path E2E | **Done on main** — green local Podman + GHA |
+| 87–89 repo artifacts | On `main` (merged earlier) |
+| 90 local/staging | **Partial** — CI workflow + evidence; Multilogin + prod still open |
+| 86 prod host | **Deferred** — operator chose no VPS yet |
 
-| Task | PR | Status |
-|------|-----|--------|
-| 87 | [#65](https://github.com/1Touch-dev/HyerPathEnrichment/pull/65) | Open — prod compose, deployment docs, `/ready` probes |
-| 88 | [#68](https://github.com/1Touch-dev/HyerPathEnrichment/pull/68) | Open — smoke + boundary harness |
-| 89 | [#70](https://github.com/1Touch-dev/HyerPathEnrichment/pull/70) | Open — full acceptance runner + OPS runbook |
-| 90 | TBD | Audit doc only — **gate blocked** |
-
-**Blockers for Task 90:** Task 86 (prod host — `enrich.hyrepath.io` DNS unresolved 2026-07-16), gaps **71**, **76**, **78** not on `main`, PRs 65/68/70 not merged.
+**Remaining for full Task 90:** Multilogin Tier 1 live canary; production VPS cutover (86–89 signed).
 
 ---
 
@@ -131,18 +140,18 @@ Track in-flight guide slices without claiming them done until merged:
 
 | Guide # | Topic | Depends on | Status in this plan |
 |---------|--------|------------|---------------------|
-| 1 + 79 | Makefile | — | Phase 1 — open |
+| 1 + 79 | Makefile | — | Phase 1 — done |
 | 31 | Email verify order / catch-all | — | Phase 2 — open |
 | 61 | LEGAL LinkedIn section | — | Phase 3 — open |
 | 64 | gitrecon GitHub throttle + source-limit matrix | — | Phase 2 code done; Phase 3 matrix doc done |
-| 77 | Expand smoke | — | Phase 1 — open |
+| 77 | Expand smoke | — | Phase 1 — done |
 | 82 | DEVPLAN.md | — | This file; keep checklist current |
-| 84 | Fresh-setup verify | 1+79, 77 | Phase 1 — blocked |
+| 84 | Fresh-setup verify | 1+79, 77 | Phase 1 — done |
 | **71** | Signals watch/detect/notify | 70 (compose webhook) | Phase 4 — **open** |
-| **76** | Real canary set | Example sets exist | Phase 5 — **open** |
-| **78** | Full request→…→storage E2E | Split e2e scripts | Phase 5 — **open** |
-| **86–89** | Prod host + acceptance | Phases 1–5 | Phase 6 — **open** |
-| **90** | Guide complete | 71, 76, 78, 86–89 + DX | Phase 7 — **open** |
+| **76** | Real canary set | Example sets exist | Phase 5 — **open** (runner exists; live Tier 1 blocked) |
+| **78** | Full request→…→storage E2E | Split e2e scripts | Phase 5 — **done** (2026-07-17) |
+| **86–89** | Prod host + acceptance | Phases 1–5 | Phase 6 — **deferred** (no VPS) |
+| **90** | Guide complete | 71, 76, 78, 86–89 + DX | Phase 7 — **partial** (local/staging) |
 
 ---
 

@@ -1,55 +1,28 @@
 # Project complete audit (Task 90 gate)
 
-**Date:** 2026-07-16  
-**Auditor:** Master agent verification pass  
-**Verdict:** **NOT COMPLETE** — repo artifacts ready in PRs; production and upstream gaps remain.
+**Date:** 2026-07-17 (updated)  
+**Verdict:** **PARTIAL — local/staging in progress; NOT fully complete**
 
 ## Summary
 
-Tasks 87–89 were implemented on separate branches with task-specific proof tests. Task 90 cannot be marked complete until PRs merge to `main`, Task 86 prod deploy is live, and DEVPLAN gaps 71/76/78 are satisfied.
+Repo-side 87–89 and full-path E2E (78) are on `main`. Task 90 remains **partial** until Multilogin Tier 1 live canary and production VPS (86–89 live sign-off). Operator deferred prod host selection on 2026-07-17.
 
 ## Evidence links
 
 | Deliverable | Evidence |
 |-------------|----------|
-| Task 87 — prod secrets/TLS/env | [PR #65](https://github.com/1Touch-dev/HyerPathEnrichment/pull/65) — `docker-compose.prod.yml`, `docs/deployment.md`, `/ready` probes |
-| Task 88 — prod smoke + boundary | [PR #68](https://github.com/1Touch-dev/HyerPathEnrichment/pull/68) — extended `smoke_test.py`, `boundary_checks.sh`, `docs/PROD_SMOKE.md` |
-| Task 89 — acceptance + ops | [PR #70](https://github.com/1Touch-dev/HyerPathEnrichment/pull/70) — `scripts/prod_full_acceptance.sh`, `docs/OPS.md`, `docs/PROD_ACCEPTANCE.md` |
-| Local DX baseline | [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md) — PASS 2026-07-16 |
-
-## Master verification (2026-07-16)
-
-| Check | Result | Notes |
-|-------|--------|-------|
-| `pytest tests/test_tier1_settings_validation.py tests/test_health_ready.py` | PASS | 8 tests (Task 87 branch) |
-| `verify_env_parity.py` staging/production templates | PASS | 25 keys |
-| Boundary pytest bundle (26 tests) | PASS | After conftest session DB init |
-| `make up && make smoke-prod` | SKIP | Docker not on Windows PATH; use WSL per SETUP_VERIFICATION |
-| `prod_full_acceptance.sh --local` | SKIP | Requires Docker stack |
-| Prod smoke at `enrich.hyrepath.io` | FAIL | DNS unresolved 2026-07-16 |
-| Gaps 71, 76, 78 on `main` | FAIL | Feature branches not merged |
-| Task 86 prod deploy | FAIL | No live host evidence |
+| Task 78 — full-path E2E | [2026-07-17 evidence](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md) · [GHA 29557737182](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182) |
+| Task 87–89 — repo artifacts | Merged to `main` (PRs #65 / #68 / #70) |
+| Tier 2–4 live CI | [tier234-live-m4.md](../backend/docs/evidence/tier234-live-m4.md) — repair + re-run |
+| Staging Scrapoxy / Langfuse | [scrapoxy](../backend/docs/evidence/scrapoxy-staging-62.md), [langfuse](../backend/docs/evidence/langfuse-staging-49.md) |
+| Tier 1 Multilogin live | [SKIP](../backend/docs/evidence/tier1-multilogin-canary-skip.md) |
+| Local DX baseline | [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md) |
+| Prod acceptance checklist | [PROD_ACCEPTANCE.md](PROD_ACCEPTANCE.md) — prod column PENDING VPS |
 
 ## Remaining work to close Task 90
 
-1. Merge PRs **#65 → #68 → #70** (order minimizes conflicts).
-2. Deploy production stack (Task **86**); configure secrets/TLS using `docs/deployment.md`.
-3. Run `BASE_URL=https://enrich.hyrepath.io API_TOKEN=... bash scripts/prod_full_acceptance.sh --prod` and sign [PROD_ACCEPTANCE.md](PROD_ACCEPTANCE.md).
-4. Merge gaps **71**, **76**, **78** to `main` with evidence.
-5. Re-run full master matrix on `main`; then check DEVPLAN Phase 6–7 boxes.
-
-## Proof commands (reproduce)
-
-```bash
-# Task 87
-cd backend && pytest tests/test_tier1_settings_validation.py tests/test_health_ready.py -q
-python backend/scripts/verify_env_parity.py \
-  --staging backend/.env.staging.example \
-  --production backend/.env.production.example
-
-# Task 88
-cd backend && bash scripts/boundary_checks.sh
-
-# Task 89 (local, requires Docker)
-bash scripts/prod_full_acceptance.sh --local
-```
+1. Green `tier234-live` + `local-acceptance` + staging proofs on GHA (post CI fix merge).
+2. Configure Multilogin and run Tier 1 live canary; update skip evidence to PASS.
+3. Choose/deploy production VPS (Task **86**); run `prod_full_acceptance.sh --prod`; sign [PROD_ACCEPTANCE.md](PROD_ACCEPTANCE.md).
+4. Close remaining DEVPLAN gaps (**71**, **76**, etc.) as product requires.
+5. Only then check Phase 7 box in [DEVPLAN.md](DEVPLAN.md).

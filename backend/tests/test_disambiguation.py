@@ -20,7 +20,7 @@ def orchestrator() -> PipelineOrchestrator:
 
 @pytest.fixture
 def request_identity() -> EnrichmentRequest:
-    return EnrichmentRequest(username="jane-doe", email="jane@acme.com")
+    return EnrichmentRequest(username="jane-doe", email="jane@acme.com", requested_tiers=["tier2", "tier3"])
 
 
 def _handle(platform: str, username: str, confidence: float) -> SocialHandle:

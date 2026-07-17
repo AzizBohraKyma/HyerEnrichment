@@ -1,37 +1,26 @@
 # Evidence: Langfuse staging (Task 49)
 
-**Overall status:** **BLOCKED** — Docker CLI not available on this runner (docker not in PATH).
+**Date (UTC):** 2026-07-17  
+**Runner:** `backend/scripts/e2e_langfuse.sh` via GitHub Actions `Local verification (Task 90)`  
+**CI run:** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
 
-**Branch:** eat/langfuse-staging-49  
-**Date (UTC):** 2026-07-16  
-**Runner:** ackend/scripts/e2e_langfuse.sh
-
-## Deliverables
-
-- [ackend/scripts/e2e_langfuse.sh](../../scripts/e2e_langfuse.sh)
-
-## Commands (when Docker is available)
-
-```bash
-# backend/.env: LANGFUSE_HOST, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
-bash backend/scripts/e2e_langfuse.sh
-```
-
-## Results (this host)
+## Status (2026-07-17 first CI pass)
 
 | Step | Status | Notes |
 |------|--------|-------|
-| e2e_langfuse.sh present | **PASS** | On branch |
-| Docker / compose | **BLOCKED** | docker version failed: command not found |
-| Langfuse UI :3000 | **NOT RUN** | Requires observability profile |
-| 	race() smoke | **NOT RUN** | Requires compose stack |
+| Observability profile + langfuse image | **PASS** | Container started |
+| UI `localhost:3000` | **FAIL** | Shared `hyrepath` Postgres DB — Langfuse schema conflict / crash loop |
+| Report artifact | **MISSING** | Failed before JSON write |
+
+## Follow-up
+
+- Compose `DATABASE_URL` now defaults to dedicated `langfuse` database
+- `e2e_langfuse.sh` creates that DB, force-recreates langfuse, writes report on failure
+- Re-run via Task 90 workflow after merge
 
 ## Pass criteria
 
-- e2e_langfuse.sh exit 0
-- langfuse-report.json under .e2e-results/
-- Langfuse UI reachable on localhost:3000 after smoke 	race() call
-
-## Unblock
-
-Install/start Docker (or run on Linux CI with Docker), re-run the script, update this file to **PASS** or **FAIL** with logs.
+- `e2e_langfuse.sh` exit 0
+- `langfuse-report.json` under `.e2e-results/`
+- Langfuse UI HTTP 200/307 on `:3000`
+- `trace()` smoke from worker
