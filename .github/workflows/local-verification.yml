@@ -1,0 +1,129 @@
+name: Local verification (Task 90)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/local-verification.yml"
+      - "backend/scripts/**"
+      - "scripts/prod_full_acceptance.sh"
+      - "Makefile"
+
+jobs:
+  e2e-full-path:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Full-path E2E (CI)
+        run: |
+          export DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0
+          make setup
+          make e2e-full-path
+
+      - name: Upload full-path report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-path-report
+          path: backend/.e2e-results/full-path-report.json
+
+  tier234-live:
+    runs-on: ubuntu-latest
+    needs: e2e-full-path
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Tier 2-4 live proof
+        run: |
+          export DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0
+          make setup
+          make up
+          cd backend
+          .venv/bin/python scripts/verify_tier234_live.py --json
+
+      - name: Upload tier234 live report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tier234-live-report
+          path: |
+            backend/.e2e-results/verify-tier234-live.json
+            backend/.e2e-results/tier2-report.json
+            backend/.e2e-results/tier3-report.json
+            backend/.e2e-results/strict-report.json
+            backend/.e2e-results/canary-run-score.json
+
+  local-acceptance:
+    runs-on: ubuntu-latest
+    needs: tier234-live
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Local prod acceptance (no frontend)
+        run: |
+          export DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0
+          export RUN_FULLSTACK=0
+          bash scripts/prod_full_acceptance.sh --local
+
+      - name: Upload acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-acceptance-report
+          path: backend/.e2e-results/prod-acceptance-report.json
+
+  staging-proofs:
+    runs-on: ubuntu-latest
+    needs: e2e-full-path
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Scrapoxy staging proof
+        continue-on-error: true
+        run: |
+          export DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0
+          make setup
+          bash backend/scripts/e2e_scrapoxy.sh
+
+      - name: Langfuse staging proof
+        continue-on-error: true
+        run: bash backend/scripts/e2e_langfuse.sh
+
+      - name: Upload staging reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-proofs
+          path: |
+            backend/.e2e-results/scrapoxy-report.json
+            backend/.e2e-results/langfuse-report.json

@@ -27,9 +27,12 @@ REPORT = RESULTS / "verify-tier234-live.json"
 
 
 def _python() -> str:
-    venv = ROOT / ".venv" / "bin" / "python"
-    if venv.is_file():
-        return str(venv)
+    for candidate in (
+        ROOT / ".venv" / "Scripts" / "python.exe",
+        ROOT / ".venv" / "bin" / "python",
+    ):
+        if candidate.is_file():
+            return str(candidate)
     return sys.executable
 
 
