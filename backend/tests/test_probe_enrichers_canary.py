@@ -59,6 +59,24 @@ def test_score_probe_to_canary() -> None:
     assert probe.score_probe_to_canary("EMPTY") == "FAIL"
     assert probe.score_probe_to_canary("CRASH") == "FAIL"
     assert probe.score_probe_to_canary("SKIP") == "SKIP"
+    assert probe.score_probe_to_canary("EMPTY", enricher="jobspy") == "SKIP"
+    assert probe.score_probe_to_canary("EMPTY", enricher="gitrecon") == "SKIP"
+    assert probe.score_probe_to_canary("CRASH", enricher="jobspy") == "FAIL"
+
+
+def test_build_tests_skips_invalid_request_fields() -> None:
+    # theharvester needs company or email; business-only must not raise.
+    tests = probe.build_tests_for_profile(
+        {"business": "warehouse Austin TX"},
+        enricher_slugs=["theharvester", "local_business"],
+    )
+    names = [name for name, *_rest in tests]
+    assert names == ["Local Business"]
+    skipped = probe.skipped_enrichers_for_profile(
+        {"business": "warehouse Austin TX"},
+        enricher_slugs=["theharvester", "local_business"],
+    )
+    assert [slug for slug, *_ in skipped] == ["theharvester"]
 
 
 def test_profile_status_from_cells() -> None:

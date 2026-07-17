@@ -108,9 +108,9 @@ All incomplete until there is evidence for **`enrich.hyrepath.io`** (or the agre
 
 | Item | Status | Link |
 |------|--------|------|
-| Full-path E2E (78) | PASS | [2026-07-17 evidence](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md), [GHA 29557737182](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182) |
+| Full-path E2E (78) | PASS | [2026-07-17 evidence](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md), [GHA 29559236134](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134) |
 | Tier 2–4 live CI | In repair / re-run | [tier234 evidence](../backend/docs/evidence/tier234-live-m4.md) |
-| Staging Scrapoxy / Langfuse | In repair / re-run | [scrapoxy](../backend/docs/evidence/scrapoxy-staging-62.md), [langfuse](../backend/docs/evidence/langfuse-staging-49.md) |
+| Staging Scrapoxy / Langfuse | PASS (GHA 29559236134) | [scrapoxy](../backend/docs/evidence/scrapoxy-staging-62.md), [langfuse](../backend/docs/evidence/langfuse-staging-49.md) |
 | Local prod acceptance | Pending green `local-acceptance` job | [`PROD_ACCEPTANCE.md`](PROD_ACCEPTANCE.md) |
 | Tier 1 Multilogin live canary | **SKIP** — creds not configured | [skip evidence](../backend/docs/evidence/tier1-multilogin-canary-skip.md) |
 | Prod host 86–89 | **DEFERRED** — no VPS yet | — |

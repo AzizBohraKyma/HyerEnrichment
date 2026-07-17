@@ -11,10 +11,10 @@ Repo-side 87–89 and full-path E2E (78) are on `main`. Task 90 remains **partia
 
 | Deliverable | Evidence |
 |-------------|----------|
-| Task 78 — full-path E2E | [2026-07-17 evidence](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md) · [GHA 29557737182](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182) |
+| Task 78 — full-path E2E | [2026-07-17 evidence](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md) · [GHA 29559236134](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134) |
 | Task 87–89 — repo artifacts | Merged to `main` (PRs #65 / #68 / #70) |
-| Tier 2–4 live CI | [tier234-live-m4.md](../backend/docs/evidence/tier234-live-m4.md) — repair + re-run |
-| Staging Scrapoxy / Langfuse | [scrapoxy](../backend/docs/evidence/scrapoxy-staging-62.md), [langfuse](../backend/docs/evidence/langfuse-staging-49.md) |
+| Tier 2–4 live CI | [tier234-live-m4.md](../backend/docs/evidence/tier234-live-m4.md) — post-#92 residual fixes |
+| Staging Scrapoxy / Langfuse | [scrapoxy](../backend/docs/evidence/scrapoxy-staging-62.md) PASS · [langfuse](../backend/docs/evidence/langfuse-staging-49.md) PASS (GHA 29559236134) |
 | Tier 1 Multilogin live | [SKIP](../backend/docs/evidence/tier1-multilogin-canary-skip.md) |
 | Local DX baseline | [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md) |
 | Prod acceptance checklist | [PROD_ACCEPTANCE.md](PROD_ACCEPTANCE.md) — prod column PENDING VPS |

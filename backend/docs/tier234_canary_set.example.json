@@ -64,12 +64,14 @@
     "id": "account-exec-jobs",
     "category": "non-technical",
     "job_search": "account executive",
+    "company": "Microsoft",
     "enrichers": ["jobspy", "crosslinked"]
   },
   {
     "id": "austin-warehouse",
     "category": "non-technical",
     "business": "warehouse Austin TX",
+    "company": "Microsoft",
     "enrichers": ["local_business", "theharvester"]
   },
   {
