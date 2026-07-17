@@ -68,4 +68,8 @@ integration-e2e: ## Backend Compose stack + frontend Playwright integration test
 	bash scripts/fullstack_e2e.sh
 
 e2e-full-path: ## Full-path E2E (compose + fake sidecars; Task 78)
-	cd $(BACKEND_DIR) && python scripts/e2e_full_path_runner.py --ci
+	@if [ -x $(BACKEND_DIR)/.venv/bin/python ]; then \
+		$(BACKEND_DIR)/.venv/bin/python $(BACKEND_DIR)/scripts/e2e_full_path_runner.py --ci; \
+	else \
+		cd $(BACKEND_DIR) && python3 scripts/e2e_full_path_runner.py --ci; \
+	fi
