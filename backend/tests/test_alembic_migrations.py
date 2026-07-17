@@ -285,7 +285,7 @@ def test_mixed_identifier_hashes_already_jsonb() -> None:
                     """
                     INSERT INTO jobs (id, status, request_payload, dossier_payload, identifier_hashes)
                     VALUES (
-                        'job_mix', 'queued', '{"x":1}'::json, '{}'::json,
+                        'job_mix', 'queued', '{"x": true}'::json, '{}'::json,
                         '["abc"]'::jsonb
                     )
                     """
