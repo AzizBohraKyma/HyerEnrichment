@@ -4,9 +4,21 @@ from __future__ import annotations
 
 import pytest
 
+from app.config import get_settings
 from app.routes import rate_limit
 from app.storage import photo_cache
 from app.workers import runner
+from tests.migration_helpers import upgrade_head
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ensure_db_schema() -> None:
+    """Migrate host SQLite so bare TestClient tests (no lifespan) have tables.
+
+    ``verify_tier234_live`` runs ``test_pipeline_shape`` with ``TestClient(app)``
+    without a context manager, so FastAPI lifespan / ``init_db`` never runs.
+    """
+    upgrade_head(get_settings().database_url)
 
 
 class FakeRedis:

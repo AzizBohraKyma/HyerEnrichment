@@ -5,28 +5,30 @@
 - Pre-#92: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
 - Post-#92: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134
 - Post-#93: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29563202825
-- Post-#94: (in flight / follow-up)
+- Post-#94: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29565415834
+- Post-#95: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29567333198
 
-## Root cause (post-#93 / #94)
+## Root cause (post-#95)
 
 | Step | Status | Cause |
 |------|--------|-------|
-| unit_tests | FAIL | `from app.providers.linkedin.urls import …` still loaded `linkedin/__init__.py`, which eagerly imported selenium client/login |
+| unit_tests | FAIL | Bare `TestClient(app)` never runs lifespan → Alembic never migrates host SQLite → `no such table: suppression_list` / `jobs` |
 | probe_sidecars | PASS | |
 | tier2_e2e | PASS | |
-| tier3_e2e | PASS | |
+| tier3_e2e | FAIL | CrossLinked enricher soft-empty (SERP flaky) but `dossier_tier3_ok` still required `CrossLinked` source + `coworkers` |
 | strict_e2e | PASS | |
-| canary_score | FAIL | 2 cells FAIL (likely CrossLinked/theHarvester SERP EMPTY); JobSpy ZipRecruiter 403 noise |
+| canary_score | PASS | |
 | strict_report_gate | PASS | failed=0 |
 | staging Scrapoxy / Langfuse | PASS | |
 
-Earlier failures (fixed in #92/#93): missing `[dev]` pytest, unscoped `requested_tiers`, redundant `full_path_live` GitHub API exhaustion, canary ValidationError on incomplete profiles.
+Earlier failures (fixed in #92–#95): missing `[dev]` pytest, unscoped `requested_tiers`, selenium import via linkedin package init, redundant `full_path_live` GitHub API exhaustion, canary ValidationError.
 
 ## Fixes
 
 - #93: drop redundant full_path_live; canary skip invalid requests; JobSpy/GitRecon EMPTY→SKIP
-- #94: lazy `app.providers` LinkedIn exports; CrossLinked EMPTY→SKIP; soft CrossLinked in e2e_tier3
-- Follow-up: lazy `app.providers.linkedin` package init (urls/types only); theHarvester EMPTY→SKIP; upload `tier234-canary.json` artifact
+- #94: lazy `app.providers` LinkedIn exports; CrossLinked EMPTY→SKIP; soft CrossLinked in e2e_tier3 enricher probe
+- #95: lazy `app.providers.linkedin` package init (urls/types only); theHarvester EMPTY→SKIP
+- Follow-up: session `ensure_db_schema` (Alembic upgrade) for host unit tests; soft-pass CrossLinked in `dossier_tier3_ok` / `api_sync_tier3`
 
 ## Re-verify
 
