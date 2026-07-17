@@ -68,6 +68,7 @@ jobs:
             backend/.e2e-results/tier3-report.json
             backend/.e2e-results/strict-report.json
             backend/.e2e-results/canary-run-score.json
+            backend/.e2e-results/tier234-canary.json
 
   local-acceptance:
     runs-on: ubuntu-latest
