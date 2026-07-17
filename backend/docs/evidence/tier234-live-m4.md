@@ -2,29 +2,31 @@
 
 **Date (UTC):** 2026-07-17  
 **CI runs:**
-- First attempt: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182 (pre-#92)
+- Pre-#92: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
 - Post-#92: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134
+- Post-#93: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29563202825
+- Post-#94: (in flight / follow-up)
 
-## Progress after PR #92
+## Root cause (post-#93 / #94)
 
-| Step | Post-#92 | Notes |
-|------|----------|-------|
-| unit_tests | FAIL | Host venv `[dev]` only; `conftest` → `runner` → LinkedIn selenium import |
+| Step | Status | Cause |
+|------|--------|-------|
+| unit_tests | FAIL | `from app.providers.linkedin.urls import …` still loaded `linkedin/__init__.py`, which eagerly imported selenium client/login |
 | probe_sidecars | PASS | |
-| tier2_e2e | PASS | 10/10 |
-| tier3_e2e | PASS | 14/14 |
-| strict_e2e | PASS | 16/16 |
-| full_path_live | FAIL | Redundant re-run of tier2/3/strict; gitrecon GitHub API exhausted |
-| canary_score | FAIL | `EnrichmentRequest` ValidationError on profiles missing identifiers; JobSpy WAF noise |
+| tier2_e2e | PASS | |
+| tier3_e2e | PASS | |
+| strict_e2e | PASS | |
+| canary_score | FAIL | 2 cells FAIL (likely CrossLinked/theHarvester SERP EMPTY); JobSpy ZipRecruiter 403 noise |
 | strict_report_gate | PASS | failed=0 |
-| staging Scrapoxy / Langfuse | PASS | Artifacts on run 29559236134 |
+| staging Scrapoxy / Langfuse | PASS | |
 
-## Fixes (follow-up PR)
+Earlier failures (fixed in #92/#93): missing `[dev]` pytest, unscoped `requested_tiers`, redundant `full_path_live` GitHub API exhaustion, canary ValidationError on incomplete profiles.
 
-- Lazy-load selenium in `LinkedInPhotoEnricher` so unit tests do not need `[enrichers]`
-- Drop redundant `full_path_live` from `verify_tier234_live.py` (already covered by tier2/3/strict)
-- Canary: skip enrichers whose fields cannot form a valid `EnrichmentRequest`; treat JobSpy/GitRecon EMPTY as SKIP in CI
-- Example canary rows: add `company` where crosslinked/theharvester are listed
+## Fixes
+
+- #93: drop redundant full_path_live; canary skip invalid requests; JobSpy/GitRecon EMPTY→SKIP
+- #94: lazy `app.providers` LinkedIn exports; CrossLinked EMPTY→SKIP; soft CrossLinked in e2e_tier3
+- Follow-up: lazy `app.providers.linkedin` package init (urls/types only); theHarvester EMPTY→SKIP; upload `tier234-canary.json` artifact
 
 ## Re-verify
 

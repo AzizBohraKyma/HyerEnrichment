@@ -55,6 +55,6 @@ Source: `backend/.e2e-results/full-path-report.json`
 
 ## Verdict
 
-**Verdict:** **PASS** — Task 78 full-path CI green on Podman/WSL and confirmed on GitHub Actions runs `29557737182` and `29559236134` (post-#92).
+**Verdict:** **PASS** — Task 78 full-path CI green on Podman/WSL and confirmed on GitHub Actions (latest green: `29563202825`; also `29557737182`, `29559236134`).
 
 WSL/Podman note (2026-07-17 later): WSL swap disk full — use GHA for remaining live proofs until local disk recovered.

@@ -31,9 +31,9 @@ Expected report: `backend/.e2e-results/prod-acceptance-report.json` with `"statu
 | Opt-out no Bearer 202 | PENDING CI | | | |
 | DSAR no Bearer 201 | PENDING CI | | | |
 | Boundary pytest bundle | PENDING CI | | | |
-| Full-path E2E | PASS (GHA 29559236134) | | 2026-07-17 | CI |
-| Staging Scrapoxy | PASS (GHA 29559236134) | | 2026-07-17 | CI |
-| Staging Langfuse | PASS (GHA 29559236134) | | 2026-07-17 | CI |
+| Full-path E2E | PASS (GHA 29563202825) | | 2026-07-17 | CI |
+| Staging Scrapoxy | PASS (GHA 29563202825) | | 2026-07-17 | CI |
+| Staging Langfuse | PASS (GHA 29563202825) | | 2026-07-17 | CI |
 | Ops runbook reviewed ([OPS.md](OPS.md)) | PASS (docs on main) | | 2026-07-17 | |
 
 ## Production evidence (fill when host live)
