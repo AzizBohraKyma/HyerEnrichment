@@ -309,6 +309,7 @@ File: `backend/docker/docker-compose.yml`
 | `ollama` | 11434 | Local LLM | Profile: `llm` |
 | `scrapoxy` | — | Proxy pool for rate-limit hardening | Profile: `paid` |
 | `langfuse` | 3000 | LLM observability | Profile: `observability` |
+| `glitchtip-web` | 8001 | Central error tracking (Sentry-compatible) | Profile: `observability` |
 | `changedetection` | — | Company change monitoring | Profile: `observability` |
 
 Start the default free stack:
@@ -857,6 +858,18 @@ npm run dev
 ```
 
 UI: `http://localhost:3000`
+
+### Central error tracking (GlitchTip)
+
+Self-hosted Sentry-compatible dashboard for production crashes. SDK is no-op until `SENTRY_DSN` is set.
+
+```bash
+cd backend/docker
+docker compose --env-file ../.env --profile observability up -d glitchtip-web glitchtip-worker
+# UI → http://localhost:8001 — create project, copy DSN to backend/.env
+```
+
+E2E proof: `bash backend/scripts/e2e_error_tracking.sh`
 
 ### Install OSINT CLI tools (optional, for real enricher output)
 

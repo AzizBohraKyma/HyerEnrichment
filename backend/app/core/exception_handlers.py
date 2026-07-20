@@ -13,6 +13,7 @@ from starlette.responses import Response
 
 from app.core.errors import AppError
 from app.core.responses import error_envelope
+from app.observability.error_tracking import capture_exception
 
 logger = logging.getLogger(__name__)
 
@@ -93,8 +94,9 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_exception_handler(_request: Request, exc: Exception) -> Response:
+    async def unhandled_exception_handler(request: Request, exc: Exception) -> Response:
         logger.exception("Unhandled exception: %s", type(exc).__name__)
+        capture_exception(exc, request=request)
         return JSONResponse(
             status_code=500,
             content=error_envelope(

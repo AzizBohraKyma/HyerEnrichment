@@ -8,6 +8,7 @@ import logging
 from app.database.session import SessionLocal, engine
 from app.enrichers.pipeline import Pipeline
 from app.infrastructure.redis import close_redis
+from app.observability.error_tracking import capture_exception, set_job_context
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +23,14 @@ def run_enrichment_job(job_id: str) -> None:
 
 
 async def _run_enrichment_job(job_id: str) -> None:
+    set_job_context(job_id)
     try:
         async with SessionLocal() as session:
             pipeline = Pipeline(session)
             await pipeline.execute_job(job_id)
+    except Exception as exc:
+        capture_exception(exc, tags={"job_id": job_id})
+        raise
     finally:
         # Each job runs under asyncio.run with a fresh event loop, but the
         # Redis client and DB engine pool are module-global. Connections

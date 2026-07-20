@@ -129,6 +129,16 @@ class Settings(BaseSettings):
     changedetection_api_key: str = Field(default="", alias="CHANGEDETECTION_API_KEY")
     notify_webhook_url: str = Field(default="", alias="NOTIFY_WEBHOOK_URL")
 
+    # Central error tracking (Sentry-compatible; GlitchTip or Sentry SaaS)
+    sentry_dsn: str = Field(default="", alias="SENTRY_DSN")
+    sentry_environment: str = Field(default="", alias="SENTRY_ENVIRONMENT")
+    sentry_release: str = Field(default="", alias="SENTRY_RELEASE")
+    sentry_traces_sample_rate: float = Field(default=0.0, alias="SENTRY_TRACES_SAMPLE_RATE")
+    sentry_send_default_pii: bool = Field(default=False, alias="SENTRY_SEND_DEFAULT_PII")
+    enable_error_tracking_probe: bool = Field(
+        default=False, alias="ENABLE_ERROR_TRACKING_PROBE"
+    )
+
     # Compliance
     audit_log_retention_years: int = Field(default=5, alias="AUDIT_LOG_RETENTION_YEARS")
 
