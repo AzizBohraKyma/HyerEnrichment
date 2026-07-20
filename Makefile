@@ -1,7 +1,7 @@
 # HyerEnrichment — common local-dev targets
 # Free Docker stack: api, worker, redis, postgres, social-analyzer, google-maps-scraper
 
-.PHONY: help setup up down test smoke smoke-prod boundary-checks migrate integration-e2e e2e-full-path
+.PHONY: help setup up down test smoke smoke-prod boundary-checks migrate integration-e2e e2e-full-path load-test
 
 .DEFAULT_GOAL := help
 
@@ -21,6 +21,7 @@ help: ## List available targets
 	@echo "  migrate  Run Alembic upgrade head in backend"
 	@echo "  integration-e2e  Start backend stack and run frontend Playwright integration tests"
 	@echo "  e2e-full-path     Run backend full-path E2E harness (CI mode)"
+	@echo "  load-test         k6 load harness (fake sidecars + elevated rate limits); LOAD_PROFILE=smoke|full"
 	@echo "  help     Show this help"
 
 setup: ## Env file + editable backend install (venv; avoids PEP 668)
@@ -72,4 +73,11 @@ e2e-full-path: ## Full-path E2E (compose + fake sidecars; Task 78)
 		$(BACKEND_DIR)/.venv/bin/python $(BACKEND_DIR)/scripts/e2e_full_path_runner.py --ci; \
 	else \
 		cd $(BACKEND_DIR) && python3 scripts/e2e_full_path_runner.py --ci; \
+	fi
+
+load-test: ## k6 load test (compose + fake sidecars + loadtest rate limits)
+	@if [ -x $(BACKEND_DIR)/.venv/bin/python ]; then \
+		$(BACKEND_DIR)/.venv/bin/python $(BACKEND_DIR)/scripts/run_load_test.py; \
+	else \
+		python3 $(BACKEND_DIR)/scripts/run_load_test.py; \
 	fi

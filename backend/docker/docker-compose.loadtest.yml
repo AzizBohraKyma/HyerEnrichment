@@ -1,0 +1,29 @@
+# Load-test override: raise ingress rate limits so k6 measures capacity, not 429s.
+# Pair with fake sidecars for deterministic enrichers (no live provider burn).
+#
+# Usage:
+#   cd backend/docker
+#   docker compose -f docker-compose.yml -f docker-compose.fake-sidecars.yml \
+#     -f docker-compose.loadtest.yml --profile paid up --build -d \
+#     api worker redis postgres social-analyzer google-maps-scraper email-verifier reacher
+#
+# Then: make load-test   (from repo root)
+# Or:   python backend/scripts/run_load_test.py
+
+services:
+  api:
+    environment:
+      MAX_SYNC_REQUESTS_PER_MINUTE: "10000"
+      MAX_ASYNC_REQUESTS_PER_MINUTE: "10000"
+      MAX_COMPLIANCE_REQUESTS_PER_MINUTE: "10000"
+      ENABLE_TIER1: "false"
+      LLM_MODE: stub
+
+  worker:
+    environment:
+      ENABLE_TIER1: "false"
+      LLM_MODE: stub
+      # Worker does not enforce HTTP rate limits; keep parity with api feature flags.
+      MAX_SYNC_REQUESTS_PER_MINUTE: "10000"
+      MAX_ASYNC_REQUESTS_PER_MINUTE: "10000"
+      MAX_COMPLIANCE_REQUESTS_PER_MINUTE: "10000"

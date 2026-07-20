@@ -626,6 +626,7 @@ Use this table when reviewing PRs, running `GRILLME.md` sessions, or planning th
 | Shape tests | Every enricher returns valid dossier fragments | `tests/test_pipeline_shape.py` |
 | Integration | Fake sidecars in CI via compose override | Implemented — `docker-compose.fake-sidecars.yml` + `scripts/e2e_fake_sidecars.sh` |
 | Full-path E2E | CI compose + fake sidecars; optional live tier chain | `scripts/e2e_full_path.sh` + `scripts/e2e_full_path_runner.py` → `.e2e-results/full-path-report.json` |
+| Load / performance | k6 concurrent traffic (health/ready + enrich); elevated rate limits + fake sidecars | `load/k6/main.js` + `scripts/run_load_test.py` → `.e2e-results/load-report.json` — see [`LOAD_TESTING.md`](LOAD_TESTING.md) |
 | Manual QA | 20-profile canary run/score (`run_canary_score.py`, `tier*_canary_set.example.json`) | Implemented — Tier 2–4 uses in-repo public identifiers; Tier 1 needs local Multilogin + gitignored `tier1_canary_set.json` |
 
 Run backend tests:
