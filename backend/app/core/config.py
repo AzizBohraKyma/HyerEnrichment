@@ -127,9 +127,7 @@ class Settings(BaseSettings):
     sentry_release: str = Field(default="", alias="SENTRY_RELEASE")
     sentry_traces_sample_rate: float = Field(default=0.0, alias="SENTRY_TRACES_SAMPLE_RATE")
     sentry_send_default_pii: bool = Field(default=False, alias="SENTRY_SEND_DEFAULT_PII")
-    enable_error_tracking_probe: bool = Field(
-        default=False, alias="ENABLE_ERROR_TRACKING_PROBE"
-    )
+    enable_error_tracking_probe: bool = Field(default=False, alias="ENABLE_ERROR_TRACKING_PROBE")
 
     # Compliance
     audit_log_retention_years: int = Field(default=5, alias="AUDIT_LOG_RETENTION_YEARS")

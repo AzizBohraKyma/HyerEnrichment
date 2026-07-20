@@ -35,4 +35,3 @@ export function ResultRow({ title, subtitle, confidence, selected, onClick }: Re
     </button>
   );
 }
-

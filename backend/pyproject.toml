@@ -84,4 +84,3 @@ omit = ["*/tests/*"]
 fail_under = 78
 show_missing = true
 skip_empty = true
-

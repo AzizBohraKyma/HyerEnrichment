@@ -9,7 +9,11 @@ from typing import Any
 from app.core.config import get_settings
 from app.integrations.linkedin.login import connect_selenium
 from app.integrations.linkedin.photo import save_failure_screenshot
-from app.integrations.linkedin.scrape import download_image, map_outcome_to_profile, scrape_on_driver
+from app.integrations.linkedin.scrape import (
+    download_image,
+    map_outcome_to_profile,
+    scrape_on_driver,
+)
 from app.integrations.linkedin.types import (
     NO_RETRY_OUTCOMES,
     ROTATE_PROFILE_OUTCOMES,
@@ -62,7 +66,10 @@ class LinkedInBrowserClient:
                     return result
                 if result.outcome in NO_RETRY_OUTCOMES:
                     return result
-                if result.outcome in ROTATE_PROFILE_OUTCOMES and profile_attempt + 1 < max_profile_attempts:
+                if (
+                    result.outcome in ROTATE_PROFILE_OUTCOMES
+                    and profile_attempt + 1 < max_profile_attempts
+                ):
                     continue
                 if result.outcome == LinkedInPhotoError.TEMPORARY_FAILURE:
                     continue
@@ -88,7 +95,10 @@ class LinkedInBrowserClient:
             for attempt in range(same_profile_retries + 1):
                 partial, image_url = await asyncio.to_thread(scrape_on_driver, driver, linkedin_url)
                 if partial.outcome != LinkedInPhotoError.SUCCESS:
-                    if partial.outcome == LinkedInPhotoError.TEMPORARY_FAILURE and attempt < same_profile_retries:
+                    if (
+                        partial.outcome == LinkedInPhotoError.TEMPORARY_FAILURE
+                        and attempt < same_profile_retries
+                    ):
                         continue
                     if partial.outcome != LinkedInPhotoError.SUCCESS:
                         save_failure_screenshot(driver, job_id)
