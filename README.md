@@ -748,8 +748,12 @@ HyerEnrichment/
 │   ├── docs/
 │   │   └── ARCHITECTURE.md            # Detailed backend architecture reference
 │   │
+│   ├── load/
+│   │   └── k6/main.js                 # k6 load scenarios (make load-test)
+│   │
 │   ├── scripts/
 │   │   ├── smoke_test.py              # Quick health check
+│   │   ├── run_load_test.py           # k6 load harness driver
 │   │   ├── e2e_compose_test.sh        # Docker Compose E2E test
 │   │   ├── e2e_realworld_strict.py    # Real-world enrichment E2E
 │   │   ├── probe_enrichers.py         # Tier 2–4 isolation probe
@@ -942,6 +946,15 @@ bash backend/scripts/e2e_compose_test.sh
 
 Proves: health check → async enrich → poll completed → opt-out suppression → worker restart persistence.
 
+### Load / performance (k6)
+
+```bash
+make load-test
+# LOAD_PROFILE=full make load-test
+```
+
+Concurrent traffic against `/health`, `/ready`, async `/enrich` + poll, and light `/enrich/sync`. Uses fake sidecars and elevated rate limits — see [`backend/docs/LOAD_TESTING.md`](backend/docs/LOAD_TESTING.md).
+
 ### Frontend
 
 ```bash
@@ -1024,4 +1037,5 @@ When filing issues, use tier prefixes: `[Tier 3] Reacher fallback fails on catch
 | Setup / install backend | `make setup` |
 | Run free Docker stack | `make up` (`make down` to stop) |
 | Run tests / smoke / migrate | `make test` / `make smoke` / `make migrate` |
+| Run k6 load test | `make load-test` (see `backend/docs/LOAD_TESTING.md`) |
 | Run full Docker stack (manual) | `cd backend/docker && docker compose up --build` |

@@ -82,6 +82,7 @@ Close partial integrations called out in the guide audit and Architecture “ope
 
 - [ ] **Real canary set (gap 76)** — Example 20-entry sets + `run_canary_score.py` / in-container `e2e_canary_tier234.sh` exist. Still open: maintained real profiles (esp. Tier 1 Multilogin) beyond example JSON.
 - [x] **Full-path E2E (gap 78)** — Harness green. Evidence: [`backend/docs/e2e-evidence/2026-07-17-full-path-ci.md`](../backend/docs/e2e-evidence/2026-07-17-full-path-ci.md) (local Podman + GHA run [29557737182](https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182)).
+- [x] **Load / performance (k6)** — Harness: [`backend/docs/LOAD_TESTING.md`](../backend/docs/LOAD_TESTING.md); `make load-test`; contract tests in `backend/tests/test_load_harness.py`. Evidence: [`backend/docs/e2e-evidence/2026-07-20-load-test-smoke.md`](../backend/docs/e2e-evidence/2026-07-20-load-test-smoke.md).
 
 **Exit:** Releases can cite canary + full-path E2E evidence, not only shape tests and `/health`.
 

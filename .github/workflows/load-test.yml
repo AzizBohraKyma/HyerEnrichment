@@ -1,0 +1,40 @@
+name: Load test (k6)
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "LOAD_PROFILE (smoke or full)"
+        required: true
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - full
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run k6 load harness
+        env:
+          LOAD_PROFILE: ${{ inputs.profile }}
+          LOAD_KEEP_STACK: "0"
+        run: python backend/scripts/run_load_test.py
+
+      - name: Upload load report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-report
+          path: |
+            backend/.e2e-results/load-report.json
+            backend/.e2e-results/k6-summary.json
+          if-no-files-found: warn
