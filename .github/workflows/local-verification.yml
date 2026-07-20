@@ -31,7 +31,7 @@ jobs:
 
       - name: Upload full-path report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: full-path-report
           path: backend/.e2e-results/full-path-report.json
@@ -59,7 +59,7 @@ jobs:
 
       - name: Upload tier234 live report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tier234-live-report
           path: |
@@ -91,7 +91,7 @@ jobs:
 
       - name: Upload acceptance report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: prod-acceptance-report
           path: backend/.e2e-results/prod-acceptance-report.json
@@ -126,7 +126,7 @@ jobs:
 
       - name: Upload staging reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: staging-proofs
           path: |
