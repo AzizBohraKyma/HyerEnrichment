@@ -25,6 +25,7 @@ dependencies = [
 dev = [
   "pytest>=8.2,<9.0",
   "pytest-asyncio>=0.23,<1.0",
+  "pytest-cov>=5.0,<7.0",
   "mypy>=1.10,<2.0",
   "ruff>=0.5,<1.0",
 ]
@@ -67,4 +68,14 @@ python_version = "3.12"
 warn_unused_configs = true
 strict = false
 ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["app"]
+branch = false
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+fail_under = 78
+show_missing = true
+skip_empty = true
 
