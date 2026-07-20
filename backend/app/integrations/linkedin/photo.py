@@ -27,15 +27,17 @@ logger = logging.getLogger(__name__)
 
 def photo_candidates_from_element(img: Any) -> list[str]:
     candidates: list[str] = []
-    srcset = (img.get_attribute("srcset") or "").strip()
-    if srcset:
-        parsed = photo_url_from_srcset(srcset)
-        if parsed:
-            candidates.append(parsed)
     for attr in DOM_PHOTO_ATTRS:
         value = (img.get_attribute(attr) or "").strip()
         if value and value not in candidates:
             candidates.append(value)
+    # Prefer explicit DOM attrs (e.g. `data-src`) over srcset.
+    # Unit tests expect `data-src` to win when both are present.
+    srcset = (img.get_attribute("srcset") or "").strip()
+    if srcset:
+        parsed = photo_url_from_srcset(srcset)
+        if parsed and parsed not in candidates:
+            candidates.append(parsed)
     return candidates
 
 
@@ -134,6 +136,13 @@ def wait_for_profile_photo_ready(driver: Any, wait: Any) -> None:
 
         if _d.find_elements(css, FIGURE_PHOTO_SELECTOR):
             return True
+
+        # The stable topcard avatar container indicates the browser has rendered
+        # the profile photo section even when the inner <img> isn't directly matched
+        # by our selectors (unit tests cover this path).
+        for container_sel in TOPCARD_PHOTO_CONTAINER_SELECTORS:
+            if _d.find_elements(css, container_sel):
+                return True
 
         for selector in DOM_PHOTO_SELECTORS:
             if _d.find_elements(css, selector):
