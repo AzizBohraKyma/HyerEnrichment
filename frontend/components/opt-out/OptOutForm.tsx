@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { submitDsar, submitOptOut } from '@/src/lib/api-client';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 import { DsarType } from '@/src/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,11 +42,11 @@ export function OptOutForm() {
           requestType: mode,
           notes: reason.trim() || undefined,
         });
-        setSummary(response.summary);
+        setSummary(response.data.summary);
       }
       setSubmitted(true);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Submit failed');
+      setError(formatApiErrorMessage(submitError));
     } finally {
       setLoading(false);
     }

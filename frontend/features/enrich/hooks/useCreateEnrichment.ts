@@ -12,7 +12,8 @@ export function useCreateEnrichment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ input, mode }: CreateJobInput) => createEnrichmentJob(input, mode),
+    mutationFn: async ({ input, mode }: CreateJobInput) =>
+      (await createEnrichmentJob(input, mode)).data,
     onSuccess: (job) => {
       queryClient.setQueryData(enrichKeys.job(job.id), job);
       void queryClient.invalidateQueries({ queryKey: enrichKeys.jobs() });

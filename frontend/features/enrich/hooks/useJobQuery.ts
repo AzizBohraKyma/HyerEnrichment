@@ -8,7 +8,7 @@ const POLL_INTERVAL_MS = 2000;
 export function useJobQuery(jobId: string | undefined) {
   return useQuery({
     queryKey: enrichKeys.job(jobId ?? ''),
-    queryFn: () => getEnrichmentJob(jobId!),
+    queryFn: async () => (await getEnrichmentJob(jobId!)).data,
     enabled: Boolean(jobId),
     refetchInterval: (query) => {
       const status = query.state.data?.status;

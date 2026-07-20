@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import {
   BackendDsarResponse,
   mapBackendDsarResponse,
-  parseBackendError,
   toBackendDsarRequest,
-  unwrapBackendData,
 } from '@/src/lib/api-adapter';
 import { backendFetch } from '@/src/lib/backend-client';
+import { bffServiceUnavailable, bffSuccess, bffValidationError, handleBackendJson } from '@/src/lib/bff-response';
 import { isMockMode } from '@/src/lib/mocks/enabled';
 import { DsarInput, DsarResponse } from '@/src/lib/types';
 
@@ -14,11 +13,11 @@ export async function POST(request: NextRequest) {
   const body = (await request.json()) as DsarInput;
 
   if (!body.identifier?.trim()) {
-    return NextResponse.json({ message: 'Identifier is required.' }, { status: 400 });
+    return bffValidationError('Identifier is required.');
   }
 
   if (!body.requestType) {
-    return NextResponse.json({ message: 'Request type is required.' }, { status: 400 });
+    return bffValidationError('Request type is required.');
   }
 
   if (isMockMode()) {
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
         mock: true,
       },
     };
-    return NextResponse.json(mock, { status: 201 });
+    return bffSuccess(mock, 201);
   }
 
   let backendResponse: Response;
@@ -47,16 +46,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(toBackendDsarRequest(body)),
     });
   } catch {
-    return NextResponse.json({ message: 'Unable to reach enrichment backend.' }, { status: 502 });
+    return bffServiceUnavailable();
   }
 
-  if (!backendResponse.ok) {
-    const message = await parseBackendError(backendResponse);
-    return NextResponse.json({ message }, { status: backendResponse.status });
-  }
-
-  const payload = mapBackendDsarResponse(
-    unwrapBackendData<BackendDsarResponse>(await backendResponse.json()),
+  return handleBackendJson<BackendDsarResponse, DsarResponse>(
+    backendResponse,
+    mapBackendDsarResponse,
+    201,
   );
-  return NextResponse.json(payload, { status: 201 });
 }

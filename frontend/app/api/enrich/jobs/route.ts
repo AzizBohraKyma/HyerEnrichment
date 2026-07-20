@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import {
   BackendJobListResponse,
   mapBackendJobListToFrontend,
-  parseBackendError,
-  unwrapBackendData,
 } from '@/src/lib/api-adapter';
 import { backendFetch } from '@/src/lib/backend-client';
+import { bffServiceUnavailable, bffSuccess, handleBackendJson } from '@/src/lib/bff-response';
 import { isMockMode } from '@/src/lib/mocks/enabled';
 import { listMockJobs } from '@/src/lib/mocks/mock-jobs';
 
@@ -15,21 +14,17 @@ export async function GET(request: NextRequest) {
 
   if (isMockMode()) {
     const { jobs, total } = listMockJobs(limit, offset);
-    return NextResponse.json({ jobs, total, limit, offset });
+    return bffSuccess({ jobs, total, limit, offset });
   }
 
   let backendResponse: Response;
   try {
     backendResponse = await backendFetch(`/enrich?limit=${limit}&offset=${offset}`);
   } catch {
-    return NextResponse.json({ message: 'Unable to reach enrichment backend.' }, { status: 502 });
+    return bffServiceUnavailable();
   }
 
-  if (!backendResponse.ok) {
-    const message = await parseBackendError(backendResponse);
-    return NextResponse.json({ message }, { status: backendResponse.status });
-  }
-
-  const payload = unwrapBackendData<BackendJobListResponse>(await backendResponse.json());
-  return NextResponse.json(mapBackendJobListToFrontend(payload));
+  return handleBackendJson(backendResponse, (payload: BackendJobListResponse) =>
+    mapBackendJobListToFrontend(payload),
+  );
 }

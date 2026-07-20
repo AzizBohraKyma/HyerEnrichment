@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { parseBackendError, toBackendOptOutRequest } from '@/src/lib/api-adapter';
+import { NextRequest } from 'next/server';
+import { toBackendOptOutRequest } from '@/src/lib/api-adapter';
 import { backendFetch } from '@/src/lib/backend-client';
+import { bffServiceUnavailable, bffSuccess, bffValidationError, backendFailureResponse, handleBackendJson } from '@/src/lib/bff-response';
 import { isMockMode } from '@/src/lib/mocks/enabled';
 import { OptOutInput } from '@/src/lib/types';
 
@@ -8,11 +9,11 @@ export async function POST(request: NextRequest) {
   const body = (await request.json()) as OptOutInput;
 
   if (!body.identifier?.trim()) {
-    return NextResponse.json({ message: 'Identifier is required.' }, { status: 400 });
+    return bffValidationError('Identifier is required.');
   }
 
   if (isMockMode()) {
-    return NextResponse.json({ status: 'accepted' }, { status: 202 });
+    return bffSuccess({ status: 'accepted' as const }, 202);
   }
 
   let backendResponse: Response;
@@ -23,13 +24,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(toBackendOptOutRequest(body)),
     });
   } catch {
-    return NextResponse.json({ message: 'Unable to reach enrichment backend.' }, { status: 502 });
+    return bffServiceUnavailable();
   }
 
   if (!backendResponse.ok) {
-    const message = await parseBackendError(backendResponse);
-    return NextResponse.json({ message }, { status: backendResponse.status });
+    return backendFailureResponse(backendResponse);
   }
 
-  return NextResponse.json({ status: 'accepted' }, { status: 202 });
+  return handleBackendJson(backendResponse, () => ({ status: 'accepted' as const }), 202);
 }

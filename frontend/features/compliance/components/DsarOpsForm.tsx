@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { submitDsar } from '@/src/lib/api-client';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 import { DsarType } from '@/src/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,9 +35,9 @@ export function DsarOpsForm() {
         requestType,
         notes: notes.trim() || undefined,
       });
-      setSummary(response.summary);
+      setSummary(response.data.summary);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Submit failed');
+      setError(formatApiErrorMessage(submitError));
     } finally {
       setLoading(false);
     }

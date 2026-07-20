@@ -10,6 +10,7 @@ import { useCreateEnrichment } from '@/features/enrich';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { patchDraft, setEnrichMode } from '@/store/slices/intakeSlice';
 import { parseTiersFromQuery } from '@/src/lib/tier-utils';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 import { EnrichmentInput } from '@/src/lib/types';
 
 function EnrichPageContent() {
@@ -59,7 +60,7 @@ function EnrichPageContent() {
 
       {createMutation.error ? (
         <Alert variant="destructive">
-          <AlertDescription>{createMutation.error.message}</AlertDescription>
+          <AlertDescription>{formatApiErrorMessage(createMutation.error)}</AlertDescription>
         </Alert>
       ) : null}
 

@@ -104,7 +104,7 @@ Rules for humans and agents writing code in this repo. Read **before** implement
 ### Frontend
 
 - **Components display; lib handles data** — fetching and mapping live in `src/lib/`, not scattered in JSX
-- **Keep types in sync** — backend wire contract: run `cd frontend && npm run openapi:export && npm run openapi:gen` after changing Pydantic models in `backend/app/domain/` or module response models; commit `frontend/openapi/openapi.json` and `frontend/src/lib/generated/openapi.ts`. Update `types.ts` and `api-adapter.ts` when UI camelCase shapes change.
+- **Keep types in sync** — backend wire contract uses `{ success, data }` / `{ success, error }` envelopes (see `backend/app/core/responses.py`). Run `cd frontend && npm run openapi:export && npm run openapi:gen` after changing Pydantic models in `backend/app/domain/` or module response models; commit `frontend/openapi/openapi.json` and `frontend/src/lib/generated/openapi.ts`. Update `types.ts` and `api-adapter.ts` when UI camelCase shapes change.
 - **No direct backend shape in UI** — components consume frontend `Dossier`, not snake_case payloads
 
 ### Cross-cutting

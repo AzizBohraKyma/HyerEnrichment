@@ -2,6 +2,7 @@
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SignalsTable, useSignalListQuery } from '@/features/signals';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 
 export default function SignalsPage() {
   const { data, isLoading, error, isFetching, fetchNextPage, hasNextPage } = useSignalListQuery();
@@ -20,7 +21,7 @@ export default function SignalsPage() {
 
       {error ? (
         <Alert variant="destructive">
-          <AlertDescription>{error.message}</AlertDescription>
+          <AlertDescription>{formatApiErrorMessage(error)}</AlertDescription>
         </Alert>
       ) : null}
 

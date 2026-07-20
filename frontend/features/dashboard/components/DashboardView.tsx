@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useJobMetricsQuery } from '@/features/history';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 
 export function DashboardView() {
   const { data, isLoading, error } = useJobMetricsQuery();
@@ -24,7 +25,7 @@ export function DashboardView() {
         <p className="text-sm text-muted-foreground">Pipeline overview and recent enrichment activity.</p>
       </div>
 
-      {error ? <p className="text-sm text-destructive">{error.message}</p> : null}
+      {error ? <p className="text-sm text-destructive">{formatApiErrorMessage(error)}</p> : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
         {kpis.map((kpi) => (
