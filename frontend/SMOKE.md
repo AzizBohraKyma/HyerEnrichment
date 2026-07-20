@@ -14,13 +14,14 @@ npm run dev
 ## Checks
 
 1. **Health** — Console header shows green "API online" when backend is up.
-2. **Async enrich** — `/app` → Full (async) → submit → job polls until completed.
-3. **Sync enrich** — Quick (sync) → tier1 disabled → submit → dossier returns once.
-4. **Job detail** — `/app/jobs/{id}` loads on refresh; polls if still running.
-5. **History** — `/app/history` lists jobs (requires backend `GET /enrich`).
-6. **Opt-out** — `/opt-out` → submit → success message.
-7. **Marketing** — `/`, `/recruiters`, … `/journalists` render; CTAs link to `/app?tiers=...`.
-8. **Build** — `npm run build` and `npm run typecheck` pass.
+2. **Async enrich** — `/app/enrich` → Full (async) → tier checkboxes (default tier2+tier3) → submit → job polls until completed.
+3. **Sync enrich** — Quick (sync) → tier1 checkbox disabled → submit without tier1 → dossier returns once.
+4. **Use-case tiers** — `/recruiters` (etc.) CTA → `/app/enrich?tiers=…` pre-checks audience tiers; toggles still work.
+5. **Job detail** — `/app/jobs/{id}` loads on refresh; polls if still running.
+6. **History** — `/app/history` lists jobs (requires backend `GET /enrich`).
+7. **Opt-out** — `/opt-out` → submit → success message.
+8. **Marketing** — `/`, `/recruiters`, … `/journalists` render; CTAs link to `/app/enrich?tiers=...`.
+9. **Build** — `npm run build` and `npm run typecheck` pass.
 
 ## Integration E2E (live backend)
 

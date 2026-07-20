@@ -8,7 +8,7 @@ const emptyDraft = (): EnrichmentInput => ({
   company: '',
   business: '',
   jobSearch: '',
-  // Default depth matches the Figma "Standard" preset.
+  // Default matches the former Standard mix (username + OSINT).
   requestedTiers: ['tier2', 'tier3'],
 });
 
