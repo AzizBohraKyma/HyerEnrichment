@@ -46,7 +46,7 @@ function EnrichPageContent() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Look someone up</h1>
         <p className="text-sm text-muted-foreground">
-          Paste one identifier (email, LinkedIn URL, or username). Results are opened in a shareable job page with live polling.
+          Select tiers and fill the fields they require. Results open on a shareable job page with live polling.
         </p>
       </div>
 

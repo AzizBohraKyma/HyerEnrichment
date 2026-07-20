@@ -1,7 +1,19 @@
-import { RequestedTier } from '@/src/lib/types';
+import { EnrichmentInput, RequestedTier } from '@/src/lib/types';
 import { tierLabels } from '@/src/lib/utils';
 
 export const ALL_TIERS: RequestedTier[] = ['tier1', 'tier2', 'tier3', 'tier4'];
+
+export type TierFieldRequirements = {
+  linkedinUrl: boolean;
+  username: boolean;
+  emailOrCompanyOrUsername: boolean;
+  businessOrJobSearch: boolean;
+};
+
+export type EnrichmentFieldValues = Pick<
+  EnrichmentInput,
+  'email' | 'linkedinUrl' | 'username' | 'company' | 'business' | 'jobSearch'
+>;
 
 export function parseTiersFromQuery(value: string | null): RequestedTier[] {
   if (!value) {
@@ -38,4 +50,50 @@ export function normalizeTiersForMode(tiers: RequestedTier[], mode: 'async' | 's
 
 export function hasValidTierSelection(tiers: RequestedTier[], mode: 'async' | 'sync'): boolean {
   return normalizeTiersForMode(tiers, mode).length > 0;
+}
+
+/** Flags matching backend EnrichmentRequest tier-specific identifier rules. */
+export function tierFieldRequirements(tiers: RequestedTier[]): TierFieldRequirements {
+  return {
+    linkedinUrl: tiers.includes('tier1'),
+    username: tiers.includes('tier2'),
+    emailOrCompanyOrUsername: tiers.includes('tier3'),
+    businessOrJobSearch: tiers.includes('tier4'),
+  };
+}
+
+function hasValue(value: string | undefined): boolean {
+  return Boolean(value?.trim());
+}
+
+/** True when field values satisfy backend rules for the selected tiers. */
+export function isEnrichmentInputValidForTiers(
+  fields: EnrichmentFieldValues,
+  tiers: RequestedTier[],
+): boolean {
+  const requirements = tierFieldRequirements(tiers);
+
+  if (requirements.linkedinUrl && !hasValue(fields.linkedinUrl)) {
+    return false;
+  }
+  if (requirements.username && !hasValue(fields.username)) {
+    return false;
+  }
+  if (
+    requirements.emailOrCompanyOrUsername &&
+    !hasValue(fields.username) &&
+    !hasValue(fields.email) &&
+    !hasValue(fields.company)
+  ) {
+    return false;
+  }
+  if (
+    requirements.businessOrJobSearch &&
+    !hasValue(fields.business) &&
+    !hasValue(fields.jobSearch)
+  ) {
+    return false;
+  }
+
+  return true;
 }

@@ -5,7 +5,7 @@ test.describe('Enrichment flow', () => {
     await page.goto('/app/enrich');
     await expect(page.getByRole('heading', { name: 'Look someone up' })).toBeVisible();
 
-    await page.getByRole('textbox', { name: 'Identifier' }).fill('e2e-playwright');
+    await page.getByRole('textbox', { name: /Username/ }).fill('e2e-playwright');
     await expect(page.getByRole('button', { name: 'Look up' })).toBeEnabled({ timeout: 15_000 });
     await page.getByRole('button', { name: 'Look up' }).click();
 
