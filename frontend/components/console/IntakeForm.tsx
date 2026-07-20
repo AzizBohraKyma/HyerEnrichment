@@ -4,19 +4,20 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useHealth } from '@/hooks/useHealth';
+import { tierDescriptions } from '@/src/lib/landing-content';
 import {
-  DepthPreset,
-  getTiersFromDepthPreset,
+  ALL_TIERS,
+  getTierLabel,
   hasValidTierSelection,
-  inferDepthPresetFromTiers,
+  normalizeTiersForMode,
 } from '@/src/lib/tier-utils';
 import { formatApiErrorMessage } from '@/src/lib/format-api-error';
-import { EnrichmentInput, EnrichMode } from '@/src/lib/types';
+import { EnrichmentInput, EnrichMode, RequestedTier } from '@/src/lib/types';
 
 type IntakeFormProps = {
   mode: EnrichMode;
@@ -32,18 +33,36 @@ export function IntakeForm({ mode, initialTiers, onSubmit, loading }: IntakeForm
   const [business, setBusiness] = useState('');
   const [jobSearch, setJobSearch] = useState('');
 
-  const [depthPreset, setDepthPreset] = useState<DepthPreset>(() => inferDepthPresetFromTiers(initialTiers ?? [], mode));
+  const [requestedTiers, setRequestedTiers] = useState<RequestedTier[]>(() =>
+    normalizeTiersForMode(initialTiers ?? ['tier2', 'tier3'], mode),
+  );
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (initialTiers?.length) {
-      setDepthPreset(inferDepthPresetFromTiers(initialTiers, mode));
-    }
-  }, [initialTiers, mode]);
+    setRequestedTiers(normalizeTiersForMode(initialTiers ?? ['tier2', 'tier3'], mode));
+    // Seed from query/draft tiers only; mode changes are handled below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally ignore mode here
+  }, [initialTiers]);
 
-  const requestedTiers = useMemo(() => getTiersFromDepthPreset(depthPreset, mode), [depthPreset, mode]);
+  useEffect(() => {
+    setRequestedTiers((prev) => normalizeTiersForMode(prev, mode));
+  }, [mode]);
+
   const hasIdentifier = useMemo(() => Boolean(identifier.trim()), [identifier]);
   const canSubmit = hasIdentifier && hasValidTierSelection(requestedTiers, mode) && online && !loading;
+
+  const toggleTier = (tier: RequestedTier, checked: boolean) => {
+    if (mode === 'sync' && tier === 'tier1') {
+      return;
+    }
+
+    setRequestedTiers((prev) => {
+      if (checked) {
+        return normalizeTiersForMode([...prev, tier], mode);
+      }
+      return prev.filter((t) => t !== tier);
+    });
+  };
 
   const parseIdentifier = (raw: string): Pick<EnrichmentInput, 'email' | 'linkedinUrl' | 'username'> => {
     const value = raw.trim();
@@ -68,7 +87,7 @@ export function IntakeForm({ mode, initialTiers, onSubmit, loading }: IntakeForm
     setError('');
     try {
       const base: EnrichmentInput = {
-        requestedTiers,
+        requestedTiers: normalizeTiersForMode(requestedTiers, mode),
       };
 
       const identifierInput = parseIdentifier(identifier);
@@ -96,7 +115,7 @@ export function IntakeForm({ mode, initialTiers, onSubmit, loading }: IntakeForm
       <CardHeader>
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Request intake</p>
         <CardTitle className="text-2xl">Look up a person</CardTitle>
-        <CardDescription>Paste one identifier. Choose depth and extras under Advanced.</CardDescription>
+        <CardDescription>Paste one identifier. Choose tiers below; extras live under Advanced.</CardDescription>
       </CardHeader>
       <CardContent>
         {mode === 'sync' ? (
@@ -115,6 +134,39 @@ export function IntakeForm({ mode, initialTiers, onSubmit, loading }: IntakeForm
               placeholder="Email, LinkedIn URL, or username"
             />
           </div>
+
+          <fieldset className="flex flex-col gap-3 rounded-lg border p-4">
+            <legend className="px-1 text-sm font-medium">Tiers</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {ALL_TIERS.map((tier) => {
+                const disabled = mode === 'sync' && tier === 'tier1';
+                const checked = requestedTiers.includes(tier);
+                const id = `tier-${tier}`;
+
+                return (
+                  <label
+                    key={tier}
+                    htmlFor={id}
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
+                      disabled ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
+                  >
+                    <Checkbox
+                      id={id}
+                      checked={checked}
+                      disabled={disabled}
+                      onCheckedChange={(value) => toggleTier(tier, value === true)}
+                      className="mt-1"
+                    />
+                    <div>
+                      <span className="block text-sm font-medium">{getTierLabel(tier)}</span>
+                      <span className="block text-xs text-muted-foreground">{tierDescriptions[tier]}</span>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
 
           <Collapsible defaultOpen={false}>
             <CollapsibleTrigger asChild>
@@ -146,39 +198,6 @@ export function IntakeForm({ mode, initialTiers, onSubmit, loading }: IntakeForm
                     />
                   </div>
                 </div>
-
-                <fieldset className="flex flex-col gap-3 rounded-lg border p-4">
-                  <legend className="px-1 text-sm font-medium">Depth</legend>
-                  <RadioGroup
-                    value={depthPreset}
-                    onValueChange={(v) => setDepthPreset(v as DepthPreset)}
-                    className="grid gap-3 sm:grid-cols-3"
-                  >
-                    <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-3">
-                      <RadioGroupItem value="quick" className="mt-1" />
-                      <div>
-                        <span className="block text-sm font-medium">Quick</span>
-                        <span className="block text-xs text-muted-foreground">Tier 2</span>
-                      </div>
-                    </label>
-                    <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-3">
-                      <RadioGroupItem value="standard" className="mt-1" />
-                      <div>
-                        <span className="block text-sm font-medium">Standard</span>
-                        <span className="block text-xs text-muted-foreground">Tier 2 + 3</span>
-                      </div>
-                    </label>
-                    <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-3">
-                      <RadioGroupItem value="deep" className="mt-1" />
-                      <div>
-                        <span className="block text-sm font-medium">Deep</span>
-                        <span className="block text-xs text-muted-foreground">
-                          Tier 1–4 {mode === 'sync' ? '(tier 1 excluded)' : ''}
-                        </span>
-                      </div>
-                    </label>
-                  </RadioGroup>
-                </fieldset>
               </div>
             </CollapsibleContent>
           </Collapsible>
