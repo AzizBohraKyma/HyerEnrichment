@@ -52,7 +52,7 @@ test.describe('Live backend integration', () => {
     await expect(page.getByRole('heading', { name: 'Look someone up' })).toBeVisible();
 
     await page.getByLabel('Quick (sync)').click();
-    await page.getByRole('textbox', { name: 'Identifier' }).fill(username);
+    await page.getByRole('textbox', { name: /Username/ }).fill(username);
 
     // Include tiers 2/3/4 (sync mode filters tier1 automatically).
     await page.getByRole('button', { name: 'Advanced' }).click();
