@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import text
 
@@ -15,11 +15,13 @@ except ImportError:  # pragma: no cover - optional runtime dependency fallback
     generate_latest = _generate_latest_noop  # type: ignore[assignment]
 
 from app.core.api_route import EnvelopeAPIRoute
-from app.core.config import get_settings
-from app.core.errors import ServiceUnavailableError
+from app.core.config import Settings, get_settings
+from app.core.errors import NotFoundError, ServiceUnavailableError
+from app.core.responses import success_envelope
 from app.database.session import SessionLocal, database_schema_at_head
 from app.domain.enrichment import HealthResponse
 from app.infrastructure.redis import get_redis_client
+from app.observability.error_tracking import capture_exception, flush_error_tracking
 
 router = APIRouter(tags=["health"], route_class=EnvelopeAPIRoute)
 
@@ -50,3 +52,14 @@ async def ready() -> HealthResponse:
 @router.get("/metrics")
 async def metrics() -> PlainTextResponse:
     return PlainTextResponse(generate_latest().decode("utf-8"), media_type=CONTENT_TYPE_LATEST)
+
+
+@router.post("/internal/error-tracking-probe")
+async def error_tracking_probe(settings: Settings = Depends(get_settings)):
+    """E2E-only probe: capture a known exception when explicitly enabled."""
+    if not settings.enable_error_tracking_probe:
+        raise NotFoundError("not found")
+    exc = RuntimeError("e2e error tracking probe")
+    capture_exception(exc, tags={"probe": "e2e"})
+    flush_error_tracking()
+    return success_envelope({"status": "captured"})

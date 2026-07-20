@@ -521,6 +521,7 @@ Copy `backend/.env.example` → `backend/.env`.
 | `google-maps-scraper` | Local business sidecar (Tier 4); built via `Dockerfile.google-maps-scraper` (Playwright driver from npm — not Hub CDN) |
 | `litellm` | LLM proxy |
 | `langfuse` | LLM observability |
+| `glitchtip-web` | Central error tracking (Sentry-compatible UI) |
 | `changedetection` | Company change signals via `POST /api/signals/changedetection` → `NOTIFY_WEBHOOK_URL` |
 
 ### Change signals (changedetection.io)
@@ -548,6 +549,34 @@ python scripts/setup_changedetection_watches.py list
 ```
 
 Flow: changedetection detects a page change → `POST /api/signals/changedetection` → API forwards `{source, watch_id, title, url, timestamp}` to `NOTIFY_WEBHOOK_URL` when configured.
+
+### Central error tracking (GlitchTip / Sentry-compatible)
+
+Opt-in crash reporting for unhandled API 500s and RQ worker failures. The SDK is a **no-op** until `SENTRY_DSN` is set (same pattern as Langfuse).
+
+Start GlitchTip under the observability profile:
+
+```bash
+cd backend/docker
+docker compose --env-file ../.env --profile observability up -d glitchtip-web glitchtip-worker api worker
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `SENTRY_DSN` | Project DSN from GlitchTip (or Sentry SaaS) — empty disables capture |
+| `SENTRY_ENVIRONMENT` | Tag events (defaults to `APP_ENV`) |
+| `SENTRY_RELEASE` | Optional release/build id (git SHA, image tag) |
+| `SENTRY_TRACES_SAMPLE_RATE` | Performance tracing sample rate (default `0`) |
+| `SENTRY_SEND_DEFAULT_PII` | Default `false` — do not attach raw identifiers |
+| `GLITCHTIP_PUBLIC_URL` | GlitchTip UI URL (compose default `http://localhost:8001`) |
+| `GLITCHTIP_SECRET_KEY` | Django secret for self-hosted GlitchTip |
+| `ENABLE_ERROR_TRACKING_PROBE` | E2E only — enables `POST /internal/error-tracking-probe` |
+
+**Reported:** unhandled FastAPI exceptions (500), unexpected RQ enrichment task failures (with `job_id` tag).
+
+**Not reported:** expected `AppError` / 4xx, validation errors, enricher soft-fail → empty fragment.
+
+UI: `http://localhost:8001` — create org/project, copy DSN into `SENTRY_DSN`. E2E proof: `bash backend/scripts/e2e_error_tracking.sh`.
 
 **Current:** compose uses real images/builds. Free-mode sidecars (`social-analyzer`, `google-maps-scraper`, `email-verifier`) start by default; paid/heavy services (`reacher`, `litellm`, `ollama`, `scrapoxy`, `langfuse`, `changedetection`) sit behind compose `profiles:` so a plain `docker compose up` stays free. Default-stack services (`postgres`, `redis`, `api`, `worker`, free sidecars) declare Compose `healthcheck`s; `api`/`worker` wait for `migrate` (`service_completed_successfully`) and `redis` (`service_healthy`). `google-maps-scraper` is built locally (`Dockerfile.google-maps-scraper`) with a pre-assembled Playwright 1.57.0 driver — Hub `:latest` still hits the retired azureedge CDN. Do not volume-mount over `/opt`. Enrichers call real tools (subprocess/library/sidecar) via `app/clients/` and `app/integrations/`, and **degrade to a valid empty fragment** when a tool, sidecar, or key is missing — never a crash. Free -> paid is an env flip via the mode flags in `core/config.py` (`PROXY_MODE`, `BROWSER_MODE`, `LLM_MODE`, `EMAIL_VERIFY_LEVEL`, `ENABLE_TIER1`).
 

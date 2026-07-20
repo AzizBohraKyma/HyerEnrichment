@@ -120,6 +120,10 @@ jobs:
         continue-on-error: true
         run: bash backend/scripts/e2e_langfuse.sh
 
+      - name: Error tracking staging proof
+        continue-on-error: true
+        run: bash backend/scripts/e2e_error_tracking.sh
+
       - name: Upload staging reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -128,3 +132,4 @@ jobs:
           path: |
             backend/.e2e-results/scrapoxy-report.json
             backend/.e2e-results/langfuse-report.json
+            backend/.e2e-results/error-tracking-report.json
