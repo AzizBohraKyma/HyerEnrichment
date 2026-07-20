@@ -17,7 +17,11 @@ from app.integrations.linkedin.photo import (
     save_failure_screenshot,
     wait_for_profile_photo_ready,
 )
-from app.integrations.linkedin.types import ExtractionMethod, LinkedInPhotoError, LinkedInPhotoResult
+from app.integrations.linkedin.types import (
+    ExtractionMethod,
+    LinkedInPhotoError,
+    LinkedInPhotoResult,
+)
 from app.integrations.multilogin.profile_pool import ProfileOutcome
 
 logger = logging.getLogger(__name__)
@@ -81,7 +85,9 @@ def scrape_on_driver(driver: Any, linkedin_url: str) -> tuple[LinkedInPhotoResul
             save_failure_screenshot(driver, None)
         return LinkedInPhotoResult(outcome=extract_state), None
 
-    confidence = OG_IMAGE_CONFIDENCE if method == ExtractionMethod.OG_IMAGE else DOM_FALLBACK_CONFIDENCE
+    confidence = (
+        OG_IMAGE_CONFIDENCE if method == ExtractionMethod.OG_IMAGE else DOM_FALLBACK_CONFIDENCE
+    )
     return (
         LinkedInPhotoResult(
             outcome=LinkedInPhotoError.SUCCESS,

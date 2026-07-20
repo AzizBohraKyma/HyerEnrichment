@@ -1,7 +1,7 @@
 ﻿# Evidence: Tier 1 live proof (Task 13 / M3)
 
-**Branch:** `feat/tier1-live-windows-m3`  
-**Date (UTC):** 2026-07-16  
+**Branch:** `feat/tier1-live-windows-m3`
+**Date (UTC):** 2026-07-16
 **Runner:** `backend/scripts/verify_tier1_live.py` (Windows native, no Docker for Tier 1)
 
 ## Environment

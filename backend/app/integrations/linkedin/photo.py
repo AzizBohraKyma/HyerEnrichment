@@ -60,10 +60,7 @@ def extract_photo_from_topcard_container(driver: Any) -> str | None:
 
 
 def img_attrs_for_debug(img: Any) -> dict[str, str]:
-    return {
-        attr: (img.get_attribute(attr) or "").strip()
-        for attr in (*DOM_PHOTO_ATTRS, "srcset")
-    }
+    return {attr: (img.get_attribute(attr) or "").strip() for attr in (*DOM_PHOTO_ATTRS, "srcset")}
 
 
 def log_photo_extraction_debug(driver: Any) -> None:

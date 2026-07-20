@@ -2,8 +2,8 @@
 
 Hyrepath Enrichment backend — architecture reference for the FastAPI service under `backend/`.
 
-**Version:** 0.3 (July 2026)  
-**Last verified against code:** 2026-07-20  
+**Version:** 0.3 (July 2026)
+**Last verified against code:** 2026-07-20
 **Repo layout:** `HyerEnrichment/backend/` (split from the Next.js frontend in `frontend/`)
 
 ---
@@ -320,8 +320,8 @@ Each enricher returns a partial dict (`photo`, `handles`, `emails`, `verified_em
 | `jobs` | Job id, status, request/dossier JSONB (JSON on SQLite), timestamps |
 | `suppression_list` | SHA-256 hashed identifiers + opt-out reason |
 
-**Docker / production:** PostgreSQL via `DATABASE_URL` (`postgresql+asyncpg://hyrepath:hyrepath@postgres:5432/hyrepath` in compose; API and worker share it).  
-**Local dev default:** SQLite (`sqlite+aiosqlite:///./hyrepath.db`).  
+**Docker / production:** PostgreSQL via `DATABASE_URL` (`postgresql+asyncpg://hyrepath:hyrepath@postgres:5432/hyrepath` in compose; API and worker share it).
+**Local dev default:** SQLite (`sqlite+aiosqlite:///./hyrepath.db`).
 Schema is owned by **Alembic** (`backend/alembic/`). Docker Compose applies migrations via the one-shot `migrate` service (`alembic upgrade head`); API and worker do not run DDL on boot. Local dev: `make migrate` before `uvicorn`, or rely on pytest `conftest` / `init_db()` in scripts. `init_db()` still stamps pre-Alembic `create_all` databases at baseline when `jobs` exists and `alembic_version` is missing, then runs `upgrade head`. Document columns use `JsonDoc` (`JSONB` on Postgres, `JSON` on SQLite). Do not use `create_all` for durable schema.
 
 **Ops notes:** Boot applies migrations automatically — no manual `alembic upgrade` required for Compose. Legacy volumes are auto-stamped (do not delete `postgres_data` unless wiping data is intentional). Local SQLite: delete `hyrepath.db` or let auto-stamp run. Postgres migration edge tests: `TEST_DATABASE_URL=postgresql+asyncpg://… pytest -m postgres` (needs `pip install -e ".[dev]"` for psycopg).

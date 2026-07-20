@@ -1,6 +1,6 @@
 # Master sign-off verification
 
-**Date (UTC):** 2026-07-16  
+**Date (UTC):** 2026-07-16
 **Runner:** `backend/scripts/verify_master_signoff.sh` + master agent independent verification
 
 ## Checklist

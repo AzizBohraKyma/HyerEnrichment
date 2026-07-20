@@ -55,7 +55,9 @@ async def test_gitrecon_parses_output_file(monkeypatch: pytest.MonkeyPatch) -> N
         return 0, "", ""
 
     monkeypatch.setattr(gitrecon_mod, "run_command", _run)
-    fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    fragment = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert fragment["handles"][0]["platform"] == "GitHub"
     assert fragment["github"]["organizations"] == ["github"]
     assert fragment["emails"] == ["octocat@github.com"]
@@ -65,11 +67,15 @@ async def test_gitrecon_parses_output_file(monkeypatch: pytest.MonkeyPatch) -> N
 async def test_gitrecon_degrades_when_tool_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     _patch_gitrecon_redis(monkeypatch)
     monkeypatch.setattr(gitrecon_mod, "run_command", _cmd(127, ""))
-    fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    fragment = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert fragment == {}
 
 
-async def test_crosslinked_reads_names_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+async def test_crosslinked_reads_names_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     from app.enrichers import crosslinked as crosslinked_mod
 
     names_file = tmp_path / "crosslinked_names.txt"
@@ -83,7 +89,9 @@ async def test_crosslinked_reads_names_file(monkeypatch: pytest.MonkeyPatch, tmp
 
     monkeypatch.setattr(get_settings(), "crosslinked_search_engines", "yahoo")
     monkeypatch.setattr(crosslinked_mod, "run_command", _run)
-    fragment = await CrossLinkedEnricher().run(EnrichmentRequest(company="Microsoft", requested_tiers=["tier3"]))
+    fragment = await CrossLinkedEnricher().run(
+        EnrichmentRequest(company="Microsoft", requested_tiers=["tier3"])
+    )
     assert fragment["coworkers"] == ["Jane Doe", "John Smith"]
     assert "jane.doe@microsoft.com" in fragment["emails"]
     assert fragment["sources"] == ["CrossLinked"]
@@ -299,7 +307,9 @@ async def test_email_verifier_reacher_catch_all_status(
 async def test_sherlock_parses_found_urls(monkeypatch: pytest.MonkeyPatch) -> None:
     stdout = "[+] GitHub: https://github.com/jane\n[+] Twitter: https://twitter.com/jane\n"
     monkeypatch.setattr(sherlock_mod, "run_command", _cmd(0, stdout))
-    fragment = await SherlockEnricher().run(EnrichmentRequest(username="jane", requested_tiers=["tier2"]))
+    fragment = await SherlockEnricher().run(
+        EnrichmentRequest(username="jane", requested_tiers=["tier2"])
+    )
     platforms = {handle["platform"] for handle in fragment["handles"]}
     assert platforms == {"Github", "Twitter"}
     assert all(handle["confidence"] == pytest.approx(0.75) for handle in fragment["handles"])
@@ -312,7 +322,9 @@ async def test_maigret_parses_found_urls(monkeypatch: pytest.MonkeyPatch) -> Non
 
     stdout = "[+] GitHub: https://github.com/jane\n"
     monkeypatch.setattr(maigret_mod, "run_command", _cmd(0, stdout))
-    fragment = await MaigretEnricher().run(EnrichmentRequest(username="jane", requested_tiers=["tier2"]))
+    fragment = await MaigretEnricher().run(
+        EnrichmentRequest(username="jane", requested_tiers=["tier2"])
+    )
     assert fragment["handles"][0]["confidence"] == pytest.approx(0.85)
     assert fragment["handles"][0]["metadata"]["provider"] == "Maigret"
     assert fragment["sources"] == ["Maigret"]
@@ -323,14 +335,26 @@ async def test_social_analyzer_maps_sidecar(monkeypatch: pytest.MonkeyPatch) -> 
         return {
             "user_info_normal": {
                 "data": [
-                    {"type": "GitHub", "link": "https://github.com/jane", "good": "true", "rate": 95},
-                    {"type": "Twitter", "link": "https://twitter.com/jane", "good": "true", "rate": "%100.00"},
+                    {
+                        "type": "GitHub",
+                        "link": "https://github.com/jane",
+                        "good": "true",
+                        "rate": 95,
+                    },
+                    {
+                        "type": "Twitter",
+                        "link": "https://twitter.com/jane",
+                        "good": "true",
+                        "rate": "%100.00",
+                    },
                 ]
             }
         }
 
     monkeypatch.setattr(sidecar_mod.SidecarClient, "post_json", _post_json)
-    fragment = await SocialAnalyzerEnricher().run(EnrichmentRequest(username="jane", requested_tiers=["tier2"]))
+    fragment = await SocialAnalyzerEnricher().run(
+        EnrichmentRequest(username="jane", requested_tiers=["tier2"])
+    )
     assert fragment["handles"][0]["platform"] == "GitHub"
     assert fragment["handles"][0]["confidence"] == pytest.approx(0.95)
     assert fragment["handles"][1]["platform"] == "Twitter"
@@ -345,7 +369,9 @@ async def test_social_analyzer_maps_fixture_sample(monkeypatch: pytest.MonkeyPat
         return sample
 
     monkeypatch.setattr(sidecar_mod.SidecarClient, "post_json", _post_json)
-    fragment = await SocialAnalyzerEnricher().run(EnrichmentRequest(username="torvalds", requested_tiers=["tier2"]))
+    fragment = await SocialAnalyzerEnricher().run(
+        EnrichmentRequest(username="torvalds", requested_tiers=["tier2"])
+    )
     assert len(fragment["handles"]) == 2
     by_platform = {h["platform"]: h for h in fragment["handles"]}
     assert by_platform["GitHub"]["confidence"] == pytest.approx(0.95)
@@ -356,7 +382,9 @@ async def test_social_analyzer_maps_fixture_sample(monkeypatch: pytest.MonkeyPat
 async def test_local_business_empty_when_sidecar_unset(monkeypatch: pytest.MonkeyPatch) -> None:
     # Sidecar disabled when URL unset -> empty fragment (ignore host .env).
     monkeypatch.setattr(get_settings(), "gmaps_scraper_url", "")
-    fragment = await LocalBusinessEnricher().run(EnrichmentRequest(business="Joe's Coffee", requested_tiers=["tier4"]))
+    fragment = await LocalBusinessEnricher().run(
+        EnrichmentRequest(business="Joe's Coffee", requested_tiers=["tier4"])
+    )
     assert fragment == {}
 
 
@@ -404,12 +432,16 @@ def test_extract_social_analyzer_candidates_fallback() -> None:
     candidates = extract_social_analyzer_candidates(sample)
     assert len(candidates) == 3
 
-    fallback = extract_social_analyzer_candidates({"detected": [{"type": "GitHub", "link": "https://github.com/x"}]})
+    fallback = extract_social_analyzer_candidates(
+        {"detected": [{"type": "GitHub", "link": "https://github.com/x"}]}
+    )
     assert len(fallback) == 1
 
 
 def test_local_business_parses_gmaps_fixture_csv() -> None:
-    csv_text = (Path(__file__).parent / "fixtures" / "gmaps_sample_row.csv").read_text(encoding="utf-8")
+    csv_text = (Path(__file__).parent / "fixtures" / "gmaps_sample_row.csv").read_text(
+        encoding="utf-8"
+    )
     row = LocalBusinessEnricher()._first_csv_row(csv_text)
     assert row is not None
     assert row["title"] == "Hey Neighbor Cafe"
@@ -418,10 +450,20 @@ def test_local_business_parses_gmaps_fixture_csv() -> None:
 
 async def test_jobspy_maps_scraped_rows(monkeypatch: pytest.MonkeyPatch) -> None:
     def _scrape(self, search_term, company, limit):
-        return [{"title": "SRE", "company": "Acme", "location": "Remote", "is_remote": True, "site": "indeed"}]
+        return [
+            {
+                "title": "SRE",
+                "company": "Acme",
+                "location": "Remote",
+                "is_remote": True,
+                "site": "indeed",
+            }
+        ]
 
     monkeypatch.setattr(JobSpyEnricher, "_scrape", _scrape)
-    fragment = await JobSpyEnricher().run(EnrichmentRequest(job_search="SRE", requested_tiers=["tier4"]))
+    fragment = await JobSpyEnricher().run(
+        EnrichmentRequest(job_search="SRE", requested_tiers=["tier4"])
+    )
     assert fragment["jobs"][0]["title"] == "SRE"
     assert fragment["jobs"][0]["remote"] is True
 
@@ -458,7 +500,9 @@ async def test_jobspy_passes_all_five_sites_to_scrape_jobs(monkeypatch: pytest.M
     fake_jobspy.scrape_jobs = _fake_scrape_jobs  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "jobspy", fake_jobspy)
 
-    fragment = await JobSpyEnricher().run(EnrichmentRequest(job_search="SRE", requested_tiers=["tier4"]))
+    fragment = await JobSpyEnricher().run(
+        EnrichmentRequest(job_search="SRE", requested_tiers=["tier4"])
+    )
     assert captured["site_name"] == list(JOBSPY_SITES)
     assert fragment["jobs"][0]["title"] == "SRE"
     assert fragment["jobs"][0]["source"] == "linkedin"

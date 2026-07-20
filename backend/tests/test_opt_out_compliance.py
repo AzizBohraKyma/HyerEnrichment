@@ -72,7 +72,11 @@ def test_enrich_still_requires_bearer() -> None:
     client = TestClient(app)
     response = client.post(
         "/enrich/sync",
-        json={"email": f"needs-auth-{uuid4().hex}@example.com", "username": "needs-auth", "requested_tiers": ["tier2"]},
+        json={
+            "email": f"needs-auth-{uuid4().hex}@example.com",
+            "username": "needs-auth",
+            "requested_tiers": ["tier2"],
+        },
     )
     assert response.status_code == 401
     assert response.json()["error"]["message"] == "unauthorized"

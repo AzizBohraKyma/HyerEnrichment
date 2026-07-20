@@ -36,7 +36,9 @@ async def check_suppression(db: AsyncSession, identifier: str) -> bool:
             return True
     except RedisError:
         logger.warning("redis unavailable during check_suppression; falling back to SQL")
-    statement = select(SuppressionRecord).where(SuppressionRecord.identifier_hash == identifier_hash)
+    statement = select(SuppressionRecord).where(
+        SuppressionRecord.identifier_hash == identifier_hash
+    )
     result = await db.execute(statement)
     suppressed = result.scalar_one_or_none() is not None
     if suppressed:

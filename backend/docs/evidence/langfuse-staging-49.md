@@ -1,8 +1,8 @@
 # Evidence: Langfuse staging (Task 49)
 
-**Date (UTC):** 2026-07-17  
-**Runner:** `backend/scripts/e2e_langfuse.sh` via GitHub Actions `Local verification (Task 90)`  
-**CI run (PASS):** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134  
+**Date (UTC):** 2026-07-17
+**Runner:** `backend/scripts/e2e_langfuse.sh` via GitHub Actions `Local verification (Task 90)`
+**CI run (PASS):** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134
 **Prior fail:** https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
 
 ## Status

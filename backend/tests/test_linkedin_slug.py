@@ -38,9 +38,7 @@ def test_extract_linkedin_slug_rejects_invalid_urls(url: str) -> None:
 
 
 def test_is_placeholder_image_url_detects_defaults() -> None:
-    assert is_placeholder_image_url(
-        "https://static.licdn.com/aero-v1/sc/h/ghost-person.png"
-    )
+    assert is_placeholder_image_url("https://static.licdn.com/aero-v1/sc/h/ghost-person.png")
     assert is_placeholder_image_url("https://media.licdn.com/default-avatar.png")
     assert not is_placeholder_image_url(
         "https://media.licdn.com/dms/image/C4D03AQG/example/photo.jpg"

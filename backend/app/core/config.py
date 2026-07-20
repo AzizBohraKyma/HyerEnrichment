@@ -63,15 +63,9 @@ class Settings(BaseSettings):
         default="http://127.0.0.1", alias="MULTILOGIN_SELENIUM_HOST"
     )
     linkedin_bot_email: str = Field(default="", alias="LINKEDIN_BOT_EMAIL")
-    linkedin_bot_password: SecretStr = Field(
-        default=SecretStr(""), alias="LINKEDIN_BOT_PASSWORD"
-    )
-    tier1_browser_timeout_seconds: int = Field(
-        default=45, alias="TIER1_BROWSER_TIMEOUT_SECONDS"
-    )
-    tier1_max_concurrent_browsers: int = Field(
-        default=1, alias="TIER1_MAX_CONCURRENT_BROWSERS"
-    )
+    linkedin_bot_password: SecretStr = Field(default=SecretStr(""), alias="LINKEDIN_BOT_PASSWORD")
+    tier1_browser_timeout_seconds: int = Field(default=45, alias="TIER1_BROWSER_TIMEOUT_SECONDS")
+    tier1_max_concurrent_browsers: int = Field(default=1, alias="TIER1_MAX_CONCURRENT_BROWSERS")
     # Legacy Playwright CDP attach (local dev); production uses Selenium via MLX launcher port.
     multilogin_cdp_url: str = Field(default="", alias="MULTILOGIN_CDP_URL")
 
@@ -97,9 +91,7 @@ class Settings(BaseSettings):
     reacher_url: str = Field(default="", alias="REACHER_URL")
     reacher_from_email: str = Field(default="", alias="REACHER_FROM_EMAIL")
     email_verify_max_per_job: int = Field(default=10, alias="EMAIL_VERIFY_MAX_PER_JOB")
-    email_verify_smtp_delay_seconds: int = Field(
-        default=6, alias="EMAIL_VERIFY_SMTP_DELAY_SECONDS"
-    )
+    email_verify_smtp_delay_seconds: int = Field(default=6, alias="EMAIL_VERIFY_SMTP_DELAY_SECONDS")
 
     # Tier 4 — jobs + business
     jobspy_results_per_board: int = Field(default=15, alias="JOBSPY_RESULTS_PER_BOARD")
@@ -193,8 +185,7 @@ def validate_tier1_settings(settings: Settings | None = None) -> None:
                 seen.add(key)
                 ordered.append(key)
         raise RuntimeError(
-            "ENABLE_TIER1=true but required settings are missing: "
-            + ", ".join(ordered)
+            "ENABLE_TIER1=true but required settings are missing: " + ", ".join(ordered)
         )
 
 

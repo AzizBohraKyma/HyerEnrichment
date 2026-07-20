@@ -1,8 +1,8 @@
 # Fresh-setup verification
 
-**Date:** 2026-07-16  
-**Branch:** `chore/fresh-setup-verify-m16`  
-**Base SHA:** `f41e41f213c709dac8fd98221fdb90b3932378d8` (origin/main)  
+**Date:** 2026-07-16
+**Branch:** `chore/fresh-setup-verify-m16`
+**Base SHA:** `f41e41f213c709dac8fd98221fdb90b3932378d8` (origin/main)
 **Result:** PASS
 
 ## Environment
@@ -91,4 +91,3 @@ PASS  unauth /enrich/sync → 401
 PASS  /enrich/sync → completed
 smoke ok
 ```
-

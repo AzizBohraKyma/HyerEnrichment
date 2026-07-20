@@ -40,7 +40,11 @@ def test_ready_returns_503_when_schema_behind() -> None:
 
     with (
         patch("app.modules.health.router.get_redis_client", return_value=redis),
-        patch("app.modules.health.router.database_schema_at_head", new_callable=AsyncMock, return_value=False),
+        patch(
+            "app.modules.health.router.database_schema_at_head",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
     ):
         client = TestClient(app)
         response = client.get("/ready")

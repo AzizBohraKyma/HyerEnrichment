@@ -55,7 +55,9 @@ def test_collect_email_candidates_respects_cap(
 
 async def test_verify_email_batch_delegates_to_enricher(orchestrator: Pipeline) -> None:
     expected = {
-        "verified_emails": [{"value": "a@b.com", "status": "deliverable", "confidence": 0.8, "source": "mx"}],
+        "verified_emails": [
+            {"value": "a@b.com", "status": "deliverable", "confidence": 0.8, "source": "mx"}
+        ],
         "sources": ["Email Verify"],
     }
     orchestrator._email_verify.verify_emails = AsyncMock(return_value=expected)
@@ -246,7 +248,12 @@ async def test_tier3_dispatch_runs_verify_after_discover(
     discover_payload = {"emails": ["found@github.com"], "sources": ["theHarvester"]}
     verify_payload = {
         "verified_emails": [
-            {"value": "found@github.com", "status": "deliverable", "confidence": 0.8, "source": "mx"}
+            {
+                "value": "found@github.com",
+                "status": "deliverable",
+                "confidence": 0.8,
+                "source": "mx",
+            }
         ],
         "sources": ["Email Verify"],
     }

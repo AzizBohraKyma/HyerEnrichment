@@ -20,14 +20,16 @@ class EnrichmentRequest(BaseModel):
 
     @model_validator(mode="after")
     def ensure_identifier(self) -> EnrichmentRequest:
-        if not any([
-            self.email,
-            self.linkedin_url,
-            self.username,
-            self.company,
-            self.business,
-            self.job_search,
-        ]):
+        if not any(
+            [
+                self.email,
+                self.linkedin_url,
+                self.username,
+                self.company,
+                self.business,
+                self.job_search,
+            ]
+        ):
             raise ValueError("at least one identifier is required")
 
         tiers = self.requested_tiers or list(RequestedTier)
@@ -35,11 +37,13 @@ class EnrichmentRequest(BaseModel):
             raise ValueError("tier1 requires linkedin_url")
         if RequestedTier.tier2 in tiers and not self.username:
             raise ValueError("tier2 requires username")
-        if RequestedTier.tier3 in tiers and not any([
-            self.username,
-            self.email,
-            self.company,
-        ]):
+        if RequestedTier.tier3 in tiers and not any(
+            [
+                self.username,
+                self.email,
+                self.company,
+            ]
+        ):
             raise ValueError("tier3 requires at least one of username, email, or company")
         if RequestedTier.tier4 in tiers and not any([self.job_search, self.business]):
             raise ValueError("tier4 requires at least one of job_search or business")

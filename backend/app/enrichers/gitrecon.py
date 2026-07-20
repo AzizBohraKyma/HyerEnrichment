@@ -39,12 +39,7 @@ def fragment_from_gitrecon_data(
     login = str(data.get("username") or data.get("login") or username)
     profile_url = f"https://github.com/{login}"
 
-    raw_emails = (
-        data.get("leaked_emails")
-        or data.get("emails")
-        or data.get("commit_emails")
-        or []
-    )
+    raw_emails = data.get("leaked_emails") or data.get("emails") or data.get("commit_emails") or []
     emails = [str(email) for email in raw_emails if email]
 
     raw_orgs = data.get("orgs") or data.get("organizations") or []

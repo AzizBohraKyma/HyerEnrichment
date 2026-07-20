@@ -13,7 +13,9 @@ from app.integrations.multilogin.profile_pool import ProfileOutcome, ProfilePool
 
 
 class _FakeDriver:
-    def __init__(self, *, current_url: str = "https://www.linkedin.com/feed/", page_source: str = "") -> None:
+    def __init__(
+        self, *, current_url: str = "https://www.linkedin.com/feed/", page_source: str = ""
+    ) -> None:
         self.current_url = current_url
         self.page_source = page_source
         self.calls: list[str] = []
@@ -101,7 +103,9 @@ async def test_profile_pool_refund_view(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 @pytest.mark.asyncio
-async def test_profile_release_rate_limit_uses_shorter_cooldown(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_profile_release_rate_limit_uses_shorter_cooldown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from app.core.config import get_settings
 
     captured: dict[str, int] = {}
@@ -112,7 +116,9 @@ async def test_profile_release_rate_limit_uses_shorter_cooldown(monkeypatch: pyt
             return True
 
     monkeypatch.setattr(get_settings(), "multilogin_rate_limit_cooldown_seconds", 1800)
-    monkeypatch.setattr("app.integrations.multilogin.profile_pool.get_redis_client", lambda: _FakeRedis())
+    monkeypatch.setattr(
+        "app.integrations.multilogin.profile_pool.get_redis_client", lambda: _FakeRedis()
+    )
 
     pool = ProfilePool()
     await pool.release("profile-1", ProfileOutcome.RATE_LIMITED)

@@ -1,6 +1,6 @@
 # Evidence: Tier 1 Multilogin live canary — Task 90
 
-**Date (UTC):** 2026-07-17  
+**Date (UTC):** 2026-07-17
 **Status:** **SKIP / BLOCKED** — remaining live gate for Task 90
 
 ## Why skipped

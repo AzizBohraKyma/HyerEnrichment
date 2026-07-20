@@ -1,6 +1,6 @@
 # Evidence: ChangeDetection staging (Task 71 adjacent)
 
-**Date (UTC):** 2026-07-17  
+**Date (UTC):** 2026-07-17
 **Status:** **DEFERRED / not in Task 90 CI matrix**
 
 ## Notes

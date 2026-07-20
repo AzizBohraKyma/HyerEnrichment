@@ -1,7 +1,7 @@
 # HyerEnrichment — common local-dev targets
 # Free Docker stack: api, worker, redis, postgres, social-analyzer, google-maps-scraper
 
-.PHONY: help setup up down test smoke smoke-prod boundary-checks migrate integration-e2e e2e-full-path load-test audit audit-python audit-frontend verify-adrs
+.PHONY: help setup up down test smoke smoke-prod boundary-checks migrate integration-e2e e2e-full-path load-test audit audit-python audit-frontend verify-adrs lint pre-commit
 
 .DEFAULT_GOAL := help
 
@@ -26,6 +26,8 @@ help: ## List available targets
 	@echo "  audit-python      Python dependency audit only"
 	@echo "  audit-frontend    Frontend npm audit only"
 	@echo "  verify-adrs  Validate formal ADR structure and cross-links (Task 6)"
+	@echo "  lint     Run ruff, mypy, and frontend typecheck (CI parity)"
+	@echo "  pre-commit  Run all pre-commit hooks on the full repo"
 	@echo "  help     Show this help"
 
 setup: ## Env file + editable backend install (venv; avoids PEP 668)
@@ -41,6 +43,8 @@ setup: ## Env file + editable backend install (venv; avoids PEP 668)
 	fi
 	$(BACKEND_DIR)/.venv/bin/pip install -e "$(BACKEND_DIR)[dev]"
 	$(BACKEND_DIR)/.venv/bin/pip install requests
+	$(BACKEND_DIR)/.venv/bin/pre-commit install
+	$(BACKEND_DIR)/.venv/bin/pre-commit install --hook-type commit-msg
 
 up: ## Start documented free Compose stack
 	cd $(DOCKER_DIR) && DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 docker compose up --build -d $(FREE_STACK)
@@ -104,3 +108,11 @@ verify-adrs: ## Validate formal ADR structure and cross-links (Task 6)
 	else \
 		python3 $(BACKEND_DIR)/scripts/verify_adrs.py --json; \
 	fi
+
+lint: ## Ruff + mypy + frontend typecheck (matches CI lint/contract jobs)
+	$(BACKEND_DIR)/.venv/bin/ruff check $(BACKEND_DIR)/app $(BACKEND_DIR)/tests
+	cd $(BACKEND_DIR) && ../$(BACKEND_DIR)/.venv/bin/mypy app
+	cd frontend && npm run typecheck
+
+pre-commit: ## Run all pre-commit hooks on the full repo
+	$(BACKEND_DIR)/.venv/bin/pre-commit run --all-files

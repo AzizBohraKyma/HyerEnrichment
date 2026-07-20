@@ -73,9 +73,7 @@ def test_upgrade_head_sqlite_idempotent(sqlite_url: str) -> None:
                     """
                 )
             )
-            row = conn.execute(
-                text("SELECT status FROM jobs WHERE id = 'job_t1'")
-            ).fetchone()
+            row = conn.execute(text("SELECT status FROM jobs WHERE id = 'job_t1'")).fetchone()
             assert row is not None
             assert row[0] == "queued"
     finally:
@@ -137,9 +135,7 @@ def test_legacy_pre_alembic_bootstrap_sqlite(sqlite_url: str) -> None:
         with engine.connect() as conn:
             cols = {c["name"] for c in inspect(conn).get_columns("jobs")}
             assert "identifier_hashes" in cols
-            row = conn.execute(
-                text("SELECT id FROM jobs WHERE id = 'job_legacy'")
-            ).fetchone()
+            row = conn.execute(text("SELECT id FROM jobs WHERE id = 'job_legacy'")).fetchone()
             assert row is not None
     finally:
         engine.dispose()

@@ -1,7 +1,7 @@
 # Evidence: Production deploy (Task 86)
 
-**Branch:** `feat/prod-deploy-86`  
-**Date (UTC):** 2026-07-16  
+**Branch:** `feat/prod-deploy-86`
+**Date (UTC):** 2026-07-16
 **Target:** https://enrich.hyrepath.io
 
 ## Deliverables

@@ -32,7 +32,9 @@ def _load_app(mode: str):
 @pytest.mark.asyncio
 async def test_fake_social_analyzer_contract() -> None:
     app = _load_app("social-analyzer")
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
         settings = await client.get("/get_settings")
         analyze = await client.post("/analyze_string", json={"string": "torvalds"})
 
@@ -65,7 +67,9 @@ async def test_fake_social_analyzer_enricher_integration(monkeypatch: pytest.Mon
     monkeypatch.setattr(get_settings(), "social_analyzer_url", "http://test")
     monkeypatch.setattr(sidecar_mod.SidecarClient, "post_json", _post_json)
 
-    fragment = await SocialAnalyzerEnricher().run(EnrichmentRequest(username="torvalds", requested_tiers=["tier2"]))
+    fragment = await SocialAnalyzerEnricher().run(
+        EnrichmentRequest(username="torvalds", requested_tiers=["tier2"])
+    )
     platforms = {h["platform"] for h in fragment["handles"]}
     assert platforms == {"GitHub", "Twitter"}
     assert len(fragment["handles"]) == 2
@@ -74,7 +78,9 @@ async def test_fake_social_analyzer_enricher_integration(monkeypatch: pytest.Mon
 @pytest.mark.asyncio
 async def test_fake_gmaps_contract() -> None:
     app = _load_app("google-maps-scraper")
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
         created = await client.post(
             "/api/v1/jobs",
             json={"name": "probe", "keywords": ["coffee"], "depth": 1, "lang": "en"},
@@ -132,7 +138,9 @@ async def test_fake_gmaps_enricher_integration(monkeypatch: pytest.MonkeyPatch) 
 @pytest.mark.asyncio
 async def test_fake_reacher_contract() -> None:
     app = _load_app("reacher")
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post("/v1/check_email", json={"to_email": "user@example.com"})
 
     assert response.status_code == 200
@@ -145,7 +153,9 @@ async def test_fake_reacher_contract() -> None:
 @pytest.mark.asyncio
 async def test_fake_reacher_catchall_contract() -> None:
     app = _load_app("reacher")
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.post(
             "/v1/check_email",
             json={"to_email": "guess@catchall.example.com"},
@@ -217,7 +227,9 @@ async def test_fake_reacher_catchall_enricher_integration(monkeypatch: pytest.Mo
 @pytest.mark.asyncio
 async def test_fake_email_verifier_contract() -> None:
     app = _load_app("email-verifier")
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
         response = await client.get("/v1/user@example.com/verification")
 
     assert response.status_code == 200

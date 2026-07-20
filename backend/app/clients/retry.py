@@ -12,7 +12,9 @@ _TRANSIENT_STATUS = frozenset({502, 503, 504})
 
 
 def is_transient_http_error(exc: BaseException) -> bool:
-    if isinstance(exc, (httpx.ConnectError, httpx.ReadTimeout, httpx.WriteTimeout, httpx.PoolTimeout)):
+    if isinstance(
+        exc, (httpx.ConnectError, httpx.ReadTimeout, httpx.WriteTimeout, httpx.PoolTimeout)
+    ):
         return True
     if isinstance(exc, httpx.HTTPStatusError):
         return exc.response.status_code in _TRANSIENT_STATUS

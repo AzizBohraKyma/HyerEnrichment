@@ -1,0 +1,51 @@
+# Local lint/format gates — mirrors CI lint-test + frontend-contract (typecheck only).
+# Install: make setup  (runs pre-commit install + commit-msg hook)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.12
+    hooks:
+      - id: ruff-format
+        files: ^backend/(app|tests)/
+      - id: ruff
+        args: [--fix]
+        files: ^backend/(app|tests)/
+
+  - repo: local
+    hooks:
+      - id: block-env-files
+        name: Block .env and .env.local commits
+        entry: python scripts/hooks/block_env_files.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: mypy
+        name: mypy backend/app
+        entry: python scripts/hooks/run_mypy.py
+        language: system
+        files: ^backend/
+        pass_filenames: false
+
+      - id: frontend-typecheck
+        name: frontend typecheck
+        entry: python scripts/hooks/run_frontend_typecheck.py
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+
+      - id: no-co-authored-by
+        name: Block Co-authored-by trailers
+        entry: python scripts/hooks/block_co_authored_by.py
+        language: system
+        stages: [commit-msg]
+        pass_filenames: true

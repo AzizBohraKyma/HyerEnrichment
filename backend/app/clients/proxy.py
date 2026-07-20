@@ -32,4 +32,6 @@ class ProxyProvider:
         parts = urlsplit(endpoint)
         host = parts.netloc.rsplit("@", 1)[-1]
         credentials = f"{quote(username, safe='')}:{quote(password, safe='')}@"
-        return urlunsplit((parts.scheme, f"{credentials}{host}", parts.path, parts.query, parts.fragment))
+        return urlunsplit(
+            (parts.scheme, f"{credentials}{host}", parts.path, parts.query, parts.fragment)
+        )

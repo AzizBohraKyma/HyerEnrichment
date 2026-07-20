@@ -72,9 +72,7 @@ def _photo_from_payload(payload: dict) -> PhotoAsset | None:
 
     uploaded_raw = payload.get("uploaded_at")
     captured_at = (
-        datetime.fromisoformat(str(uploaded_raw))
-        if uploaded_raw
-        else datetime.now(timezone.utc)
+        datetime.fromisoformat(str(uploaded_raw)) if uploaded_raw else datetime.now(timezone.utc)
     )
     if captured_at.tzinfo is None:
         captured_at = captured_at.replace(tzinfo=timezone.utc)
@@ -173,7 +171,9 @@ class PhotoCache:
 
     async def _get_from_sql(self, slug: str) -> PhotoAsset | None:
         async with SessionLocal() as session:
-            statement = select(PhotoCacheRecord).where(PhotoCacheRecord.slug_hash == slug_hash(slug))
+            statement = select(PhotoCacheRecord).where(
+                PhotoCacheRecord.slug_hash == slug_hash(slug)
+            )
             result = await session.execute(statement)
             record = result.scalar_one_or_none()
 

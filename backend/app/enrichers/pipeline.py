@@ -162,12 +162,16 @@ class Pipeline:
     async def register_opt_out(self, identifier: str, reason: str | None = None) -> PurgeResult:
         identifier_hash = hash_identifier(identifier)
         await add_suppression(self.db, identifier, reason)
-        await log_event(self.db, AuditEventType.opt_out, identifier_hash, details={"reason": reason or ""})
+        await log_event(
+            self.db, AuditEventType.opt_out, identifier_hash, details={"reason": reason or ""}
+        )
 
         try:
             purge_result = await purge_identifier_data(self.db, identifier)
         except Exception:
-            logger.warning("purge failed for identifier_hash=%s", identifier_hash[:12], exc_info=True)
+            logger.warning(
+                "purge failed for identifier_hash=%s", identifier_hash[:12], exc_info=True
+            )
             purge_result = PurgeResult()
             await self.db.commit()
 
@@ -217,7 +221,9 @@ class Pipeline:
             payloads.extend(await self._run_tier_parallel(self.tier4, request))
         return payloads
 
-    async def _run_tier(self, enrichers: list[Enricher], request: EnrichmentRequest) -> list[dict[str, Any]]:
+    async def _run_tier(
+        self, enrichers: list[Enricher], request: EnrichmentRequest
+    ) -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []
         for enricher in enrichers:
             results.append(await self._invoke_enricher(enricher, request))
@@ -241,7 +247,9 @@ class Pipeline:
                 payloads.append(result)
         return payloads
 
-    async def _invoke_enricher(self, worker: Enricher, request: EnrichmentRequest) -> dict[str, Any]:
+    async def _invoke_enricher(
+        self, worker: Enricher, request: EnrichmentRequest
+    ) -> dict[str, Any]:
         try:
             if not await worker.validate(request):
                 return {}
