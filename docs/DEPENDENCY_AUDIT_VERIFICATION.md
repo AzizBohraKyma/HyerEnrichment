@@ -76,7 +76,7 @@ npm audit reports high findings for `next@14.2.35` with fix version `16.2.10` on
 
 ## CI evidence
 
-_Update after PR CI completes:_
-
-- PR: _(fill on push)_
-- GHA `dependency-audit` run: _(fill on push)_
+- PR: https://github.com/1Touch-dev/HyerPathEnrichment/pull/108
+- GHA `dependency-audit` run: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29724330927 (PASS)
+- `frontend-contract` also PASS after openapi-typescript v7 type regen
+- `lint-test` fails on `main` pre-existing mypy errors (unrelated to Task 4)
