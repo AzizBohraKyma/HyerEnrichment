@@ -14,8 +14,8 @@ export function useHealth() {
   const refresh = useCallback(async () => {
     try {
       const status = await getHealth();
-      setHealth(status);
-      setOnline(status.status === 'ok' || status.status === 'ready');
+      setHealth(status.data);
+      setOnline(status.data.status === 'ok' || status.data.status === 'ready');
     } catch {
       setHealth({ status: 'error', service: 'hyrepath-enrichment' });
       setOnline(false);

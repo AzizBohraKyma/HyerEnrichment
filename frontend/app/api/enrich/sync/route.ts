@@ -1,28 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import {
   BackendJobResponse,
   hasIdentifier,
   mapBackendJobToFrontend,
-  parseBackendError,
   parseEnrichmentInput,
   toBackendEnrichmentRequest,
-  unwrapBackendData,
 } from '@/src/lib/api-adapter';
 import { backendFetch } from '@/src/lib/backend-client';
+import { bffServiceUnavailable, bffValidationError, handleBackendJson } from '@/src/lib/bff-response';
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as Parameters<typeof parseEnrichmentInput>[0];
   const input = parseEnrichmentInput(body);
 
   if (!hasIdentifier(input)) {
-    return NextResponse.json({ message: 'At least one identifier is required.' }, { status: 400 });
+    return bffValidationError('At least one identifier is required.');
   }
 
   if (input.requestedTiers.includes('tier1')) {
-    return NextResponse.json(
-      { message: 'Tier 1 is not available in sync mode. Use async enrichment or remove tier1.' },
-      { status: 400 },
-    );
+    return bffValidationError('Tier 1 is not available in sync mode. Use async enrichment or remove tier1.');
   }
 
   let backendResponse: Response;
@@ -33,14 +29,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(toBackendEnrichmentRequest(input)),
     });
   } catch {
-    return NextResponse.json({ message: 'Unable to reach enrichment backend.' }, { status: 502 });
+    return bffServiceUnavailable();
   }
 
-  if (!backendResponse.ok) {
-    const message = await parseBackendError(backendResponse);
-    return NextResponse.json({ message }, { status: backendResponse.status });
-  }
-
-  const backendJob = unwrapBackendData<BackendJobResponse>(await backendResponse.json());
-  return NextResponse.json(mapBackendJobToFrontend(backendJob, input), { status: 200 });
+  return handleBackendJson<BackendJobResponse, ReturnType<typeof mapBackendJobToFrontend>>(
+    backendResponse,
+    (payload) => mapBackendJobToFrontend(payload, input),
+    200,
+  );
 }

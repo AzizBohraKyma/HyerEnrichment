@@ -3,6 +3,7 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { JobHistoryTable } from '@/components/console/JobHistoryTable';
 import { useJobListQuery } from '@/features/history';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 
 const PAGE_SIZE = 50;
 
@@ -22,7 +23,7 @@ export default function HistoryPage() {
 
       {error ? (
         <Alert variant="destructive">
-          <AlertDescription>{error.message}</AlertDescription>
+          <AlertDescription>{formatApiErrorMessage(error)}</AlertDescription>
         </Alert>
       ) : null}
 

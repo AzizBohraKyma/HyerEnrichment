@@ -35,7 +35,7 @@ export async function pollEnrichmentJob(
     await sleep(intervalMs);
 
     try {
-      latestJob = await getEnrichmentJob(jobId);
+      latestJob = (await getEnrichmentJob(jobId)).data;
       options.onUpdate?.(latestJob);
 
       if (isTerminalStatus(latestJob.status)) {

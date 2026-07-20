@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useHealthQuery } from '../hooks/useHealthQuery';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 import { cn } from '@/src/lib/utils';
 
 export function HealthView() {
@@ -37,7 +38,7 @@ export function HealthView() {
             {isLoading ? (
               <Skeleton className="h-8 w-32" />
             ) : error ? (
-              <p className="text-sm text-destructive">{error.message}</p>
+              <p className="text-sm text-destructive">{formatApiErrorMessage(error)}</p>
             ) : (
               <div className="flex items-center gap-3">
                 <span className={cn('h-3 w-3 rounded-full', online ? 'bg-success' : 'bg-destructive')} />

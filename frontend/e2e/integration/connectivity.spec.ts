@@ -30,6 +30,14 @@ test.beforeAll(async () => {
 test.describe('Live backend integration', () => {
   let jobId: string;
 
+  test('BFF health route returns success envelope', async ({ request }) => {
+    const response = await request.get('/api/health');
+    expect(response.ok()).toBeTruthy();
+    const body = await response.json();
+    expect(body.success).toBe(true);
+    expect(body.data).toMatchObject({ status: expect.any(String), service: expect.any(String) });
+  });
+
   test('health page reports live backend (not mock)', async ({ page }) => {
     await page.goto('/app/health');
     await expect(page.getByRole('heading', { name: 'System health' })).toBeVisible();

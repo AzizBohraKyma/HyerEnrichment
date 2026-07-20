@@ -7,7 +7,7 @@ const PAGE_SIZE = 50;
 export function useSignalListQuery() {
   return useInfiniteQuery({
     queryKey: signalKeys.all,
-    queryFn: ({ pageParam }) => listSignals({ limit: PAGE_SIZE, offset: pageParam }),
+    queryFn: async ({ pageParam }) => (await listSignals({ limit: PAGE_SIZE, offset: pageParam })).data,
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages, lastOffset) => {
       const nextOffset = lastOffset + lastPage.signals.length;

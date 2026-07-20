@@ -9,7 +9,7 @@ export const healthKeys = {
 export function useHealthQuery() {
   return useQuery({
     queryKey: healthKeys.status(),
-    queryFn: getHealth,
+    queryFn: async () => (await getHealth()).data,
     refetchInterval: 30_000,
   });
 }

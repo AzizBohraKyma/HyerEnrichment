@@ -7,6 +7,7 @@ import { JobProgress } from '@/components/console/JobProgress';
 import { EmptyState } from '@/components/console/EmptyState';
 import { useJobQuery } from '@/features/enrich';
 import { isTerminalStatus } from '@/src/lib/enrich-poll';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 
 export default function JobDetailPage() {
   const params = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ export default function JobDetailPage() {
   if (error && !job) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>{error.message}</AlertDescription>
+        <AlertDescription>{formatApiErrorMessage(error)}</AlertDescription>
       </Alert>
     );
   }

@@ -1,108 +1,107 @@
-import { EnrichmentInput, EnrichmentJob, EnrichMode, HealthStatus, JobListResponse, OptOutInput, DsarInput, DsarResponse, SignalListResponse } from '@/src/lib/types';
+import {
+  ApiError,
+  isErrorEnvelope,
+  isSuccessEnvelope,
+  parseEnvelopeError,
+  SuccessEnvelope,
+} from '@/src/lib/api-envelope';
+import {
+  DsarInput,
+  DsarResponse,
+  EnrichmentInput,
+  EnrichmentJob,
+  EnrichMode,
+  HealthStatus,
+  JobListResponse,
+  OptOutInput,
+  SignalListResponse,
+} from '@/src/lib/types';
 
-async function parseJson<T>(response: Response): Promise<T> {
-  const payload = (await response.json()) as T;
-  return payload;
-}
-
-async function throwApiError(response: Response): Promise<never> {
-  let message = 'Request failed';
+async function parseJsonBody(response: Response): Promise<unknown> {
   try {
-    const body = (await response.json()) as { message?: string };
-    message = body.message ?? message;
+    return await response.json();
   } catch {
-    message = await response.text();
+    return null;
   }
-  throw new Error(message || `Request failed (${response.status})`);
 }
 
-export async function createEnrichmentJob(input: EnrichmentInput, mode: EnrichMode): Promise<EnrichmentJob> {
+async function request<T>(path: string, init?: RequestInit): Promise<SuccessEnvelope<T>> {
+  const response = await fetch(path, init);
+  const body = await parseJsonBody(response);
+
+  if (!response.ok || isErrorEnvelope(body)) {
+    throw parseEnvelopeError(body, response.status);
+  }
+
+  if (!isSuccessEnvelope(body)) {
+    throw new ApiError('Invalid API response shape', {
+      code: 'INTERNAL_ERROR',
+      statusCode: response.status || 500,
+    });
+  }
+
+  return body as SuccessEnvelope<T>;
+}
+
+export async function requestData<T>(path: string, init?: RequestInit): Promise<T> {
+  const envelope = await request<T>(path, init);
+  return envelope.data;
+}
+
+export async function createEnrichmentJob(
+  input: EnrichmentInput,
+  mode: EnrichMode,
+): Promise<SuccessEnvelope<EnrichmentJob>> {
   const path = mode === 'sync' ? '/api/enrich/sync' : '/api/enrich';
-  const response = await fetch(path, {
+  return request<EnrichmentJob>(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
-
-  if (!response.ok) {
-    await throwApiError(response);
-  }
-
-  return parseJson<EnrichmentJob>(response);
 }
 
-export async function getEnrichmentJob(id: string): Promise<EnrichmentJob> {
-  const response = await fetch(`/api/enrich/${id}`);
-
-  if (!response.ok) {
-    await throwApiError(response);
-  }
-
-  return parseJson<EnrichmentJob>(response);
+export async function getEnrichmentJob(id: string): Promise<SuccessEnvelope<EnrichmentJob>> {
+  return request<EnrichmentJob>(`/api/enrich/${id}`);
 }
 
-export async function listEnrichmentJobs(params: { limit?: number; offset?: number } = {}): Promise<JobListResponse> {
+export async function listEnrichmentJobs(
+  params: { limit?: number; offset?: number } = {},
+): Promise<SuccessEnvelope<JobListResponse>> {
   const search = new URLSearchParams();
   if (params.limit !== undefined) search.set('limit', String(params.limit));
   if (params.offset !== undefined) search.set('offset', String(params.offset));
 
   const query = search.toString();
-  const response = await fetch(`/api/enrich/jobs${query ? `?${query}` : ''}`);
-
-  if (!response.ok) {
-    await throwApiError(response);
-  }
-
-  return parseJson<JobListResponse>(response);
+  return request<JobListResponse>(`/api/enrich/jobs${query ? `?${query}` : ''}`);
 }
 
-export async function submitOptOut(payload: OptOutInput): Promise<void> {
-  const response = await fetch('/api/opt-out', {
+export async function submitOptOut(payload: OptOutInput): Promise<SuccessEnvelope<{ status: 'accepted' }>> {
+  return request<{ status: 'accepted' }>('/api/opt-out', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    await throwApiError(response);
-  }
 }
 
-export async function submitDsar(payload: DsarInput): Promise<DsarResponse> {
-  const response = await fetch('/api/dsar', {
+export async function submitDsar(payload: DsarInput): Promise<SuccessEnvelope<DsarResponse>> {
+  return request<DsarResponse>('/api/dsar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    await throwApiError(response);
-  }
-
-  return parseJson<DsarResponse>(response);
 }
 
-export async function listSignals(params: { limit?: number; offset?: number } = {}): Promise<SignalListResponse> {
+export async function listSignals(
+  params: { limit?: number; offset?: number } = {},
+): Promise<SuccessEnvelope<SignalListResponse>> {
   const search = new URLSearchParams();
   if (params.limit !== undefined) search.set('limit', String(params.limit));
   if (params.offset !== undefined) search.set('offset', String(params.offset));
 
   const query = search.toString();
-  const response = await fetch(`/api/signals${query ? `?${query}` : ''}`);
-
-  if (!response.ok) {
-    await throwApiError(response);
-  }
-
-  return parseJson<SignalListResponse>(response);
+  return request<SignalListResponse>(`/api/signals${query ? `?${query}` : ''}`);
 }
 
-export async function getHealth(): Promise<HealthStatus> {
-  const response = await fetch('/api/health');
-
-  if (!response.ok) {
-    await throwApiError(response);
-  }
-
-  return parseJson<HealthStatus>(response);
+export async function getHealth(): Promise<SuccessEnvelope<HealthStatus>> {
+  return request<HealthStatus>('/api/health');
 }

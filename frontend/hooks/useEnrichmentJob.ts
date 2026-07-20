@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createEnrichmentJob, getEnrichmentJob } from '@/src/lib/api-client';
 import { isTerminalStatus, pollEnrichmentJob } from '@/src/lib/enrich-poll';
+import { ApiError } from '@/src/lib/api-envelope';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 import { EnrichmentInput, EnrichmentJob, EnrichMode } from '@/src/lib/types';
 
 type UseEnrichmentJobOptions = {
@@ -22,10 +24,10 @@ export function useEnrichmentJob(options: UseEnrichmentJobOptions = {}) {
     setLoading(true);
     try {
       const loaded = await getEnrichmentJob(id);
-      setJob(loaded);
-      return loaded;
+      setJob(loaded.data);
+      return loaded.data;
     } catch (loadError) {
-      const message = loadError instanceof Error ? loadError.message : 'Failed to load job';
+      const message = formatApiErrorMessage(loadError);
       setError(message);
       return null;
     } finally {
@@ -50,7 +52,7 @@ export function useEnrichmentJob(options: UseEnrichmentJobOptions = {}) {
       setJob(result.job);
       setPollTimedOut(true);
     } else {
-      setError(result.error.message);
+      setError(result.error instanceof ApiError ? result.error.message : formatApiErrorMessage(result.error));
     }
   }, []);
 
@@ -62,16 +64,15 @@ export function useEnrichmentJob(options: UseEnrichmentJobOptions = {}) {
 
       try {
         const created = await createEnrichmentJob(input, mode);
-        setJob(created);
+        setJob(created.data);
 
-        if (mode === 'async' && !isTerminalStatus(created.status)) {
-          await startPolling(created.id);
+        if (mode === 'async' && !isTerminalStatus(created.data.status)) {
+          await startPolling(created.data.id);
         }
 
-        return created;
+        return created.data;
       } catch (submitError) {
-        const message = submitError instanceof Error ? submitError.message : 'Submit failed';
-        setError(message);
+        setError(formatApiErrorMessage(submitError));
         return null;
       } finally {
         setLoading(false);

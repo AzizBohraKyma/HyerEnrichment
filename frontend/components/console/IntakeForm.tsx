@@ -15,6 +15,7 @@ import {
   hasValidTierSelection,
   inferDepthPresetFromTiers,
 } from '@/src/lib/tier-utils';
+import { formatApiErrorMessage } from '@/src/lib/format-api-error';
 import { EnrichmentInput, EnrichMode } from '@/src/lib/types';
 
 type IntakeFormProps = {
@@ -86,7 +87,7 @@ export function IntakeForm({ mode, initialTiers, onSubmit, loading }: IntakeForm
 
       await onSubmit(base);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Submit failed');
+      setError(formatApiErrorMessage(submitError));
     }
   };
 
