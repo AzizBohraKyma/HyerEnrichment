@@ -109,4 +109,3 @@ export function EntityDetailPanel({ dossier, entity }: EntityDetailPanelProps) {
     </div>
   );
 }
-

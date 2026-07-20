@@ -48,7 +48,12 @@ def test_tier1_local_filled_detects_placeholders(tmp_path: Path) -> None:
     placeholders = tmp_path / "tier1.json"
     placeholders.write_text(
         json.dumps(
-            [{"slug": "your-tech-slug-01", "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-01"}]
+            [
+                {
+                    "slug": "your-tech-slug-01",
+                    "linkedin_url": "https://www.linkedin.com/in/your-tech-slug-01",
+                }
+            ]
         ),
         encoding="utf-8",
     )
@@ -57,7 +62,12 @@ def test_tier1_local_filled_detects_placeholders(tmp_path: Path) -> None:
     real = tmp_path / "real.json"
     real.write_text(
         json.dumps(
-            [{"slug": "public-profile", "linkedin_url": "https://www.linkedin.com/in/public-profile"}]
+            [
+                {
+                    "slug": "public-profile",
+                    "linkedin_url": "https://www.linkedin.com/in/public-profile",
+                }
+            ]
         ),
         encoding="utf-8",
     )

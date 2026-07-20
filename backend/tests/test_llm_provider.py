@@ -99,7 +99,9 @@ async def test_ollama_compare_uses_messages() -> None:
     mock_client.__aexit__ = AsyncMock(return_value=None)
 
     with patch("app.clients.llm.httpx.AsyncClient", return_value=mock_client):
-        decision = await ollama_compare("jane-doe", "X | jane_doe | https://x.com/jane_doe", settings)
+        decision = await ollama_compare(
+            "jane-doe", "X | jane_doe | https://x.com/jane_doe", settings
+        )
 
     assert decision.same_identity is True
     assert decision.confidence == pytest.approx(0.8)

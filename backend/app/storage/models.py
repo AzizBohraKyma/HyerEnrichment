@@ -17,5 +17,9 @@ class PhotoCacheRecord(Base):
     asset_url: Mapped[str] = mapped_column(String(1024), default="", nullable=False)
     extraction_method: Mapped[str] = mapped_column(String(64), default="", nullable=False)
     content_hash: Mapped[str] = mapped_column(String(64), default="", nullable=False)
-    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    uploaded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )

@@ -180,4 +180,3 @@ export function DossierScanList({ dossier, selectedId, onSelect }: DossierScanLi
     </div>
   );
 }
-

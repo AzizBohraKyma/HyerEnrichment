@@ -9,7 +9,12 @@ from alembic import command
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import Engine
 
-from app.database.session import BASELINE_REVISION, alembic_config, legacy_pre_alembic, run_migrations
+from app.database.session import (
+    BASELINE_REVISION,
+    alembic_config,
+    legacy_pre_alembic,
+    run_migrations,
+)
 
 
 def postgres_test_url() -> str | None:

@@ -9,7 +9,11 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.compliance.identifiers import hash_identifier, linkedin_slug_from_identifier, request_identifier_values
+from app.compliance.identifiers import (
+    hash_identifier,
+    linkedin_slug_from_identifier,
+    request_identifier_values,
+)
 from app.domain.enrichment import EnrichmentRequest
 from app.domain.enums import JobStatus
 from app.modules.enrichment.models import JobRecord
@@ -67,7 +71,9 @@ def _legacy_job_matches(job: JobRecord, target_hash: str) -> bool:
     except Exception:
         return False
 
-    return any(hash_identifier(value) == target_hash for value in request_identifier_values(request))
+    return any(
+        hash_identifier(value) == target_hash for value in request_identifier_values(request)
+    )
 
 
 async def _purge_photo_cache(db: AsyncSession, identifier: str) -> tuple[int, int]:

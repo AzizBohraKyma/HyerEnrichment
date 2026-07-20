@@ -101,20 +101,33 @@ def _offline_enrichers(monkeypatch: pytest.MonkeyPatch) -> None:
                         "metadata": {"provider": "GitRecon", "matched": True},
                     }
                 ],
-                "github": {"profile": "https://github.com/candidate", "organizations": [], "public_commits": 12},
+                "github": {
+                    "profile": "https://github.com/candidate",
+                    "organizations": [],
+                    "public_commits": 12,
+                },
                 "emails": ["candidate@example.com"],
             }
         ),
     )
-    monkeypatch.setattr(TheHarvesterEnricher, "_fetch", _stub({"emails": ["candidate@example.com"]}))
-    monkeypatch.setattr(EmailDiscoverEnricher, "_fetch", _stub({"emails": ["candidate@example.com"]}))
+    monkeypatch.setattr(
+        TheHarvesterEnricher, "_fetch", _stub({"emails": ["candidate@example.com"]})
+    )
+    monkeypatch.setattr(
+        EmailDiscoverEnricher, "_fetch", _stub({"emails": ["candidate@example.com"]})
+    )
     monkeypatch.setattr(
         EmailVerifyEnricher,
         "_fetch",
         _stub(
             {
                 "verified_emails": [
-                    {"value": "candidate@example.com", "status": "deliverable", "confidence": 0.55, "source": "mx"}
+                    {
+                        "value": "candidate@example.com",
+                        "status": "deliverable",
+                        "confidence": 0.55,
+                        "source": "mx",
+                    }
                 ]
             }
         ),
@@ -260,7 +273,9 @@ def test_sync_rate_limit_returns_429(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_async_enrich_enqueues_queued_job(monkeypatch: pytest.MonkeyPatch) -> None:
     enqueued: list[str] = []
-    monkeypatch.setattr(enrichment_service, "enqueue_enrichment", lambda job_id: enqueued.append(job_id))
+    monkeypatch.setattr(
+        enrichment_service, "enqueue_enrichment", lambda job_id: enqueued.append(job_id)
+    )
 
     client = TestClient(app)
     response = client.post(
@@ -278,7 +293,9 @@ def test_async_enrich_enqueues_queued_job(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_async_enrich_suppressed_skips_enqueue(monkeypatch: pytest.MonkeyPatch) -> None:
     enqueued: list[str] = []
-    monkeypatch.setattr(enrichment_service, "enqueue_enrichment", lambda job_id: enqueued.append(job_id))
+    monkeypatch.setattr(
+        enrichment_service, "enqueue_enrichment", lambda job_id: enqueued.append(job_id)
+    )
 
     client = TestClient(app)
     headers = {"Authorization": "Bearer change-me"}

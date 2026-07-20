@@ -80,7 +80,10 @@ def merge_payloads(request: EnrichmentRequest, payloads: list[dict[str, Any]]) -
             for handle in handles:
                 if not isinstance(handle, dict):
                     continue
-                key = (str(handle.get("platform", "")).lower(), str(handle.get("username", "")).lower())
+                key = (
+                    str(handle.get("platform", "")).lower(),
+                    str(handle.get("username", "")).lower(),
+                )
                 candidate = SocialHandle.model_validate(handle)
                 if key not in handles_seen:
                     handles_seen.add(key)
@@ -179,9 +182,7 @@ def build_confidence(request: EnrichmentRequest, dossier: Dossier) -> list[Confi
         ConfidenceBreakdown(
             label="email-verification",
             score=(
-                0.89
-                if any(e.status != "disposable" for e in dossier.verified_emails)
-                else 0.22
+                0.89 if any(e.status != "disposable" for e in dossier.verified_emails) else 0.22
             ),
             evidence=[
                 "verified emails: "

@@ -87,7 +87,11 @@ class R2StorageClient:
                 await self._delete_from_r2(object_key, settings)
                 return True
             except Exception:
-                logger.warning("R2 delete failed for key=%s; trying local cache", object_key[:32], exc_info=True)
+                logger.warning(
+                    "R2 delete failed for key=%s; trying local cache",
+                    object_key[:32],
+                    exc_info=True,
+                )
 
         return self._delete_from_local_cache(object_key)
 

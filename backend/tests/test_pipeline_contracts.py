@@ -234,7 +234,9 @@ def test_suppressed_async_and_sync() -> None:
 
 def test_async_enrich_suppressed_skips_enqueue(monkeypatch: pytest.MonkeyPatch) -> None:
     enqueued: list[str] = []
-    monkeypatch.setattr(enrichment_service, "enqueue_enrichment", lambda job_id: enqueued.append(job_id))
+    monkeypatch.setattr(
+        enrichment_service, "enqueue_enrichment", lambda job_id: enqueued.append(job_id)
+    )
 
     client = TestClient(app)
     identifier = "contracts-async-skip@example.com"

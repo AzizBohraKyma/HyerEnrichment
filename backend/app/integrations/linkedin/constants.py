@@ -55,7 +55,7 @@ FIGURE_PHOTO_SELECTOR = 'div[componentkey="topcard-logo-image-referencekey"] fig
 DOM_PHOTO_SELECTORS = (
     FIGURE_PHOTO_SELECTOR,
     # Fallback DOM selectors (used in unit tests; also covers common LinkedIn variants).
-    'img.pv-top-card-profile-picture__image',
+    "img.pv-top-card-profile-picture__image",
     'img[src*="profile-displayphoto"]',
     'div[componentkey="topcard-logo-image-referencekey"] img',
     'div[aria-label="Profile photo"] img',

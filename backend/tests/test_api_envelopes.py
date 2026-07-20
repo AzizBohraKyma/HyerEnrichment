@@ -103,7 +103,11 @@ def test_envelope_does_not_double_wrap() -> None:
         assert body["data"] == {"ok": True}
         assert "success" not in body["data"]
     finally:
-        app.routes[:] = [route for route in app.routes if getattr(route, "path", None) != "/_test/already-wrapped"]
+        app.routes[:] = [
+            route
+            for route in app.routes
+            if getattr(route, "path", None) != "/_test/already-wrapped"
+        ]
 
 
 def test_unhandled_exception_envelope() -> None:
@@ -120,7 +124,9 @@ def test_unhandled_exception_envelope() -> None:
         assert body["error"]["message"] == "An unexpected error occurred."
         assert "secret boom details" not in str(body)
     finally:
-        app.routes[:] = [route for route in app.routes if getattr(route, "path", None) != "/_test/boom"]
+        app.routes[:] = [
+            route for route in app.routes if getattr(route, "path", None) != "/_test/boom"
+        ]
 
 
 def test_not_found_error_class_meta() -> None:

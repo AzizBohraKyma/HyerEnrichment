@@ -2,7 +2,7 @@
 
 Rules for humans and agents writing code in this repo. Read **before** implementing.
 
-**Scope:** entire project (`frontend/` + `backend/`).  
+**Scope:** entire project (`frontend/` + `backend/`).
 **Pair with:** `backend/docs/ARCHITECTURE.md` (what exists), `AGENTS.md` (session behavior).
 
 ---

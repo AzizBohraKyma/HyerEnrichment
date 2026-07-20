@@ -53,7 +53,9 @@ async def test_gitrecon_rate_limit_stderr_soft_fails(
     monkeypatch.setattr(gitrecon_mod, "run_command", _run)
     monkeypatch.setattr(gitrecon_mod.asyncio, "sleep", _sleep)
 
-    fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    fragment = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert fragment == {}
     assert await gitrecon_redis.get(gitrecon_mod._COOLDOWN_KEY) == "1"
     # backoff configured to 0 so sleep is skipped
@@ -78,7 +80,9 @@ async def test_gitrecon_rate_limit_brief_backoff(
     monkeypatch.setattr(gitrecon_mod, "run_command", _run)
     monkeypatch.setattr(gitrecon_mod.asyncio, "sleep", _sleep)
 
-    fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    fragment = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert fragment == {}
     assert slept == [2.5]
 
@@ -95,7 +99,9 @@ async def test_gitrecon_skips_when_cooldown_active(
         return 0, "", ""
 
     monkeypatch.setattr(gitrecon_mod, "run_command", _run)
-    fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    fragment = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert fragment == {}
     assert called is False
 
@@ -115,10 +121,14 @@ async def test_gitrecon_skips_when_per_minute_exhausted(
 
     monkeypatch.setattr(gitrecon_mod, "run_command", _run)
 
-    first = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    first = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert first["handles"][0]["username"] == "octocat"
 
-    second = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    second = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert second == {}
 
 
@@ -142,7 +152,9 @@ async def test_gitrecon_normal_path_parses_json(
         return 0, "", ""
 
     monkeypatch.setattr(gitrecon_mod, "run_command", _run)
-    fragment = await GitReconEnricher().run(EnrichmentRequest(username="octocat", requested_tiers=["tier3"]))
+    fragment = await GitReconEnricher().run(
+        EnrichmentRequest(username="octocat", requested_tiers=["tier3"])
+    )
     assert fragment["handles"][0]["platform"] == "GitHub"
     assert fragment["github"]["organizations"] == ["github"]
     assert fragment["emails"] == ["octocat@github.com"]

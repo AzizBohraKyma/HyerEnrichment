@@ -21,12 +21,16 @@ class OptOutService:
     async def register(self, identifier: str, reason: str | None = None) -> PurgeResult:
         identifier_hash = hash_identifier(identifier)
         await add_suppression(self.db, identifier, reason)
-        await log_event(self.db, AuditEventType.opt_out, identifier_hash, details={"reason": reason or ""})
+        await log_event(
+            self.db, AuditEventType.opt_out, identifier_hash, details={"reason": reason or ""}
+        )
 
         try:
             purge_result = await purge_identifier_data(self.db, identifier)
         except Exception:
-            logger.warning("purge failed for identifier_hash=%s", identifier_hash[:12], exc_info=True)
+            logger.warning(
+                "purge failed for identifier_hash=%s", identifier_hash[:12], exc_info=True
+            )
             purge_result = PurgeResult()
             await self.db.commit()
 

@@ -1,6 +1,6 @@
 # Master verification — 2026-07-16
 
-**Runner:** Master agent (independent re-run)  
+**Runner:** Master agent (independent re-run)
 **Host:** Windows 11, Python 3.13, Redis service running, Docker **not installed**, WSL **broken**, MLX launcher **down**.
 
 ## Checklist

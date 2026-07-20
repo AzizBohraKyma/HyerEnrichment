@@ -14,8 +14,10 @@ from app.core.responses import success_envelope
 
 
 def _already_enveloped(payload: Any) -> bool:
-    return isinstance(payload, dict) and "success" in payload and (
-        ("data" in payload) or ("error" in payload)
+    return (
+        isinstance(payload, dict)
+        and "success" in payload
+        and (("data" in payload) or ("error" in payload))
     )
 
 

@@ -40,7 +40,16 @@ class _BoomScore(Enricher):
         return True
 
     async def _fetch(self, request: EnrichmentRequest) -> dict[str, Any]:
-        return {"handles": [{"platform": "X", "username": "ok", "profile_url": "https://x.com/ok", "confidence": 0.8}]}
+        return {
+            "handles": [
+                {
+                    "platform": "X",
+                    "username": "ok",
+                    "profile_url": "https://x.com/ok",
+                    "confidence": 0.8,
+                }
+            ]
+        }
 
     async def score(self, payload: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError("score failed")
@@ -117,7 +126,9 @@ async def test_execute_job_completes_when_one_tier2_enricher_fails() -> None:
 def test_is_transient_http_error_detects_connect_and_503() -> None:
     assert is_transient_http_error(httpx.ConnectError("down"))
     response = httpx.Response(503, request=httpx.Request("GET", "http://example"))
-    assert is_transient_http_error(httpx.HTTPStatusError("bad", request=response.request, response=response))
+    assert is_transient_http_error(
+        httpx.HTTPStatusError("bad", request=response.request, response=response)
+    )
     response_400 = httpx.Response(400, request=httpx.Request("GET", "http://example"))
     assert not is_transient_http_error(
         httpx.HTTPStatusError("bad", request=response_400.request, response=response_400)

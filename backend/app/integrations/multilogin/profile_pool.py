@@ -8,7 +8,10 @@ from datetime import date
 from enum import StrEnum
 
 from app.core.config import get_settings
-from app.observability.tier1_metrics import tier1_profile_pool_exhausted_total, tier1_profile_views_total
+from app.observability.tier1_metrics import (
+    tier1_profile_pool_exhausted_total,
+    tier1_profile_views_total,
+)
 from app.clients.multilogin import MultiloginClient, MultiloginError
 from app.infrastructure.redis import get_redis_client
 

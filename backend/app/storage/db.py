@@ -22,4 +22,3 @@ __all__ = [
     "init_db",
     "run_migrations",
 ]
-

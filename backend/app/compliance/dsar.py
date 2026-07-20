@@ -55,7 +55,11 @@ async def process_dsar(db: AsyncSession, request: DsarRequest) -> DsarResponse:
         db,
         AuditEventType.dsar_completed,
         identifier_hash,
-        details={"dsar_id": record.id, "request_type": request.request_type.value, "summary": summary},
+        details={
+            "dsar_id": record.id,
+            "request_type": request.request_type.value,
+            "summary": summary,
+        },
     )
     await db.commit()
     await db.refresh(record)
@@ -99,7 +103,9 @@ async def _process_deletion(
     dsar_id: str,
 ) -> dict[str, Any]:
     orchestrator = Pipeline(db)
-    purge_result = await orchestrator.register_opt_out(identifier, reason=f"dsar_deletion:{dsar_id}")
+    purge_result = await orchestrator.register_opt_out(
+        identifier, reason=f"dsar_deletion:{dsar_id}"
+    )
     return {
         "suppressed": True,
         "jobs_cleared": purge_result.jobs_cleared,
@@ -116,7 +122,8 @@ async def _matching_jobs(db: AsyncSession, identifier_hash: str) -> list[JobReco
     return [
         job
         for job in jobs
-        if identifier_hash in (job.identifier_hashes or []) or _legacy_job_matches(job, identifier_hash)
+        if identifier_hash in (job.identifier_hashes or [])
+        or _legacy_job_matches(job, identifier_hash)
     ]
 
 

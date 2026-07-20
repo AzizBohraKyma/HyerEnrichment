@@ -8,7 +8,13 @@ import pytest
 from pydantic import SecretStr
 
 from app.core.config import get_settings
-from app.clients.multilogin import MultiloginClient, MultiloginError, sign_in, start_profile, stop_profile
+from app.clients.multilogin import (
+    MultiloginClient,
+    MultiloginError,
+    sign_in,
+    start_profile,
+    stop_profile,
+)
 
 
 @pytest.fixture

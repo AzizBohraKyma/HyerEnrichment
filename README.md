@@ -354,7 +354,7 @@ Subprocess-based enrichers use `app/providers/process.py` (`run_command`). Brows
 
 ## API reference
 
-**Base URL:** `http://localhost:8000` (local)  
+**Base URL:** `http://localhost:8000` (local)
 **Auth:** `Authorization: Bearer <API_TOKEN>` on all routes except health endpoints and the signals webhook.
 
 ### `GET /health`
@@ -391,7 +391,7 @@ Prometheus metrics (empty body if `prometheus_client` not installed). No auth re
 
 Create an async enrichment job. Returns immediately; poll `GET /enrich/{id}` for results.
 
-**Auth:** Required  
+**Auth:** Required
 **Rate limit:** `MAX_ASYNC_REQUESTS_PER_MINUTE` (default 30/min per token)
 
 **Request body:**
@@ -519,7 +519,7 @@ Poll job status and retrieve dossier.
 
 Run enrichment inline in the API process. Same request body as `POST /enrich`.
 
-**Auth:** Required  
+**Auth:** Required
 **Rate limit:** `MAX_SYNC_REQUESTS_PER_MINUTE` (default 10/min per token)
 
 **Response `200`:** Same shape as `GET /enrich/{id}` with `status: "completed"` (or `"suppressed"`).
@@ -824,7 +824,7 @@ uvicorn app.main:app --reload
 python -m app.workers.rq_worker
 ```
 
-API: `http://localhost:8000`  
+API: `http://localhost:8000`
 Interactive docs: `http://localhost:8000/docs`
 
 ### Backend — Docker Compose (Postgres + Redis + sidecars)

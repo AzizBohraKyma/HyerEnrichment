@@ -31,7 +31,9 @@ def test_extension_for_content_type() -> None:
 
 def test_object_key_with_extension_appends_when_missing() -> None:
     assert object_key_with_extension("linkedin/jane-doe", "image/webp") == "linkedin/jane-doe.webp"
-    assert object_key_with_extension("linkedin/jane-doe.jpg", "image/jpeg") == "linkedin/jane-doe.jpg"
+    assert (
+        object_key_with_extension("linkedin/jane-doe.jpg", "image/jpeg") == "linkedin/jane-doe.jpg"
+    )
 
 
 def test_r2_is_configured_requires_all_credentials() -> None:
@@ -143,7 +145,9 @@ async def test_upload_bytes_raises_in_production_when_r2_fails(
 
 
 @pytest.mark.asyncio
-async def test_delete_object_removes_local_cache_file(storage_client: R2StorageClient, tmp_path) -> None:
+async def test_delete_object_removes_local_cache_file(
+    storage_client: R2StorageClient, tmp_path
+) -> None:
     key = "linkedin/test-delete.jpg"
     cache_file = tmp_path / key.replace("/", "_")
     cache_file.parent.mkdir(parents=True, exist_ok=True)

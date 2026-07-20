@@ -1,6 +1,6 @@
 ﻿# Evidence: Tier 2-4 live E2E (M4-M10) — Task 90
 
-**Date (UTC):** 2026-07-17  
+**Date (UTC):** 2026-07-17
 **CI runs:**
 - Pre-#92: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29557737182
 - Post-#92: https://github.com/1Touch-dev/HyerPathEnrichment/actions/runs/29559236134

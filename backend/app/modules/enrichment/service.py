@@ -60,7 +60,9 @@ class EnrichmentService:
                     created_at=job.created_at,
                     updated_at=job.updated_at,
                     request_payload=job.request_payload,
-                    identifier_summary=Pipeline.identifier_summary_from_payload(job.request_payload),
+                    identifier_summary=Pipeline.identifier_summary_from_payload(
+                        job.request_payload
+                    ),
                 )
                 for job in jobs
             ],

@@ -46,4 +46,3 @@ export type DossierEntity =
       title: string;
       entity: string;
     };
-

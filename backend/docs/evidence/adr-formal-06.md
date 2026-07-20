@@ -1,8 +1,8 @@
 # Evidence: Formal ADRs (Task 6)
 
-**Date (UTC):** 2026-07-20  
-**Status:** **PASS**  
-**Verifier:** `python backend/scripts/verify_adrs.py --json`  
+**Date (UTC):** 2026-07-20
+**Status:** **PASS**
+**Verifier:** `python backend/scripts/verify_adrs.py --json`
 **Report:** `backend/.e2e-results/verify-adrs.json` (local artifact; gitignored)
 
 ## Pass criteria

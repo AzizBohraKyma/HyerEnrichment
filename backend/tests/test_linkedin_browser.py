@@ -162,9 +162,7 @@ def test_extract_photo_url_placeholder_only() -> None:
 
 def test_extract_photo_url_profile_displayphoto_selector() -> None:
     avatar_img = _FakeElement(
-        {
-            "src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_200_200/photo.jpg"
-        }
+        {"src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_200_200/photo.jpg"}
     )
     container = _FakeElement(
         {"aria-label": "Profile photo"},
@@ -206,9 +204,7 @@ def test_extract_photo_url_uses_data_src_and_srcset() -> None:
 
 def test_extract_photo_url_prefers_topcard_componentkey() -> None:
     avatar_img = _FakeElement(
-        {
-            "src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_200_200/avatar.jpg"
-        }
+        {"src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_200_200/avatar.jpg"}
     )
     container = _FakeElement(
         {"componentkey": "topcard-logo-image-referencekey"},
@@ -219,7 +215,9 @@ def test_extract_photo_url_prefers_topcard_componentkey() -> None:
             'div[componentkey="topcard-logo-image-referencekey"]': [container],
             'img[src*="profile-displayphoto"]': [
                 _FakeElement(
-                    {"src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_100_100/decoy.jpg"}
+                    {
+                        "src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_100_100/decoy.jpg"
+                    }
                 )
             ],
         }
@@ -232,7 +230,9 @@ def test_extract_photo_url_prefers_topcard_componentkey() -> None:
 
 def test_extract_photo_url_topcard_aria_label_fallback() -> None:
     avatar_img = _FakeElement(
-        {"src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_200_200/aria-avatar.jpg"}
+        {
+            "src": "https://media.licdn.com/dms/image/profile-displayphoto-shrink_200_200/aria-avatar.jpg"
+        }
     )
     container = _FakeElement(
         {"aria-label": "Profile photo"},
@@ -378,7 +378,9 @@ def test_login_linkedin_requires_credentials(monkeypatch: pytest.MonkeyPatch) ->
     settings = get_settings()
     monkeypatch.setattr(settings, "tier1_skip_login_if_session_valid", False)
     monkeypatch.setattr(settings, "linkedin_bot_email", "")
-    monkeypatch.setattr(settings, "linkedin_bot_password", settings.linkedin_bot_password.__class__(""))
+    monkeypatch.setattr(
+        settings, "linkedin_bot_password", settings.linkedin_bot_password.__class__("")
+    )
 
     driver = _FakeDriver(current_url="https://www.linkedin.com/login")
     assert login_linkedin(driver) == LinkedInPhotoError.AUTH_REQUIRED
@@ -421,7 +423,9 @@ async def test_browser_client_downloads_image(monkeypatch: pytest.MonkeyPatch) -
     settings = get_settings()
     monkeypatch.setattr(settings, "browser_mode", "multilogin")
     monkeypatch.setattr(settings, "linkedin_bot_email", "bot@example.com")
-    monkeypatch.setattr(settings, "linkedin_bot_password", settings.linkedin_bot_password.__class__("secret"))
+    monkeypatch.setattr(
+        settings, "linkedin_bot_password", settings.linkedin_bot_password.__class__("secret")
+    )
 
     driver = _FakeDriver(
         current_url="https://www.linkedin.com/in/jane-doe",
@@ -457,7 +461,10 @@ async def test_browser_client_downloads_image(monkeypatch: pytest.MonkeyPatch) -
                 "https://media.licdn.com/dms/image/photo.jpg",
             ),
         ),
-        patch("app.integrations.linkedin.client.asyncio.to_thread", side_effect=lambda fn, *args: fn(*args)),
+        patch(
+            "app.integrations.linkedin.client.asyncio.to_thread",
+            side_effect=lambda fn, *args: fn(*args),
+        ),
         patch(
             "app.integrations.linkedin.client.download_image",
             new=AsyncMock(return_value=(b"jpeg-bytes", "image/jpeg")),

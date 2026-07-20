@@ -1,7 +1,7 @@
 # Dependency audit verification (Task 4)
 
-**Date:** 2026-07-20  
-**Branch:** `chore/dependency-vulnerability-scanning-4`  
+**Date:** 2026-07-20
+**Branch:** `chore/dependency-vulnerability-scanning-4`
 **Result:** PASS (local checks; CI pending on PR)
 
 ## What was added
