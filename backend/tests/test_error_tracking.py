@@ -10,7 +10,6 @@ from fastapi.testclient import TestClient
 
 from app.core.api_route import EnvelopeAPIRoute
 from app.core.config import Settings, get_settings
-from app.core.errors import NotFoundError
 from app.main import app
 from app.observability import error_tracking
 from tests.envelope_helpers import assert_error, assert_success

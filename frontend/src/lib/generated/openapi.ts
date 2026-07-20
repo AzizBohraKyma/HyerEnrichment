@@ -50,6 +50,13 @@ export interface paths {
     /** Health */
     get: operations["health_health_get"];
   };
+  "/internal/error-tracking-probe": {
+    /**
+     * Error Tracking Probe
+     * @description E2E-only probe: capture a known exception when explicitly enabled.
+     */
+    post: operations["error_tracking_probe_internal_error_tracking_probe_post"];
+  };
   "/metrics": {
     /** Metrics */
     get: operations["metrics_metrics_get"];
@@ -622,6 +629,20 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["HealthResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Error Tracking Probe
+   * @description E2E-only probe: capture a known exception when explicitly enabled.
+   */
+  error_tracking_probe_internal_error_tracking_probe_post: {
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
         };
       };
     };

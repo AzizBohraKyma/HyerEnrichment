@@ -1331,6 +1331,26 @@
         ]
       }
     },
+    "/internal/error-tracking-probe": {
+      "post": {
+        "description": "E2E-only probe: capture a known exception when explicitly enabled.",
+        "operationId": "error_tracking_probe_internal_error_tracking_probe_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Error Tracking Probe",
+        "tags": [
+          "health"
+        ]
+      }
+    },
     "/metrics": {
       "get": {
         "operationId": "metrics_metrics_get",
