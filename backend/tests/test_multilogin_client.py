@@ -112,6 +112,7 @@ async def test_start_profile_returns_port(mlx_settings: None) -> None:
         call_kwargs = mock_client.get.await_args.kwargs
         assert call_kwargs["params"] == {"automation_type": "selenium"}
         assert "profile-uuid" in str(mock_client.get.await_args.args[0])
+        mock_client_cls.assert_called_once_with(timeout=60.0, verify=False)
 
 
 @pytest.mark.asyncio
@@ -130,6 +131,44 @@ async def test_stop_profile_uses_v1_launcher_path(mlx_settings: None) -> None:
         await client.stop_profile("profile-uuid")
         url = str(mock_client.get.await_args.args[0])
         assert "/api/v1/profile/stop/p/profile-uuid" in url
+        mock_client_cls.assert_called_once_with(timeout=30.0, verify=False)
+
+
+@pytest.mark.asyncio
+async def test_cloud_api_clients_keep_default_verify(mlx_settings: None) -> None:
+    """sign_in / list_profiles hit api.multilogin.com — do not skip TLS verify."""
+    client = MultiloginClient()
+
+    with patch("app.clients.multilogin.httpx.AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = None
+        mock_client.post = AsyncMock(
+            return_value=httpx.Response(200, json={"data": {"token": "tok-123"}})
+        )
+        mock_client_cls.return_value = mock_client
+
+        await client.sign_in(force=True)
+        mock_client_cls.assert_called_once_with(timeout=15.0)
+        assert mock_client_cls.call_args.kwargs.get("verify") is not False
+
+    client._token = "tok-123"
+    client._token_expires_at = 1e12
+    with patch("app.clients.multilogin.httpx.AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = None
+        mock_client.post = AsyncMock(
+            return_value=httpx.Response(
+                200,
+                json={"data": {"profiles": [{"profile_id": "p1"}], "total": 1}},
+            )
+        )
+        mock_client_cls.return_value = mock_client
+
+        await client.list_profiles()
+        mock_client_cls.assert_called_once_with(timeout=30.0)
+        assert mock_client_cls.call_args.kwargs.get("verify") is not False
 
 
 @pytest.mark.asyncio
