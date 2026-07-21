@@ -77,6 +77,14 @@ def scrape_on_driver(driver: Any, linkedin_url: str) -> tuple[LinkedInPhotoResul
         wait_for_profile_photo_ready(driver, wait)
     except Exception:
         logger.warning("Timed out waiting for profile photo DOM", exc_info=True)
+        # The SPA can still be rendering when we did the first detect_page_state
+        # check right after driver.get(), so a real 404/authwall/captcha page
+        # may only become detectable once it settles here after the timeout.
+        # Re-check now so these are classified correctly instead of falling
+        # through to a misleading NO_IMAGE.
+        settled_state = detect_page_state(driver)
+        if settled_state != LinkedInPhotoError.SUCCESS:
+            return LinkedInPhotoResult(outcome=settled_state), None
 
     image_url, method, extract_state = extract_photo_url(driver)
     if extract_state != LinkedInPhotoError.SUCCESS or not image_url or method is None:

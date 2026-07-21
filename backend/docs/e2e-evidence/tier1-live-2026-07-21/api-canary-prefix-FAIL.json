@@ -1,0 +1,74 @@
+{
+  "generated_at": "2026-07-21T10:53:54Z",
+  "exit_code": 1,
+  "checks": [
+    {
+      "name": "api_health",
+      "ok": true,
+      "detail": "status=200",
+      "data": {}
+    },
+    {
+      "name": "sync_guard",
+      "ok": true,
+      "detail": "sync skipped tier1 sources=[]",
+      "data": {}
+    }
+  ],
+  "rows": [
+    {
+      "slug": "williamhgates",
+      "linkedin_url": "https://www.linkedin.com/in/williamhgates",
+      "category": "technical",
+      "expect_photo": true,
+      "status": "FAIL",
+      "detail": "completed but dossier.photo.asset_url missing",
+      "job_id": "job_1f8c58b9db3d4b059b8d70ace414578e",
+      "job_status": "completed",
+      "asset_url": null,
+      "sources": []
+    },
+    {
+      "slug": "owinfrey",
+      "linkedin_url": "https://www.linkedin.com/in/owinfrey",
+      "category": "non-technical",
+      "expect_photo": true,
+      "status": "FAIL",
+      "detail": "completed but dossier.photo.asset_url missing",
+      "job_id": "job_455a67fb4fc4452e81df83170b4d7f9f",
+      "job_status": "completed",
+      "asset_url": null,
+      "sources": []
+    },
+    {
+      "slug": "garyvaynerchuk",
+      "linkedin_url": "https://www.linkedin.com/in/garyvaynerchuk",
+      "category": "non-technical",
+      "expect_photo": true,
+      "status": "FAIL",
+      "detail": "job status=failed",
+      "job_id": "job_6be1cfbbadec42f7b1172251fe0212b5",
+      "job_status": "failed",
+      "asset_url": null,
+      "sources": []
+    },
+    {
+      "slug": "ariannahuffington",
+      "linkedin_url": "https://www.linkedin.com/in/ariannahuffington",
+      "category": "non-technical",
+      "expect_photo": true,
+      "status": "FAIL",
+      "detail": "job status=failed",
+      "job_id": "job_a7b7214eaa4d4358abbc28b26935eb07",
+      "job_status": "failed",
+      "asset_url": null,
+      "sources": []
+    }
+  ],
+  "summary": {
+    "pass": 0,
+    "fail": 4,
+    "skip": 0,
+    "checks_failed": 0
+  }
+}

@@ -40,6 +40,8 @@ htmlcov/
 
 # Local databases
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
 
@@ -50,6 +52,7 @@ backend/artifacts/
 
 # Local Tier 1 canary profiles (copy from tier1_canary_set.example.json)
 backend/docs/tier1_canary_set.json
+backend/docs/tier1_retry_set.json
 
 # Local Tier 2–4 canary profiles (copy from tier234_canary_set.example.json)
 backend/docs/tier234_canary_set.json
