@@ -27,7 +27,7 @@ dev = [
   "pytest>=9.0.3,<10.0",
   "pytest-asyncio>=1.0,<2.0",
   "pytest-cov>=5.0,<8.0",
-  "mypy>=1.10,<2.0",
+  "mypy>=1.10,<3.0",
   "ruff>=0.5,<1.0",
   # LinkedIn unit tests import selenium-backed modules at collection time
   "selenium>=4.21,<5.0",
