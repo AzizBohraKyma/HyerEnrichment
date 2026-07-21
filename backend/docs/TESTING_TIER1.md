@@ -37,7 +37,7 @@ docker compose exec worker chromium --version
 | `BROWSER_MODE` | `multilogin` in prod; `local` only for dev experiments |
 | `MULTILOGIN_*` | Email, password (MD5 in code), folder id, launcher URL; set `MULTILOGIN_WORKSPACE_ID` for workspace-scoped token refresh; set `MULTILOGIN_PROFILE_ID` to skip `/profile/search` (local probe) |
 | `LINKEDIN_BOT_*` | Dummy LinkedIn account for Selenium login |
-| `MULTILOGIN_SELENIUM_HOST` | `http://host.docker.internal` from Docker worker |
+| `MULTILOGIN_SELENIUM_HOST` | Host-native: `http://127.0.0.1`; Docker Tier 1 override: `http://launcher.mlx.yt` |
 | `selenium` + Chromium | Installed in `Dockerfile.worker` via `.[enrichers]` |
 | R2 (optional) | `R2_*` creds; unset writes to `backend/.asset-cache/` |
 
@@ -46,8 +46,27 @@ docker compose exec worker chromium --version
 ## Layer 2 — Multilogin connectivity
 
 Multilogin launcher must be running on the host (not inside Docker).
+Launcher start/stop uses HTTPS with TLS verify disabled (self-signed/expired local cert);
+cloud auth (`api.multilogin.com`) keeps normal TLS verify.
 
 After `/user/signin`, if `MULTILOGIN_WORKSPACE_ID` is set the client exchanges a workspace-scoped token via `/user/refresh_token`. Profile search always sends `search_text=""` (required by Multilogin X) with `folder_id` for pool discovery. `MULTILOGIN_PROFILE_ID` is optional for single-profile local probe (skips search); it is not required for listing.
+
+### Windows local (recommended)
+
+ChromeDriver inside Multilogin rejects non-`localhost` Host headers, so on Windows run the **RQ worker on the host** (not in Docker) with Multilogin X open:
+
+```powershell
+# Confirm launcher (expect non-000; often 404)
+curl.exe -sk https://127.0.0.1:45001/api/v2/
+
+cd backend
+$env:ENABLE_TIER1 = 'true'
+$env:BROWSER_MODE = 'multilogin'
+$env:MULTILOGIN_SELENIUM_HOST = 'http://127.0.0.1'
+python -m app.workers.rq_worker
+```
+
+Use Redis/Postgres from Docker if needed; keep Tier 1 Selenium on the host path.
 
 ```bash
 cd backend
@@ -76,12 +95,15 @@ docker compose up --build -d api worker redis postgres
 
 Enable Tier 1 on the worker (recommended override file). Secrets come from
 `backend/.env` via `env_file` (or set `WORKER_ENV_FILE` to a host-only secrets
-file in production). The override forces `MULTILOGIN_SELENIUM_HOST=http://host.docker.internal`
+file in production). The override forces `MULTILOGIN_SELENIUM_HOST=http://launcher.mlx.yt`
 and maps `launcher.mlx.yt` / `host.docker.internal` → `host-gateway` (or
 `MULTILOGIN_HOST_IP` when set) so the Multilogin agent on the **Windows/Docker
 host** (port 45001) is reachable. WSL `127.0.0.1` is not the Windows host —
 confirm the agent with PowerShell first
 (`curl.exe -sk https://127.0.0.1:45001/api/v2/` → non-`000`, often `404`).
+
+On Windows Desktop Docker, prefer the host-native worker path above if Selenium
+attach fails with Host-header / connection errors.
 
 **WSL2 + Docker Engine:** `host-gateway` is the WSL VM, not Windows. Export the
 Windows host IP before `up`:
@@ -91,6 +113,9 @@ export MULTILOGIN_HOST_IP=$(ip route show default | awk '{print $3}')
 # expect: curl -sk https://$MULTILOGIN_HOST_IP:45001/api/v2/ → 404
 ```
 
+If HTTP(S) proxies are set in the environment, also set
+`NO_PROXY` / `no_proxy` to include `api.multilogin.com,launcher.mlx.yt,127.0.0.1,localhost`
+so cloud sign-in is not routed through a proxy that rejects POSTs.
 ```bash
 cd backend/docker
 docker compose -f docker-compose.yml -f docker-compose.tier1.yml up -d --build worker

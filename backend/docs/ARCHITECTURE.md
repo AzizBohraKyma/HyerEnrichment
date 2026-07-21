@@ -240,7 +240,8 @@ Each tier maps to enricher modules in `app/enrichers/`. The orchestrator registe
 | `linkedin_photo.py` | `joeyism/linkedin_scraper` + Playwright | Multilogin X stealth browser over CDP; photo uploaded to R2 |
 
 - One browser session per profile lookup — no bulk scraping
-- Multilogin runs on the host; worker reaches it at `host.docker.internal:45001`
+- Multilogin runs on the host; launcher API is hostname-locked to `launcher.mlx.yt:45001` (Docker maps that name via `extra_hosts`). Host-native Windows Tier 1 uses Selenium at `127.0.0.1`; Docker Tier 1 uses `MULTILOGIN_SELENIUM_HOST=http://launcher.mlx.yt`
+- Launcher HTTPS skips TLS verify (self-signed local cert); cloud API (`api.multilogin.com`) does not
 - Only the profile picture is captured, not full profile export
 
 ### Tier 2 — Cross-site username hunt (no browser)
@@ -466,12 +467,12 @@ Copy `backend/.env.example` → `backend/.env`.
 | `MULTILOGIN_FOLDER_ID` | Profile pool folder |
 | `MULTILOGIN_WORKSPACE_ID` | Workspace for `/user/refresh_token` after sign-in (needed for multi-workspace accounts) |
 | `MULTILOGIN_PROFILE_ID` | Fixed profile id; when set, skips `/profile/search` (local probe / single-profile) |
-| `MULTILOGIN_LAUNCHER_URL` | MLX launcher base (`/api/v2` for start, `/api/v1` derived for stop) |
-| `MULTILOGIN_SELENIUM_HOST` | Selenium Remote host (Docker: `http://host.docker.internal`) |
+| `MULTILOGIN_LAUNCHER_URL` | MLX launcher base (`/api/v2` for start, `/api/v1` derived for stop); start/stop skip TLS verify |
+| `MULTILOGIN_SELENIUM_HOST` | Selenium Remote host (host-native: `http://127.0.0.1`; Docker Tier 1: `http://launcher.mlx.yt`) |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | R2 credentials |
 | `LINKEDIN_BOT_EMAIL`, `LINKEDIN_BOT_PASSWORD` | Dummy LinkedIn account for Selenium login |
 
-**Docker Tier 1:** use `-f docker-compose.tier1.yml`. That override loads secrets from `env_file` (`../.env` or `WORKER_ENV_FILE`) into the **worker only**, forces `MULTILOGIN_SELENIUM_HOST=http://host.docker.internal`, maps `launcher.mlx.yt` and `host.docker.internal` → `host-gateway` (or `MULTILOGIN_HOST_IP` on WSL2 + Docker Engine so traffic reaches Windows), and the worker exits on boot if Multilogin/bot (and staging/production R2) settings are missing (`validate_tier1_settings`).
+**Docker Tier 1:** use `-f docker-compose.tier1.yml`. That override loads secrets from `env_file` (`../.env` or `WORKER_ENV_FILE`) into the **worker only**, forces `MULTILOGIN_SELENIUM_HOST=http://launcher.mlx.yt`, maps `launcher.mlx.yt` and `host.docker.internal` → `host-gateway` (or `MULTILOGIN_HOST_IP` on WSL2 + Docker Engine so traffic reaches Windows), and the worker exits on boot if Multilogin/bot (and staging/production R2) settings are missing (`validate_tier1_settings`). On Windows, prefer a host-native RQ worker with `MULTILOGIN_SELENIUM_HOST=http://127.0.0.1` when ChromeDriver rejects non-localhost Host headers.
 
 ### Tier 3 (email) — target
 

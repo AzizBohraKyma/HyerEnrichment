@@ -50,6 +50,11 @@ class MultiloginClient:
             return base[: -len("/api/v2")] + "/api/v1"
         return base.replace("/api/v2", "/api/v1")
 
+    @staticmethod
+    def _launcher_client(*, timeout: float) -> httpx.AsyncClient:
+        """HTTP client for the local MLX launcher (self-signed/expired cert)."""
+        return httpx.AsyncClient(timeout=timeout, verify=False)
+
     def _require_credentials(self) -> tuple[str, str, str]:
         settings = get_settings()
         email = settings.multilogin_email.strip()
@@ -159,7 +164,7 @@ class MultiloginClient:
             f"{settings.multilogin_launcher_url.rstrip('/')}"
             f"/profile/f/{folder_id}/p/{profile_id}/start"
         )
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with self._launcher_client(timeout=60.0) as client:
             response = await client.get(
                 url,
                 params={"automation_type": "selenium"},
@@ -190,7 +195,7 @@ class MultiloginClient:
         v1_base = self._launcher_v1_base(settings.multilogin_launcher_url)
         url = f"{v1_base}/profile/stop/p/{profile_id}"
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with self._launcher_client(timeout=30.0) as client:
             response = await client.get(url, headers=self._json_headers(bearer))
 
         if response.status_code != 200:

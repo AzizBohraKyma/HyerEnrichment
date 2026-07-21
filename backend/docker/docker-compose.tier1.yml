@@ -10,7 +10,8 @@
 #
 # Multilogin launcher must run on the Docker host (port 45001), not inside a
 # container. WSL 127.0.0.1 is not the Windows host — verify the agent from
-# PowerShell.
+# PowerShell. On Windows Desktop, prefer a host-native RQ worker
+# (MULTILOGIN_SELENIUM_HOST=http://127.0.0.1) if Selenium Host-header checks fail.
 #
 # Host reachability:
 #   - Docker Desktop / Linux: default host-gateway is correct.
