@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EnrichModeToggle } from '@/components/console/EnrichModeToggle';
 import { IntakeForm } from '@/components/console/IntakeForm';
@@ -20,14 +21,7 @@ function EnrichPageContent() {
   const draft = useAppSelector((state) => state.intake.draft);
   const mode = useAppSelector((state) => state.intake.enrichMode);
   const initialTiers = useMemo(() => parseTiersFromQuery(searchParams.get('tiers')), [searchParams]);
-  const jobIdParam = searchParams.get('jobId');
   const createMutation = useCreateEnrichment();
-
-  useEffect(() => {
-    if (jobIdParam) {
-      router.replace(`/app/jobs/${jobIdParam}`);
-    }
-  }, [jobIdParam, router]);
 
   useEffect(() => {
     if (initialTiers.length) {
@@ -38,6 +32,10 @@ function EnrichPageContent() {
   const handleSubmit = async (input: EnrichmentInput) => {
     dispatch(patchDraft(input));
     const created = await createMutation.mutateAsync({ input, mode });
+    if (mode === 'async') {
+      toast.success('Job created', { description: created.id });
+      return;
+    }
     router.push(`/app/jobs/${created.id}`);
   };
 
@@ -46,7 +44,8 @@ function EnrichPageContent() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Look someone up</h1>
         <p className="text-sm text-muted-foreground">
-          Select tiers and fill the fields they require. Results open on a shareable job page with live polling.
+          Select tiers and fill the fields they require. Async jobs stay here after submit — check History for
+          results. Sync jobs open the dossier when finished.
         </p>
       </div>
 
@@ -66,7 +65,7 @@ function EnrichPageContent() {
 
       <EmptyState
         title="Ready to look up"
-        description="After submit you will be redirected to the profile results page."
+        description="Async: you will get a confirmation toast and can follow the job in History. Sync: results open on the job page."
       />
     </div>
   );
