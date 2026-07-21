@@ -21,7 +21,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_DIR="$(cd "$SCRIPT_DIR/../docker" && pwd)"
-BASE="http://localhost:8000"
+# Override when the api container's published host port is remapped (e.g. via
+# a local docker-compose.override.yml to avoid colliding with another compose
+# project already bound to :8000 on the same Docker host).
+BASE="${E2E_BASE_URL:-http://localhost:8000}"
 TOKEN="change-me"
 AUTH="Authorization: Bearer $TOKEN"
 
@@ -50,9 +53,13 @@ done
 [ "$code" = "200" ] || fail "health never returned 200 (last=$code)"
 pass "health 200"
 
+# API routes wrap successful JSON bodies in the shared `{success, data}`
+# envelope (app/core/api_route.py::EnvelopeAPIRoute) — unwrap before reading fields.
+unwrap() { python3 -c 'import sys,json; b=json.load(sys.stdin); print(json.dumps(b.get("data", b) if isinstance(b, dict) and b.get("success") is True else b))'; }
+
 echo "== enqueue async job (ident=$IDENT) =="
 resp="$(curl -s -X POST "$BASE/enrich" -H "$AUTH" -H 'Content-Type: application/json' \
-  -d "{\"username\":\"$IDENT\",\"requested_tiers\":[\"tier2\"]}")"
+  -d "{\"username\":\"$IDENT\",\"requested_tiers\":[\"tier2\"]}" | unwrap)"
 echo "  enqueue response: $resp"
 status="$(echo "$resp" | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
 job_id="$(echo "$resp" | python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')"
@@ -62,7 +69,7 @@ pass "async enqueue queued (job_id=$job_id)"
 echo "== poll until terminal =="
 final=""
 for i in $(seq 1 40); do
-  poll="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH")"
+  poll="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" | unwrap)"
   final="$(echo "$poll" | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
   [ "$final" != "queued" ] && [ "$final" != "running" ] && break
   sleep 2
@@ -74,11 +81,11 @@ echo "== opt-out suppression (unauthenticated) =="
 oc="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/opt-out" \
   -H 'Content-Type: application/json' -d "{\"identifier\":\"$IDENT\",\"reason\":\"e2e\"}")"
 [ "$oc" = "202" ] || fail "opt-out expected 202, got $oc"
-chk="$(curl -s "$BASE/api/opt-out/check?identifier=$IDENT" \
+chk="$(curl -s "$BASE/api/opt-out/check?identifier=$IDENT" | unwrap \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["suppressed"])')"
 [ "$chk" = "True" ] || fail "identifier not reported suppressed"
 sup="$(curl -s -X POST "$BASE/enrich/sync" -H "$AUTH" -H 'Content-Type: application/json' \
-  -d "{\"username\":\"$IDENT\",\"requested_tiers\":[\"tier2\"]}" \
+  -d "{\"username\":\"$IDENT\",\"requested_tiers\":[\"tier2\"]}" | unwrap \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
 [ "$sup" = "suppressed" ] || fail "enrich not suppressed (got $sup)"
 pass "opt-out blocks enrichment (suppression in Postgres)"
@@ -86,7 +93,7 @@ pass "opt-out blocks enrichment (suppression in Postgres)"
 echo "== opt-out purge clears prior job dossier =="
 # API always serializes a full Dossier shape; purge is proven by status=purged
 # (dossier_payload wiped to {} in SQL and validated into empty defaults).
-purged_status="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
+purged_status="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" | unwrap \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
 [ "$purged_status" = "purged" ] || fail "prior job not purged after opt-out (status=$purged_status)"
 pass "opt-out purged stored dossier for matching identifier"
@@ -94,7 +101,7 @@ pass "opt-out purged stored dossier for matching identifier"
 echo "== restart worker; purged job must survive in Postgres volume =="
 docker compose restart worker
 sleep 3
-after="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" \
+after="$(curl -s "$BASE/enrich/$job_id" -H "$AUTH" | unwrap \
   | python3 -c 'import sys,json;print(json.load(sys.stdin)["status"])')"
 [ "$after" = "purged" ] || fail "old job lost after worker restart (got $after)"
 pass "old job still purged after worker restart"

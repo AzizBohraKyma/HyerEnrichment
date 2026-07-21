@@ -77,7 +77,15 @@ if [ "$MODE" = "--local" ]; then
   fi
 fi
 
-run_step smoke_prod make smoke-prod
+# --local runs against the compose stack's localhost BASE_URL; `make smoke-prod`
+# forces SMOKE_PROD=1, which smoke_test.py rejects for localhost URLs by design
+# (it's meant to catch operators accidentally "smoke-testing prod" against their
+# laptop). Local mode wants the same checks without that production guard.
+if [ "$MODE" = "--prod" ]; then
+  run_step smoke_prod make smoke-prod
+else
+  run_step smoke_local make smoke
+fi
 run_step boundary_checks make boundary-checks
 
 if [ -f "$BACKEND_DIR/scripts/e2e_full_path.sh" ]; then

@@ -4,6 +4,14 @@ Operator guide for deploying Hyrepath Enrichment to staging and production. The 
 
 Target production host: `enrich.hyrepath.io` (or agreed domain).
 
+**Status (2026-07-21):** The deploy + acceptance automation below (compose
+file, env templates, `scripts/prod_full_acceptance.sh`) is verified end-to-end
+via a local dry run — see [PROD_ACCEPTANCE.md](PROD_ACCEPTANCE.md#local-dry-run-evidence-2026-07-21)
+and evidence at [`backend/docs/e2e-evidence/prod-dryrun-2026-07-21/`](../backend/docs/e2e-evidence/prod-dryrun-2026-07-21/).
+**The only remaining blocker to going live is provisioning a real VPS and
+pointing DNS at `enrich.hyrepath.io`** — an external/business decision, not a
+code change.
+
 ## Architecture
 
 ```

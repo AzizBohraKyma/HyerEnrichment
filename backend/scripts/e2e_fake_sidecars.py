@@ -39,6 +39,15 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 EXPECTED_BUSINESS_NAME = "Hey Neighbor Cafe"
 
 
+def _unwrap(payload: Any) -> dict[str, Any]:
+    """Unwrap the `{success, data}` envelope every JSON route now returns
+    (see `app/core/api_route.py::EnvelopeAPIRoute`). Falls back to the raw
+    payload for callers still on the pre-envelope shape."""
+    if isinstance(payload, dict) and payload.get("success") is True and isinstance(payload.get("data"), dict):
+        return payload["data"]
+    return payload if isinstance(payload, dict) else {}
+
+
 @dataclass
 class CheckResult:
     name: str
@@ -88,7 +97,7 @@ class FakeSidecarProbe:
                 response = await client.get(f"{self.base_url}/health")
             self.record(
                 "api_health",
-                response.status_code == 200 and response.json().get("status") == "ok",
+                response.status_code == 200 and _unwrap(response.json()).get("status") == "ok",
                 f"status={response.status_code}",
             )
         except httpx.HTTPError as exc:
@@ -198,13 +207,13 @@ class FakeSidecarProbe:
             if enqueue.status_code != 202:
                 self.record("api_async_tier4", False, f"enqueue status={enqueue.status_code}")
                 return
-            job_id = enqueue.json().get("id")
+            job_id = _unwrap(enqueue.json()).get("id")
             final = ""
             dossier: dict[str, Any] = {}
             for _ in range(40):
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     poll = await client.get(f"{self.base_url}/enrich/{job_id}", headers=self.headers)
-                payload = poll.json()
+                payload = _unwrap(poll.json())
                 final = payload.get("status", "")
                 dossier = payload.get("dossier") or {}
                 if final not in {"queued", "running"}:
@@ -241,7 +250,7 @@ class FakeSidecarProbe:
             if enqueue.status_code != 202:
                 self.record("sse_job_events", False, f"enqueue status={enqueue.status_code}")
                 return
-            job_id = enqueue.json().get("id")
+            job_id = _unwrap(enqueue.json()).get("id")
 
             events: list[dict[str, Any]] = []
             async with httpx.AsyncClient(timeout=60.0) as client, client.stream(

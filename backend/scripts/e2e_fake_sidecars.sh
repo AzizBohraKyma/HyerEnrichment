@@ -17,10 +17,21 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_DIR="$(cd "$SCRIPT_DIR/../docker" && pwd)"
 BACKEND_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-BASE="http://localhost:8000"
+# Override when the api container's published host port is remapped (e.g. via
+# a local docker-compose.override.yml to avoid colliding with another compose
+# project already bound to :8000 on the same Docker host).
+BASE="${E2E_BASE_URL:-http://localhost:8000}"
 COMPOSE_FILES=(--profile paid -f docker-compose.yml -f docker-compose.fake-sidecars.yml)
 
 cd "$COMPOSE_DIR"
+
+# `docker compose` only auto-merges docker-compose.override.yml when no -f flag
+# is given; this script passes explicit -f flags above, so re-add it manually
+# if present (e.g. a local port-remap override to avoid colliding with another
+# compose project already bound to the same host ports).
+if [ -f "$COMPOSE_DIR/docker-compose.override.yml" ]; then
+  COMPOSE_FILES+=(-f docker-compose.override.yml)
+fi
 
 pass() { echo "PASS  $1"; }
 fail() { echo "FAIL  $1" >&2; exit 1; }
