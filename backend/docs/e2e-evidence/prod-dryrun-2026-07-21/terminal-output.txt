@@ -1,0 +1,964 @@
+== setup ==
+backend/.env already exists - skipping copy
+backend/.venv/bin/pip install -e "backend[dev]"
+Obtaining file:///G:/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: fastapi<1.0,>=0.111 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (0.139.2)
+Requirement already satisfied: uvicorn<1.0,>=0.30 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from uvicorn[standard]<1.0,>=0.30->hyrepath-enrichment-backend==0.1.0) (0.51.0)
+Requirement already satisfied: pydantic<3.0,>=2.8 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (2.13.4)
+Requirement already satisfied: pydantic-settings<3.0,>=2.3 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (2.14.2)
+Requirement already satisfied: sqlalchemy<3.0,>=2.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (2.0.51)
+Requirement already satisfied: alembic<2.0,>=1.13 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (1.18.5)
+Requirement already satisfied: aiosqlite<1.0,>=0.20 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (0.22.1)
+Requirement already satisfied: asyncpg<1.0,>=0.29 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (0.31.0)
+Requirement already satisfied: psycopg<4.0,>=3.1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from psycopg[binary]<4.0,>=3.1->hyrepath-enrichment-backend==0.1.0) (3.3.4)
+Requirement already satisfied: httpx<1.0,>=0.27 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (0.28.1)
+Requirement already satisfied: redis<6.0,>=5.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (5.3.1)
+Requirement already satisfied: rq<2.0,>=1.16 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (1.16.2)
+Requirement already satisfied: prometheus-client<1.0,>=0.20 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (0.25.0)
+Requirement already satisfied: mailchecker<7.0,>=6.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (6.0.21)
+Requirement already satisfied: sentry-sdk<3.0,>=2.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from sentry-sdk[fastapi]<3.0,>=2.0->hyrepath-enrichment-backend==0.1.0) (2.66.0)
+Requirement already satisfied: pytest<10.0,>=9.0.3 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (9.1.1)
+Requirement already satisfied: pytest-asyncio<2.0,>=1.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (1.4.0)
+Requirement already satisfied: pytest-cov<8.0,>=5.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (7.1.0)
+Requirement already satisfied: mypy<2.0,>=1.10 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (1.20.2)
+Requirement already satisfied: ruff<1.0,>=0.5 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (0.15.22)
+Requirement already satisfied: selenium<5.0,>=4.21 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (4.46.0)
+Requirement already satisfied: requests<3.0,>=2.31 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (2.34.2)
+Requirement already satisfied: pip-audit<3.0,>=2.7 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (2.10.1)
+Requirement already satisfied: pre-commit<4.0,>=3.7 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from hyrepath-enrichment-backend==0.1.0) (3.8.0)
+Requirement already satisfied: Mako in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from alembic<2.0,>=1.13->hyrepath-enrichment-backend==0.1.0) (1.3.12)
+Requirement already satisfied: typing-extensions>=4.12 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from alembic<2.0,>=1.13->hyrepath-enrichment-backend==0.1.0) (4.16.0)
+Requirement already satisfied: starlette>=0.46.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from fastapi<1.0,>=0.111->hyrepath-enrichment-backend==0.1.0) (1.3.1)
+Requirement already satisfied: typing-inspection>=0.4.2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from fastapi<1.0,>=0.111->hyrepath-enrichment-backend==0.1.0) (0.4.2)
+Requirement already satisfied: annotated-doc>=0.0.2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from fastapi<1.0,>=0.111->hyrepath-enrichment-backend==0.1.0) (0.0.4)
+Requirement already satisfied: anyio in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from httpx<1.0,>=0.27->hyrepath-enrichment-backend==0.1.0) (4.14.2)
+Requirement already satisfied: certifi in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from httpx<1.0,>=0.27->hyrepath-enrichment-backend==0.1.0) (2026.6.17)
+Requirement already satisfied: httpcore==1.* in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from httpx<1.0,>=0.27->hyrepath-enrichment-backend==0.1.0) (1.0.9)
+Requirement already satisfied: idna in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from httpx<1.0,>=0.27->hyrepath-enrichment-backend==0.1.0) (3.18)
+Requirement already satisfied: h11>=0.16 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from httpcore==1.*->httpx<1.0,>=0.27->hyrepath-enrichment-backend==0.1.0) (0.16.0)
+Requirement already satisfied: mypy_extensions>=1.0.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from mypy<2.0,>=1.10->hyrepath-enrichment-backend==0.1.0) (1.1.0)
+Requirement already satisfied: pathspec>=1.0.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from mypy<2.0,>=1.10->hyrepath-enrichment-backend==0.1.0) (1.1.1)
+Requirement already satisfied: librt>=0.8.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from mypy<2.0,>=1.10->hyrepath-enrichment-backend==0.1.0) (0.13.0)
+Requirement already satisfied: CacheControl>=0.13.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from CacheControl[filecache]>=0.13.0->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (0.14.4)
+Requirement already satisfied: cyclonedx-python-lib<12,>=5 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (11.11.0)
+Requirement already satisfied: packaging>=23.0.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (26.2)
+Requirement already satisfied: pip-api>=0.0.28 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (0.0.34)
+Requirement already satisfied: pip-requirements-parser>=32.0.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (32.0.1)
+Requirement already satisfied: rich>=12.4 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (15.0.0)
+Requirement already satisfied: tomli>=2.2.1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (2.4.1)
+Requirement already satisfied: tomli-w>=1.2.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (1.2.0)
+Requirement already satisfied: platformdirs>=4.2.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (4.10.1)
+Requirement already satisfied: license-expression<31,>=30 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from cyclonedx-python-lib<12,>=5->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (30.4.4)
+Requirement already satisfied: packageurl-python<2,>=0.11 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from cyclonedx-python-lib<12,>=5->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (0.17.6)
+Requirement already satisfied: py-serializable<3.0.0,>=2.1.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from cyclonedx-python-lib<12,>=5->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (2.1.0)
+Requirement already satisfied: sortedcontainers<3.0.0,>=2.4.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from cyclonedx-python-lib<12,>=5->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (2.4.0)
+Requirement already satisfied: boolean.py>=4.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from license-expression<31,>=30->cyclonedx-python-lib<12,>=5->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (5.0)
+Requirement already satisfied: cfgv>=2.0.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pre-commit<4.0,>=3.7->hyrepath-enrichment-backend==0.1.0) (3.5.0)
+Requirement already satisfied: identify>=1.0.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pre-commit<4.0,>=3.7->hyrepath-enrichment-backend==0.1.0) (2.6.19)
+Requirement already satisfied: nodeenv>=0.11.1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pre-commit<4.0,>=3.7->hyrepath-enrichment-backend==0.1.0) (1.10.0)
+Requirement already satisfied: pyyaml>=5.1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pre-commit<4.0,>=3.7->hyrepath-enrichment-backend==0.1.0) (6.0.3)
+Requirement already satisfied: virtualenv>=20.10.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pre-commit<4.0,>=3.7->hyrepath-enrichment-backend==0.1.0) (21.6.1)
+Requirement already satisfied: tzdata in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from psycopg<4.0,>=3.1->psycopg[binary]<4.0,>=3.1->hyrepath-enrichment-backend==0.1.0) (2026.3)
+Requirement already satisfied: psycopg-binary==3.3.4 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from psycopg[binary]<4.0,>=3.1->hyrepath-enrichment-backend==0.1.0) (3.3.4)
+Requirement already satisfied: defusedxml<0.8.0,>=0.7.1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from py-serializable<3.0.0,>=2.1.0->cyclonedx-python-lib<12,>=5->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (0.7.1)
+Requirement already satisfied: annotated-types>=0.6.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pydantic<3.0,>=2.8->hyrepath-enrichment-backend==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.46.4 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pydantic<3.0,>=2.8->hyrepath-enrichment-backend==0.1.0) (2.46.4)
+Requirement already satisfied: python-dotenv>=0.21.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pydantic-settings<3.0,>=2.3->hyrepath-enrichment-backend==0.1.0) (1.2.2)
+Requirement already satisfied: colorama>=0.4 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pytest<10.0,>=9.0.3->hyrepath-enrichment-backend==0.1.0) (0.4.6)
+Requirement already satisfied: iniconfig>=1.0.1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pytest<10.0,>=9.0.3->hyrepath-enrichment-backend==0.1.0) (2.3.0)
+Requirement already satisfied: pluggy<2,>=1.5 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pytest<10.0,>=9.0.3->hyrepath-enrichment-backend==0.1.0) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pytest<10.0,>=9.0.3->hyrepath-enrichment-backend==0.1.0) (2.20.0)
+Requirement already satisfied: coverage>=7.10.6 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from coverage[toml]>=7.10.6->pytest-cov<8.0,>=5.0->hyrepath-enrichment-backend==0.1.0) (7.15.2)
+Requirement already satisfied: PyJWT>=2.9.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from redis<6.0,>=5.0->hyrepath-enrichment-backend==0.1.0) (2.13.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from requests<3.0,>=2.31->hyrepath-enrichment-backend==0.1.0) (3.4.9)
+Requirement already satisfied: urllib3<3,>=1.26 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from requests<3.0,>=2.31->hyrepath-enrichment-backend==0.1.0) (2.7.0)
+Requirement already satisfied: click>=5 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from rq<2.0,>=1.16->hyrepath-enrichment-backend==0.1.0) (8.4.2)
+Requirement already satisfied: trio<1.0,>=0.31.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (0.33.0)
+Requirement already satisfied: trio-websocket<1.0,>=0.12.2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (0.12.2)
+Requirement already satisfied: websocket-client<2.0,>=1.8.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (1.9.0)
+Requirement already satisfied: greenlet>=1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from sqlalchemy<3.0,>=2.0->hyrepath-enrichment-backend==0.1.0) (3.5.3)
+Requirement already satisfied: attrs>=23.2.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from trio<1.0,>=0.31.0->selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (26.1.0)
+Requirement already satisfied: outcome in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from trio<1.0,>=0.31.0->selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (1.3.0.post0)
+Requirement already satisfied: sniffio>=1.3.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from trio<1.0,>=0.31.0->selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (1.3.1)
+Requirement already satisfied: cffi>=1.14 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from trio<1.0,>=0.31.0->selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (2.1.0)
+Requirement already satisfied: wsproto>=0.14 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from trio-websocket<1.0,>=0.12.2->selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (1.3.2)
+Requirement already satisfied: pysocks!=1.5.7,<2.0,>=1.5.6 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from urllib3[socks]<3.0,>=2.6.3->selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (1.7.1)
+Requirement already satisfied: httptools>=0.8.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from uvicorn[standard]<1.0,>=0.30->hyrepath-enrichment-backend==0.1.0) (0.8.0)
+Requirement already satisfied: watchfiles>=0.20 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from uvicorn[standard]<1.0,>=0.30->hyrepath-enrichment-backend==0.1.0) (1.2.0)
+Requirement already satisfied: websockets>=13.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from uvicorn[standard]<1.0,>=0.30->hyrepath-enrichment-backend==0.1.0) (16.1.1)
+Requirement already satisfied: msgpack<2.0.0,>=0.5.2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from CacheControl>=0.13.0->CacheControl[filecache]>=0.13.0->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (1.2.1)
+Requirement already satisfied: filelock>=3.8.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from CacheControl[filecache]>=0.13.0->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (3.31.2)
+Requirement already satisfied: pycparser in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from cffi>=1.14->trio<1.0,>=0.31.0->selenium<5.0,>=4.21->hyrepath-enrichment-backend==0.1.0) (3.0)
+Requirement already satisfied: pip in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-api>=0.0.28->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (25.1.1)
+Requirement already satisfied: pyparsing in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from pip-requirements-parser>=32.0.0->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (3.3.2)
+Requirement already satisfied: markdown-it-py>=2.2.0 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from rich>=12.4->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (4.2.0)
+Requirement already satisfied: mdurl~=0.1 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from markdown-it-py>=2.2.0->rich>=12.4->pip-audit<3.0,>=2.7->hyrepath-enrichment-backend==0.1.0) (0.1.2)
+Requirement already satisfied: distlib<1,>=0.3.7 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from virtualenv>=20.10.0->pre-commit<4.0,>=3.7->hyrepath-enrichment-backend==0.1.0) (0.4.3)
+Requirement already satisfied: python-discovery>=1.4.2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from virtualenv>=20.10.0->pre-commit<4.0,>=3.7->hyrepath-enrichment-backend==0.1.0) (1.4.4)
+Requirement already satisfied: MarkupSafe>=0.9.2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from Mako->alembic<2.0,>=1.13->hyrepath-enrichment-backend==0.1.0) (3.0.3)
+Building wheels for collected packages: hyrepath-enrichment-backend
+  Building editable for hyrepath-enrichment-backend (pyproject.toml): started
+  Building editable for hyrepath-enrichment-backend (pyproject.toml): finished with status 'done'
+  Created wheel for hyrepath-enrichment-backend: filename=hyrepath_enrichment_backend-0.1.0-0.editable-py3-none-any.whl size=4411 sha256=7b510b672bb136c33301439df1cdd64153e84577225e3ac5be6411947183f796
+  Stored in directory: C:\Users\AZIZ\AppData\Local\Temp\pip-ephem-wheel-cache-m3irx3kd\wheels\8c\aa\2e\eef366734b7ab547935e4af57166bd4447382091dfd854c24c
+Successfully built hyrepath-enrichment-backend
+Installing collected packages: hyrepath-enrichment-backend
+  Attempting uninstall: hyrepath-enrichment-backend
+    Found existing installation: hyrepath-enrichment-backend 0.1.0
+    Uninstalling hyrepath-enrichment-backend-0.1.0:
+      Successfully uninstalled hyrepath-enrichment-backend-0.1.0
+Successfully installed hyrepath-enrichment-backend-0.1.0
+
+[notice] A new release of pip is available: 25.1.1 -> 26.1.2
+[notice] To update, run: G:\ThunderMarketingCorp\HyerEnrichment\.worktrees\task90-prod-dryrun\backend\.venv\Scripts\python.exe -m pip install --upgrade pip
+backend/.venv/bin/pip install requests
+Requirement already satisfied: requests in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (2.34.2)
+Requirement already satisfied: charset_normalizer<4,>=2 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from requests) (3.4.9)
+Requirement already satisfied: idna<4,>=2.5 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from requests) (3.18)
+Requirement already satisfied: urllib3<3,>=1.26 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from requests) (2.7.0)
+Requirement already satisfied: certifi>=2023.5.7 in g:\thundermarketingcorp\hyerenrichment\.worktrees\task90-prod-dryrun\backend\.venv\lib\site-packages (from requests) (2026.6.17)
+
+[notice] A new release of pip is available: 25.1.1 -> 26.1.2
+[notice] To update, run: G:\ThunderMarketingCorp\HyerEnrichment\.worktrees\task90-prod-dryrun\backend\.venv\Scripts\python.exe -m pip install --upgrade pip
+backend/.venv/bin/pre-commit install
+Running in migration mode with existing hooks at G:\ThunderMarketingCorp\HyerEnrichment\.git\hooks\pre-commit.legacy
+Use -f to use only pre-commit.
+pre-commit installed at G:\ThunderMarketingCorp\HyerEnrichment\.git\hooks\pre-commit
+backend/.venv/bin/pre-commit install --hook-type commit-msg
+pre-commit installed at G:\ThunderMarketingCorp\HyerEnrichment\.git\hooks\commit-msg
+PASS  setup
+== compose_up ==
+cd backend/docker && DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 docker compose up --build -d api worker redis postgres social-analyzer google-maps-scraper
+time="2026-07-21T12:50:35Z" level=warning msg="/mnt/g/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend/docker/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Image task90dryrun-worker Building
+ Image task90dryrun-api Building
+ Image task90dryrun-migrate Building
+ Image task90dryrun-social-analyzer Building
+ Image task90dryrun-google-maps-scraper Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.94kB done
+#1 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile.api
+#2 transferring dockerfile:
+#2 transferring dockerfile: 1.85kB 0.1s done
+#2 ...
+
+#3 [google-maps-scraper internal] load build definition from Dockerfile.google-maps-scraper
+#3 transferring dockerfile: 3.00kB 0.1s done
+#3 DONE 0.6s
+
+#2 [api internal] load build definition from Dockerfile.api
+#2 DONE 0.7s
+
+#4 [google-maps-scraper internal] load metadata for docker.io/library/golang:1.26.4-trixie
+#4 ...
+
+#5 [social-analyzer internal] load build definition from Dockerfile.social-analyzer
+#5 transferring dockerfile: 355B 0.0s done
+#5 DONE 0.9s
+
+#6 [social-analyzer internal] load metadata for docker.io/library/node:18-alpine
+#6 ...
+
+#7 [worker internal] load build definition from Dockerfile.worker
+#7 transferring dockerfile: 2.23kB 0.0s done
+#7 DONE 1.1s
+
+#8 [worker internal] load metadata for docker.io/library/python:3.12-slim
+#8 ...
+
+#9 [google-maps-scraper internal] load metadata for docker.io/library/debian:trixie-slim
+#9 DONE 1.2s
+
+#4 [google-maps-scraper internal] load metadata for docker.io/library/golang:1.26.4-trixie
+#4 DONE 1.3s
+
+#6 [social-analyzer internal] load metadata for docker.io/library/node:18-alpine
+#6 DONE 1.3s
+
+#8 [worker internal] load metadata for docker.io/library/python:3.12-slim
+#8 DONE 1.3s
+
+#10 [worker internal] load .dockerignore
+#10 transferring context:
+#10 transferring context: 490B 0.0s done
+#10 ...
+
+#11 [google-maps-scraper internal] load .dockerignore
+#11 transferring context: 2B 0.0s done
+#11 DONE 0.5s
+
+#10 [migrate internal] load .dockerignore
+#10 DONE 0.7s
+
+#12 [api internal] load build context
+#12 ...
+
+#13 [social-analyzer 1/3] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#13 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 1.3s done
+#13 DONE 1.4s
+
+#12 [api internal] load build context
+#12 ...
+
+#14 [google-maps-scraper builder 1/3] FROM docker.io/library/golang:1.26.4-trixie@sha256:68b7145ec43d1820b9a56704554b53d1520aa2a15cb5233e374188a31b2a1bce
+#14 resolve docker.io/library/golang:1.26.4-trixie@sha256:68b7145ec43d1820b9a56704554b53d1520aa2a15cb5233e374188a31b2a1bce 1.3s done
+#14 DONE 1.4s
+
+#12 [api internal] load build context
+#12 ...
+
+#15 [google-maps-scraper driver 1/4] FROM docker.io/library/debian:trixie-slim@sha256:020c0d20b9880058cbe785a9db107156c3c75c2ac944a6aa7ab59f2add76a7bd
+#15 resolve docker.io/library/debian:trixie-slim@sha256:020c0d20b9880058cbe785a9db107156c3c75c2ac944a6aa7ab59f2add76a7bd 1.3s done
+#15 DONE 1.5s
+
+#16 [social-analyzer 2/3] WORKDIR /usr/src/app
+#16 CACHED
+
+#17 [social-analyzer 3/3] RUN apk add --no-cache git firefox-esr         && git clone --depth 1 https://github.com/qeeqbox/social-analyzer.git .         && npm ci         && npm install lodash
+#17 CACHED
+
+#18 [api  1/10] FROM docker.io/library/python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de
+#18 resolve docker.io/library/python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de 1.2s done
+#18 DONE 1.4s
+
+#19 [google-maps-scraper driver 4/4] RUN mkdir -p /opt/browsers  && /opt/node /opt/package/cli.js install chromium  && /opt/node /opt/package/cli.js install-deps chromium || true
+#19 CACHED
+
+#20 [google-maps-scraper stage-2 6/7] RUN chmod +x /opt/node && chmod -R a+rX /opt/package /opt/browsers
+#20 CACHED
+
+#21 [google-maps-scraper builder 3/3] RUN apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*  && git clone --depth 1 https://github.com/gosom/google-maps-scraper.git .  && CGO_ENABLED=0 GOTOOLCHAIN=auto go build -ldflags="-w -s" -o /usr/bin/google-maps-scraper
+#21 CACHED
+
+#22 [google-maps-scraper stage-2 5/7] COPY --from=driver /opt/browsers /opt/browsers
+#22 CACHED
+
+#23 [google-maps-scraper driver 3/4] RUN apt-get update  && apt-get install -y --no-install-recommends ca-certificates curl xz-utils  && rm -rf /var/lib/apt/lists/*  && if [ "amd64" = "arm64" ]; then       NODE_ARCH="arm64";     else       NODE_ARCH="x64";     fi  && curl -fsSL "https://nodejs.org/dist/v20.18.1/node-v20.18.1-linux-${NODE_ARCH}.tar.xz"       -o /tmp/node.tar.xz  && tar -xJf /tmp/node.tar.xz -C /tmp  && cp "/tmp/node-v20.18.1-linux-${NODE_ARCH}/bin/node" /opt/node  && chmod +x /opt/node  && curl -fsSL "https://registry.npmjs.org/playwright-core/-/playwright-core-1.60.0.tgz"       -o /tmp/pw.tgz  && mkdir -p /tmp/pw /opt/package  && tar -xzf /tmp/pw.tgz -C /tmp/pw  && cp -a /tmp/pw/package/. /opt/package/  && /opt/node /opt/package/cli.js --version
+#23 CACHED
+
+#24 [google-maps-scraper driver 2/4] WORKDIR /opt
+#24 CACHED
+
+#25 [google-maps-scraper stage-2 3/7] COPY --from=driver /opt/node /opt/node
+#25 CACHED
+
+#26 [google-maps-scraper stage-2 4/7] COPY --from=driver /opt/package /opt/package
+#26 CACHED
+
+#27 [google-maps-scraper stage-2 2/7] RUN apt-get update && apt-get install -y --no-install-recommends     ca-certificates     curl     libnss3     libnspr4     libatk1.0-0     libatk-bridge2.0-0     libcups2     libdrm2     libdbus-1-3     libxkbcommon0     libatspi2.0-0     libx11-6     libxcomposite1     libxdamage1     libxext6     libxfixes3     libxrandr2     libgbm1     libpango-1.0-0     libcairo2     libasound2  && apt-get clean  && rm -rf /var/lib/apt/lists/*
+#27 CACHED
+
+#28 [google-maps-scraper builder 2/3] WORKDIR /app
+#28 CACHED
+
+#29 [google-maps-scraper stage-2 7/7] COPY --from=builder /usr/bin/google-maps-scraper /usr/bin/
+#29 CACHED
+
+#12 [api internal] load build context
+#12 transferring context: 14.81kB 1.8s done
+#12 DONE 2.1s
+
+#30 [google-maps-scraper] exporting to image
+#30 exporting layers done
+#30 exporting manifest sha256:33ebd11410c3420813c7dbfc9977b59020bfd32cf6f4c4d5f1b7c6e2e964ad71 0.2s done
+#30 exporting config sha256:11e74df0361980a5b8becff9543e4f706ad2457cba93a00ad115cf3edccf8150 0.2s done
+#30 ...
+
+#31 [api  9/10] RUN curl -fsSL -o /tmp/email-sleuth.tar.gz         "https://github.com/buyukakyuz/email-sleuth/releases/download/v1.1.3/email-sleuth-v1.1.3-x86_64-unknown-linux-gnu.tar.gz"     && mkdir -p /tmp/email-sleuth-extract     && tar -xzf /tmp/email-sleuth.tar.gz -C /tmp/email-sleuth-extract     && install "$(find /tmp/email-sleuth-extract -name email-sleuth -type f | head -1)" /usr/local/bin/email-sleuth     && rm -rf /tmp/email-sleuth.tar.gz /tmp/email-sleuth-extract
+#31 CACHED
+
+#32 [api  2/10] WORKDIR /app
+#32 CACHED
+
+#33 [api  4/10] COPY pyproject.toml /app/pyproject.toml
+#33 CACHED
+
+#34 [api  5/10] RUN pip install --no-cache-dir ".[enrichers]"     && which sherlock     && which maigret
+#34 CACHED
+
+#35 [api  7/10] RUN git clone --depth 1 https://github.com/laramies/theHarvester.git /opt/theHarvester     && pip install --no-cache-dir /opt/theHarvester     && which theHarvester
+#35 CACHED
+
+#36 [api  3/10] RUN apt-get update     && apt-get install -y --no-install-recommends         ca-certificates         curl         git     && rm -rf /var/lib/apt/lists/*
+#36 CACHED
+
+#37 [api  8/10] RUN git clone --depth 1 https://github.com/GONZOsint/gitrecon.git /opt/gitrecon     && pip install --no-cache-dir -r /opt/gitrecon/requirements.txt rich requests
+#37 CACHED
+
+#38 [api  6/10] RUN pip install --no-cache-dir "git+https://github.com/Buff3st-0v3rfl0w/CrossLinked.git"     && which crosslinked
+#38 CACHED
+
+#30 [google-maps-scraper] exporting to image
+#30 exporting attestation manifest sha256:8d91b538f0ebef0857cbfbf2bde90f3b949f38fea22a4fde8c7b211b51119a23
+#30 ...
+
+#32 [worker  2/10] WORKDIR /app
+#32 CACHED
+
+#39 [worker  5/12] COPY app /app/backend/app
+#39 CACHED
+
+#40 [worker  9/12] RUN git clone --depth 1 https://github.com/GONZOsint/gitrecon.git /opt/gitrecon     && pip install --no-cache-dir -r /opt/gitrecon/requirements.txt rich requests
+#40 CACHED
+
+#41 [worker  7/12] RUN pip install --no-cache-dir "git+https://github.com/Buff3st-0v3rfl0w/CrossLinked.git"     && which crosslinked
+#41 CACHED
+
+#42 [worker 11/12] RUN test -f "/opt/gitrecon/gitrecon.py"
+#42 CACHED
+
+#43 [worker  4/12] COPY pyproject.toml /app/pyproject.toml
+#43 CACHED
+
+#44 [worker  6/12] RUN pip install --no-cache-dir ".[enrichers]"     && which sherlock     && which maigret
+#44 CACHED
+
+#45 [worker 10/12] RUN curl -fsSL -o /tmp/email-sleuth.tar.gz         "https://github.com/buyukakyuz/email-sleuth/releases/download/v1.1.3/email-sleuth-v1.1.3-x86_64-unknown-linux-gnu.tar.gz"     && mkdir -p /tmp/email-sleuth-extract     && tar -xzf /tmp/email-sleuth.tar.gz -C /tmp/email-sleuth-extract     && install "$(find /tmp/email-sleuth-extract -name email-sleuth -type f | head -1)" /usr/local/bin/email-sleuth     && rm -rf /tmp/email-sleuth.tar.gz /tmp/email-sleuth-extract     && email-sleuth --version
+#45 CACHED
+
+#46 [worker  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends         chromium         chromium-driver         ca-certificates         curl         git     && rm -rf /var/lib/apt/lists/*
+#46 CACHED
+
+#47 [worker  8/12] RUN git clone --depth 1 https://github.com/laramies/theHarvester.git /opt/theHarvester     && pip install --no-cache-dir /opt/theHarvester     && which theHarvester
+#47 CACHED
+
+#48 [api 10/10] COPY . /app/backend
+#48 CACHED
+
+#49 [worker 12/12] COPY . /app/backend
+#49 CACHED
+
+#50 [social-analyzer] exporting to image
+#50 exporting layers done
+#50 exporting manifest sha256:780ca7dde6ba235b7637c1a7d186cce913c53a3fcdab087066f9d6a1c29c269f 0.1s done
+#50 exporting config sha256:81c271a7de1070a5325a1cf8819df32ac9ecdb3b682d2f45a916856284f87ca9 0.1s done
+#50 exporting attestation manifest sha256:42aaaaf4aca4f90375d5a00c0ebe247991a9fd1771a7bca8c9de452fd0914543
+#50 exporting attestation manifest sha256:42aaaaf4aca4f90375d5a00c0ebe247991a9fd1771a7bca8c9de452fd0914543 1.9s done
+#50 exporting manifest list sha256:6d9ac66ed633e5854a2e8c26442c1ec55fca153952707645996d618c16c0b92b
+#50 exporting manifest list sha256:6d9ac66ed633e5854a2e8c26442c1ec55fca153952707645996d618c16c0b92b 1.4s done
+#50 naming to docker.io/library/task90dryrun-social-analyzer:latest
+#50 naming to docker.io/library/task90dryrun-social-analyzer:latest 0.9s done
+#50 unpacking to docker.io/library/task90dryrun-social-analyzer:latest
+#50 unpacking to docker.io/library/task90dryrun-social-analyzer:latest 1.1s done
+#50 DONE 6.5s
+
+#30 [google-maps-scraper] exporting to image
+#30 exporting attestation manifest sha256:8d91b538f0ebef0857cbfbf2bde90f3b949f38fea22a4fde8c7b211b51119a23 2.1s done
+#30 exporting manifest list sha256:338ed95df81928cfa2515c16ae41eddf2f408f59185501bad8afdfc689f6074d 1.5s done
+#30 naming to docker.io/library/task90dryrun-google-maps-scraper:latest 0.7s done
+#30 unpacking to docker.io/library/task90dryrun-google-maps-scraper:latest 1.0s done
+#30 DONE 6.7s
+
+#51 [worker] exporting to image
+#51 exporting layers 0.0s done
+#51 exporting manifest sha256:99379d19d7bd68d943fe2c9fb8f364cd0c082ece92746f032cc3584a084a37a1 0.5s done
+#51 exporting config sha256:330f5143ceb5663aebf16773789d3d1524645f2b5a4ff59620f54f7cb47ce742 0.5s done
+#51 exporting attestation manifest sha256:ac0c313ded0f70df681fe5be2b0c65e9e2a6c789a0a480af2e175d18ae3a502b 2.7s done
+#51 exporting manifest list sha256:060d462e056ded499b103aabed199f174c8f20adef8fde3a6b9d1f01425e1500
+#51 exporting manifest list sha256:060d462e056ded499b103aabed199f174c8f20adef8fde3a6b9d1f01425e1500 1.5s done
+#51 naming to docker.io/library/task90dryrun-worker:latest
+#51 ...
+
+#52 [api] exporting to image
+#52 exporting layers 0.0s done
+#52 exporting manifest sha256:ede2c0a170bffa103a45e8ef345e42df100b30553584f375be34fa2c871901ad 0.5s done
+#52 exporting config sha256:576e3325b2f01ca59f5d61e623fadb8181c96450e3a09b757ace96decb0f5eb0 0.5s done
+#52 exporting attestation manifest sha256:53a6f5747f56eefadc080624977f080fb0c14136bdb63d202bfccb6a44d7a4f4 2.8s done
+#52 exporting manifest list sha256:360f7535b34eaf05348ea58a2a5890b96956ffd08f81ecd08317de2fc4035c69 1.2s done
+#52 naming to docker.io/library/task90dryrun-api:latest 1.1s done
+#52 unpacking to docker.io/library/task90dryrun-api:latest
+#52 ...
+
+#51 [worker] exporting to image
+#51 naming to docker.io/library/task90dryrun-worker:latest 0.9s done
+#51 unpacking to docker.io/library/task90dryrun-worker:latest
+#51 unpacking to docker.io/library/task90dryrun-worker:latest 0.6s done
+#51 ...
+
+#53 [migrate] exporting to image
+#53 exporting layers 0.0s done
+#53 exporting manifest sha256:af3cfcf7cf8167c220a378f9119bc07e8deaf7d6747ba460aa1721ba24633ade 0.3s done
+#53 exporting config sha256:cfdec5430f28840cb4931a695c2d34087a33deab5d224fb5e3b416f129a0174e 0.5s done
+#53 exporting attestation manifest sha256:2816dc3301d5126787c6efb05be0ca1504bb74df816efc4a4b5ad723df4668fd 2.9s done
+#53 exporting manifest list sha256:5506b3dcc1c791655efecf580a961cb53199c2154f4f3b17413d9a5a110986c8 1.1s done
+#53 naming to docker.io/library/task90dryrun-migrate:latest 0.7s done
+#53 unpacking to docker.io/library/task90dryrun-migrate:latest 1.3s done
+#53 DONE 8.3s
+
+#52 [api] exporting to image
+#52 unpacking to docker.io/library/task90dryrun-api:latest 0.7s done
+#52 DONE 8.3s
+
+#51 [worker] exporting to image
+#51 DONE 8.3s
+
+#54 [social-analyzer] resolving provenance for metadata file
+#54 DONE 4.0s
+
+#55 [worker] resolving provenance for metadata file
+#55 ...
+
+#56 [google-maps-scraper] resolving provenance for metadata file
+#56 DONE 3.7s
+
+#57 [api] resolving provenance for metadata file
+#57 ...
+
+#55 [worker] resolving provenance for metadata file
+#55 DONE 2.1s
+
+#58 [migrate] resolving provenance for metadata file
+#58 ...
+
+#57 [api] resolving provenance for metadata file
+#57 DONE 4.2s
+
+#58 [migrate] resolving provenance for metadata file
+#58 DONE 1.1s
+ Image task90dryrun-worker Built
+ Image task90dryrun-api Built
+ Image task90dryrun-google-maps-scraper Built
+ Image task90dryrun-social-analyzer Built
+ Image task90dryrun-migrate Built
+ Network task90dryrun_default Creating
+ Network task90dryrun_default Created
+ Container task90dryrun-google-maps-scraper-1 Creating
+ Container task90dryrun-postgres-1 Creating
+ Container task90dryrun-redis-1 Creating
+ Container task90dryrun-social-analyzer-1 Creating
+ Container task90dryrun-social-analyzer-1 Created
+ Container task90dryrun-google-maps-scraper-1 Created
+ Container task90dryrun-redis-1 Created
+ Container task90dryrun-postgres-1 Created
+ Container task90dryrun-migrate-1 Creating
+ Container task90dryrun-migrate-1 Created
+ Container task90dryrun-worker-1 Creating
+ Container task90dryrun-api-1 Creating
+ Container task90dryrun-api-1 Created
+ Container task90dryrun-worker-1 Created
+ Container task90dryrun-social-analyzer-1 Starting
+ Container task90dryrun-google-maps-scraper-1 Starting
+ Container task90dryrun-postgres-1 Starting
+ Container task90dryrun-redis-1 Starting
+ Container task90dryrun-social-analyzer-1 Started
+ Container task90dryrun-postgres-1 Started
+ Container task90dryrun-postgres-1 Waiting
+ Container task90dryrun-google-maps-scraper-1 Started
+ Container task90dryrun-redis-1 Started
+ Container task90dryrun-postgres-1 Healthy
+ Container task90dryrun-migrate-1 Starting
+ Container task90dryrun-migrate-1 Started
+ Container task90dryrun-migrate-1 Waiting
+ Container task90dryrun-redis-1 Waiting
+ Container task90dryrun-redis-1 Waiting
+ Container task90dryrun-migrate-1 Waiting
+ Container task90dryrun-redis-1 Healthy
+ Container task90dryrun-redis-1 Healthy
+ Container task90dryrun-migrate-1 Exited
+ Container task90dryrun-worker-1 Starting
+ Container task90dryrun-migrate-1 Exited
+ Container task90dryrun-api-1 Starting
+ Container task90dryrun-api-1 Started
+ Container task90dryrun-worker-1 Started
+PASS  compose_up
+== wait for /ready ==
+PASS  /ready
+== smoke_local ==
+PASS  /health
+PASS  /ready
+PASS  unauth /enrich/sync → 401
+PASS  /enrich/sync → completed
+PASS  unauth /api/opt-out → 202
+PASS  unauth /api/dsar → 201
+PASS  /enrich → queued (job_id=job_7f7e8b0488b54adba90ba8e4b18b9c37)
+PASS  /enrich/job_7f7e8b0488b54adba90ba8e4b18b9c37 → completed
+smoke ok
+PASS  smoke_local
+== boundary_checks ==
+bash backend/scripts/boundary_checks.sh
+..........................                                               [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  G:\ThunderMarketingCorp\HyerEnrichment\.worktrees\task90-prod-dryrun\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+26 passed, 1 warning in 4.95s
+boundary checks ok
+PASS  boundary_checks
+== full_path_e2e ==
+
+========== stage: compose_test (/g/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend/scripts/e2e_compose_test.sh) ==========
+== bringing up api, worker, redis, postgres ==
+time="2026-07-21T12:52:45Z" level=warning msg="/mnt/g/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend/docker/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Container task90dryrun-api-1 Running
+ Container task90dryrun-worker-1 Running
+ Container task90dryrun-redis-1 Running
+ Container task90dryrun-postgres-1 Running
+ Container task90dryrun-postgres-1 Waiting
+ Container task90dryrun-postgres-1 Healthy
+ Container task90dryrun-migrate-1 Starting
+ Container task90dryrun-migrate-1 Started
+ Container task90dryrun-redis-1 Waiting
+ Container task90dryrun-migrate-1 Waiting
+ Container task90dryrun-redis-1 Waiting
+ Container task90dryrun-migrate-1 Waiting
+ Container task90dryrun-redis-1 Healthy
+ Container task90dryrun-redis-1 Healthy
+ Container task90dryrun-migrate-1 Exited
+ Container task90dryrun-migrate-1 Exited
+  using identifier: compose-e2e-1784638369
+== waiting for API health ==
+PASS  health 200
+== enqueue async job (ident=compose-e2e-1784638369) ==
+  enqueue response: {"id": "job_983c3510c2cf4c00b1f499dba578c416", "status": "queued", "dossier": {"photo": null, "handles": [], "emails": [], "verified_emails": [], "github": {}, "coworkers": [], "jobs": [], "business": null, "confidence": [], "sources": [], "metadata": {}}}
+PASS  async enqueue queued (job_id=job_983c3510c2cf4c00b1f499dba578c416)
+== poll until terminal ==
+PASS  async poll completed
+== opt-out suppression (unauthenticated) ==
+PASS  opt-out blocks enrichment (suppression in Postgres)
+== opt-out purge clears prior job dossier ==
+PASS  opt-out purged stored dossier for matching identifier
+== restart worker; purged job must survive in Postgres volume ==
+ Container task90dryrun-worker-1 Restarting
+ Container task90dryrun-worker-1 Started
+PASS  old job still purged after worker restart
+
+All Docker Compose E2E checks passed.
+PASS  compose_test (exit=0, 47s)
+
+========== stage: fake_sidecars (/g/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend/scripts/e2e_fake_sidecars.sh) ==========
+== bringing up fake-sidecar stack ==
+time="2026-07-21T12:53:32Z" level=warning msg="/mnt/g/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend/docker/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Image task90dryrun-migrate Building
+ Image hyrepath/fake-sidecar:latest Building
+ Image task90dryrun-api Building
+ Image hyrepath/fake-sidecar:latest Building
+ Image hyrepath/fake-sidecar:latest Building
+ Image hyrepath/fake-sidecar:latest Building
+ Image task90dryrun-worker Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 4.16kB done
+#1 DONE 0.0s
+
+#2 [email-verifier internal] load build definition from Dockerfile
+#2 transferring dockerfile: 30B 0.0s
+#2 transferring dockerfile: 341B 0.0s done
+#2 ...
+
+#3 [worker internal] load build definition from Dockerfile.worker
+#3 transferring dockerfile: 2.23kB 0.0s done
+#3 DONE 0.5s
+
+#2 [email-verifier internal] load build definition from Dockerfile
+#2 DONE 0.6s
+
+#4 [reacher internal] load metadata for docker.io/library/python:3.12-slim
+#4 ...
+
+#5 [api internal] load build definition from Dockerfile.api
+#5 transferring dockerfile: 1.85kB 0.0s done
+#5 DONE 0.8s
+
+#4 [migrate internal] load metadata for docker.io/library/python:3.12-slim
+#4 DONE 0.4s
+
+#6 [migrate internal] load .dockerignore
+#6 transferring context: 490B 0.0s done
+#6 transferring context: 490B 0.0s done
+#6 DONE 0.3s
+
+#7 [worker internal] load build context
+#7 ...
+
+#8 [google-maps-scraper internal] load .dockerignore
+#8 transferring context: 2B 0.0s done
+#8 DONE 0.5s
+
+#7 [worker internal] load build context
+#7 ...
+
+#9 [email-verifier internal] load build context
+#9 transferring context: 164B 0.0s done
+#9 DONE 0.3s
+
+#10 [google-maps-scraper  1/10] FROM docker.io/library/python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de
+#10 resolve docker.io/library/python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de 0.5s done
+#10 DONE 0.5s
+
+#11 [email-verifier  2/10] WORKDIR /app
+#11 CACHED
+
+#12 [email-verifier 3/5] RUN pip install --no-cache-dir starlette==0.46.2 uvicorn==0.34.0
+#12 CACHED
+
+#13 [email-verifier 4/5] COPY server.py ./
+#13 CACHED
+
+#14 [reacher 5/5] COPY fixtures/ ./fixtures/
+#14 CACHED
+
+#7 [worker internal] load build context
+#7 transferring context: 14.81kB 1.8s done
+#7 DONE 2.1s
+
+#15 [social-analyzer] exporting to image
+#15 exporting layers 0.0s done
+#15 exporting manifest sha256:3aee4aeefc440ce9914a0abefec8b04476786add834aea2f58b4ad148aec99d2 0.5s done
+#15 exporting config sha256:7510da2ca5c8354fd7c2b0e6aaefa6075d9f53be163945bd4fa79786116dda01 0.7s done
+#15 ...
+
+#11 [api  2/10] WORKDIR /app
+#11 CACHED
+
+#16 [api  4/10] COPY pyproject.toml /app/pyproject.toml
+#16 CACHED
+
+#17 [api  5/10] RUN pip install --no-cache-dir ".[enrichers]"     && which sherlock     && which maigret
+#17 CACHED
+
+#18 [api  7/10] RUN git clone --depth 1 https://github.com/laramies/theHarvester.git /opt/theHarvester     && pip install --no-cache-dir /opt/theHarvester     && which theHarvester
+#18 CACHED
+
+#19 [api  8/10] RUN git clone --depth 1 https://github.com/GONZOsint/gitrecon.git /opt/gitrecon     && pip install --no-cache-dir -r /opt/gitrecon/requirements.txt rich requests
+#19 CACHED
+
+#20 [api  3/10] RUN apt-get update     && apt-get install -y --no-install-recommends         ca-certificates         curl         git     && rm -rf /var/lib/apt/lists/*
+#20 CACHED
+
+#21 [api  6/10] RUN pip install --no-cache-dir "git+https://github.com/Buff3st-0v3rfl0w/CrossLinked.git"     && which crosslinked
+#21 CACHED
+
+#22 [api  9/10] RUN curl -fsSL -o /tmp/email-sleuth.tar.gz         "https://github.com/buyukakyuz/email-sleuth/releases/download/v1.1.3/email-sleuth-v1.1.3-x86_64-unknown-linux-gnu.tar.gz"     && mkdir -p /tmp/email-sleuth-extract     && tar -xzf /tmp/email-sleuth.tar.gz -C /tmp/email-sleuth-extract     && install "$(find /tmp/email-sleuth-extract -name email-sleuth -type f | head -1)" /usr/local/bin/email-sleuth     && rm -rf /tmp/email-sleuth.tar.gz /tmp/email-sleuth-extract
+#22 CACHED
+
+#22 [migrate  9/10] RUN curl -fsSL -o /tmp/email-sleuth.tar.gz         "https://github.com/buyukakyuz/email-sleuth/releases/download/v1.1.3/email-sleuth-v1.1.3-x86_64-unknown-linux-gnu.tar.gz"     && mkdir -p /tmp/email-sleuth-extract     && tar -xzf /tmp/email-sleuth.tar.gz -C /tmp/email-sleuth-extract     && install "$(find /tmp/email-sleuth-extract -name email-sleuth -type f | head -1)" /usr/local/bin/email-sleuth     && rm -rf /tmp/email-sleuth.tar.gz /tmp/email-sleuth-extract
+#22 CACHED
+
+#21 [migrate  6/10] RUN pip install --no-cache-dir "git+https://github.com/Buff3st-0v3rfl0w/CrossLinked.git"     && which crosslinked
+#21 CACHED
+
+#17 [migrate  5/10] RUN pip install --no-cache-dir ".[enrichers]"     && which sherlock     && which maigret
+#17 CACHED
+
+#16 [migrate  4/10] COPY pyproject.toml /app/pyproject.toml
+#16 CACHED
+
+#18 [migrate  7/10] RUN git clone --depth 1 https://github.com/laramies/theHarvester.git /opt/theHarvester     && pip install --no-cache-dir /opt/theHarvester     && which theHarvester
+#18 CACHED
+
+#20 [migrate  3/10] RUN apt-get update     && apt-get install -y --no-install-recommends         ca-certificates         curl         git     && rm -rf /var/lib/apt/lists/*
+#20 CACHED
+
+#19 [migrate  8/10] RUN git clone --depth 1 https://github.com/GONZOsint/gitrecon.git /opt/gitrecon     && pip install --no-cache-dir -r /opt/gitrecon/requirements.txt rich requests
+#19 CACHED
+
+#23 [worker  4/12] COPY pyproject.toml /app/pyproject.toml
+#23 CACHED
+
+#11 [worker  2/10] WORKDIR /app
+#11 CACHED
+
+#24 [worker 11/12] RUN test -f "/opt/gitrecon/gitrecon.py"
+#24 CACHED
+
+#25 [worker  6/12] RUN pip install --no-cache-dir ".[enrichers]"     && which sherlock     && which maigret
+#25 CACHED
+
+#26 [worker  9/12] RUN git clone --depth 1 https://github.com/GONZOsint/gitrecon.git /opt/gitrecon     && pip install --no-cache-dir -r /opt/gitrecon/requirements.txt rich requests
+#26 CACHED
+
+#27 [worker  7/12] RUN pip install --no-cache-dir "git+https://github.com/Buff3st-0v3rfl0w/CrossLinked.git"     && which crosslinked
+#27 CACHED
+
+#28 [worker 10/12] RUN curl -fsSL -o /tmp/email-sleuth.tar.gz         "https://github.com/buyukakyuz/email-sleuth/releases/download/v1.1.3/email-sleuth-v1.1.3-x86_64-unknown-linux-gnu.tar.gz"     && mkdir -p /tmp/email-sleuth-extract     && tar -xzf /tmp/email-sleuth.tar.gz -C /tmp/email-sleuth-extract     && install "$(find /tmp/email-sleuth-extract -name email-sleuth -type f | head -1)" /usr/local/bin/email-sleuth     && rm -rf /tmp/email-sleuth.tar.gz /tmp/email-sleuth-extract     && email-sleuth --version
+#28 CACHED
+
+#29 [worker  8/12] RUN git clone --depth 1 https://github.com/laramies/theHarvester.git /opt/theHarvester     && pip install --no-cache-dir /opt/theHarvester     && which theHarvester
+#29 CACHED
+
+#30 [worker  3/12] RUN apt-get update     && apt-get install -y --no-install-recommends         chromium         chromium-driver         ca-certificates         curl         git     && rm -rf /var/lib/apt/lists/*
+#30 CACHED
+
+#31 [worker  5/12] COPY app /app/backend/app
+#31 CACHED
+
+#32 [migrate 10/10] COPY . /app/backend
+#32 CACHED
+
+#33 [worker 12/12] COPY . /app/backend
+#33 CACHED
+
+#15 [social-analyzer] exporting to image
+#15 exporting attestation manifest sha256:e4e70dd4654e52bef88fd04054c9a5f5ec45637403006b34fb2863b7f4b4c038
+#15 exporting attestation manifest sha256:e4e70dd4654e52bef88fd04054c9a5f5ec45637403006b34fb2863b7f4b4c038 3.8s done
+#15 exporting manifest list sha256:1067ca74d85aef86f7673193fd5a90df721a6af09d395e9bac717bcc5a78f587
+#15 ...
+
+#34 [google-maps-scraper] exporting to image
+#34 exporting layers done
+#34 exporting manifest sha256:f6331588ceaf889b5df27152a5a6a166f70e9634640edcb58469ed24b18a426a 0.4s done
+#34 exporting config sha256:d2ab3d351bb7278d5d2cd271b08796d64ee3bcc752d4b8108df81a60f8339966 0.2s done
+#34 exporting attestation manifest sha256:4b138b548891e27af62e18f1133637f9dd564a22c333d945b6d40f19ca11ab59 2.6s done
+#34 exporting manifest list sha256:0f48c2673d27a3d2120dcfdfe8f87d950d80e29613989ac84de3a8b5e9d9d45a 1.6s done
+#34 naming to docker.io/hyrepath/fake-sidecar:latest 1.1s done
+#34 unpacking to docker.io/hyrepath/fake-sidecar:latest
+#34 unpacking to docker.io/hyrepath/fake-sidecar:latest 1.9s done
+#34 ...
+
+#15 [social-analyzer] exporting to image
+#15 exporting manifest list sha256:1067ca74d85aef86f7673193fd5a90df721a6af09d395e9bac717bcc5a78f587 2.2s done
+#15 ...
+
+#34 [google-maps-scraper] exporting to image
+#34 DONE 9.0s
+
+#15 [social-analyzer] exporting to image
+#15 naming to docker.io/hyrepath/fake-sidecar:latest 0.5s done
+#15 ...
+
+#35 [email-verifier] exporting to image
+#35 exporting layers 0.0s done
+#35 exporting manifest sha256:48e685044a4c35034ac5b45d550340c234150d82c67aa2079fd0b1b1083458e3 0.5s done
+#35 exporting config sha256:721560ae96cb832aee76513701a57a6a6b153d7e47cb18a6ecd489a106680605 0.5s done
+#35 exporting attestation manifest sha256:725a9b173d76b7209430b9ff7604711111db3d76bfa274630df898bf19218242 3.1s done
+#35 exporting manifest list sha256:efa8e22e460e47794b30d5305cc9711b63ff604c21d35f44a8ba9b084f4bc936 2.2s done
+#35 naming to docker.io/hyrepath/fake-sidecar:latest 1.0s done
+#35 unpacking to docker.io/hyrepath/fake-sidecar:latest 1.3s done
+#35 ...
+
+#36 [reacher] exporting to image
+#36 exporting layers 0.0s done
+#36 exporting manifest sha256:28056657785d2a1d6a9a879a0c2ba138c0635fb0d613124d7fa876efe0677147 0.5s done
+#36 exporting config sha256:1354b64d4eb19e11dffb0f3755183e779900588ecec61e2bb0d275e72c73af0c 0.7s done
+#36 exporting attestation manifest sha256:c91d659adb28fc7ed5245102e1af7ab5f9264d683b548b87f205f54f2160587b 3.4s done
+#36 exporting manifest list sha256:9201b157b267b56a9a45a58ced5b03c1a5c2790ab3cef60937331b499bd3bf0a 2.2s done
+#36 naming to docker.io/hyrepath/fake-sidecar:latest 0.8s done
+#36 unpacking to docker.io/hyrepath/fake-sidecar:latest 1.3s done
+#36 ...
+
+#15 [social-analyzer] exporting to image
+#15 unpacking to docker.io/hyrepath/fake-sidecar:latest 1.9s done
+#15 ...
+
+#35 [email-verifier] exporting to image
+#35 DONE 11.0s
+
+#36 [reacher] exporting to image
+#36 DONE 11.0s
+
+#37 [worker] exporting to image
+#37 exporting layers 0.0s done
+#37 exporting manifest sha256:99379d19d7bd68d943fe2c9fb8f364cd0c082ece92746f032cc3584a084a37a1 0.8s done
+#37 exporting config sha256:330f5143ceb5663aebf16773789d3d1524645f2b5a4ff59620f54f7cb47ce742 1.0s done
+#37 exporting attestation manifest sha256:709a13cd4c8e0ebb8633df330c43eee69bf4b172857b7ce29ce7066a5de81584 3.4s done
+#37 exporting manifest list sha256:27be0b9178049c223c5a0987fb005984bc52f932c205262813c427ffcb4c1423
+#37 ...
+
+#15 [social-analyzer] exporting to image
+#15 DONE 11.7s
+
+#38 [api] exporting to image
+#38 exporting layers 0.0s done
+#38 exporting manifest sha256:ede2c0a170bffa103a45e8ef345e42df100b30553584f375be34fa2c871901ad 0.8s done
+#38 exporting config sha256:576e3325b2f01ca59f5d61e623fadb8181c96450e3a09b757ace96decb0f5eb0 0.9s done
+#38 exporting attestation manifest sha256:809eadf68710c0be4904a5b5a4a74e183c1922e41ea3f22d12eb1383bf3078ce 3.2s done
+#38 exporting manifest list sha256:5ec189163cdefedd9aa919f265336d6b1a081a6d1d40a8474a4d65d3de63faea
+#38 exporting manifest list sha256:5ec189163cdefedd9aa919f265336d6b1a081a6d1d40a8474a4d65d3de63faea 2.2s done
+#38 naming to docker.io/library/task90dryrun-api:latest
+#38 ...
+
+#37 [worker] exporting to image
+#37 exporting manifest list sha256:27be0b9178049c223c5a0987fb005984bc52f932c205262813c427ffcb4c1423 2.0s done
+#37 naming to docker.io/library/task90dryrun-worker:latest
+#37 ...
+
+#39 [migrate] exporting to image
+#39 exporting layers 0.0s done
+#39 exporting manifest sha256:af3cfcf7cf8167c220a378f9119bc07e8deaf7d6747ba460aa1721ba24633ade 0.8s done
+#39 exporting config sha256:cfdec5430f28840cb4931a695c2d34087a33deab5d224fb5e3b416f129a0174e 0.9s done
+#39 exporting attestation manifest sha256:6c67d235ecab9e3ee53aedb5c43065be34584e8ea87405e9db501acc7178182e 3.4s done
+#39 exporting manifest list sha256:3f38cd76e99f2aa847e198ec2d2a00d387d9eff810bfbf87b1deaaa1f5cbad2b 2.2s done
+#39 naming to docker.io/library/task90dryrun-migrate:latest
+#39 naming to docker.io/library/task90dryrun-migrate:latest 1.2s done
+#39 unpacking to docker.io/library/task90dryrun-migrate:latest
+#39 ...
+
+#37 [worker] exporting to image
+#37 naming to docker.io/library/task90dryrun-worker:latest 1.1s done
+#37 unpacking to docker.io/library/task90dryrun-worker:latest
+#37 unpacking to docker.io/library/task90dryrun-worker:latest 1.8s done
+#37 ...
+
+#39 [migrate] exporting to image
+#39 unpacking to docker.io/library/task90dryrun-migrate:latest 1.8s done
+#39 DONE 12.4s
+
+#38 [api] exporting to image
+#38 naming to docker.io/library/task90dryrun-api:latest 1.2s done
+#38 unpacking to docker.io/library/task90dryrun-api:latest 1.8s done
+#38 DONE 12.4s
+
+#37 [worker] exporting to image
+#37 DONE 12.4s
+
+#40 [google-maps-scraper] resolving provenance for metadata file
+#40 ...
+
+#41 [migrate] resolving provenance for metadata file
+#41 ...
+
+#40 [google-maps-scraper] resolving provenance for metadata file
+#40 DONE 7.0s
+
+#42 [email-verifier] resolving provenance for metadata file
+#42 DONE 6.7s
+
+#43 [reacher] resolving provenance for metadata file
+#43 DONE 5.6s
+
+#44 [api] resolving provenance for metadata file
+#44 ...
+
+#45 [social-analyzer] resolving provenance for metadata file
+#45 DONE 5.0s
+
+#46 [worker] resolving provenance for metadata file
+#46 ...
+
+#41 [migrate] resolving provenance for metadata file
+#41 DONE 3.7s
+
+#46 [worker] resolving provenance for metadata file
+#46 DONE 2.4s
+
+#44 [api] resolving provenance for metadata file
+#44 DONE 3.5s
+ Image task90dryrun-migrate Built
+ Image task90dryrun-worker Built
+ Image task90dryrun-api Built
+ Image hyrepath/fake-sidecar:latest Built
+ Image hyrepath/fake-sidecar:latest Built
+ Image hyrepath/fake-sidecar:latest Built
+ Image hyrepath/fake-sidecar:latest Built
+ Container task90dryrun-postgres-1 Running
+ Container task90dryrun-redis-1 Running
+ Container task90dryrun-reacher-1 Creating
+ Container task90dryrun-email-verifier-1 Creating
+ Container task90dryrun-google-maps-scraper-1 Recreate
+ Container task90dryrun-migrate-1 Recreate
+ Container task90dryrun-social-analyzer-1 Recreate
+ Container task90dryrun-reacher-1 Created
+ Container task90dryrun-email-verifier-1 Created
+ Container task90dryrun-migrate-1 Recreated
+ Container task90dryrun-api-1 Recreate
+ Container task90dryrun-worker-1 Recreate
+ Container task90dryrun-google-maps-scraper-1 Recreated
+ Container task90dryrun-social-analyzer-1 Recreated
+ Container task90dryrun-api-1 Recreated
+ Container task90dryrun-worker-1 Recreated
+ Container task90dryrun-social-analyzer-1 Starting
+ Container task90dryrun-postgres-1 Waiting
+ Container task90dryrun-reacher-1 Starting
+ Container task90dryrun-google-maps-scraper-1 Starting
+ Container task90dryrun-email-verifier-1 Starting
+ Container task90dryrun-postgres-1 Healthy
+ Container task90dryrun-migrate-1 Starting
+ Container task90dryrun-google-maps-scraper-1 Started
+ Container task90dryrun-reacher-1 Started
+ Container task90dryrun-social-analyzer-1 Started
+ Container task90dryrun-migrate-1 Started
+ Container task90dryrun-redis-1 Waiting
+ Container task90dryrun-migrate-1 Waiting
+ Container task90dryrun-migrate-1 Waiting
+ Container task90dryrun-redis-1 Waiting
+ Container task90dryrun-email-verifier-1 Started
+ Container task90dryrun-redis-1 Healthy
+ Container task90dryrun-redis-1 Healthy
+ Container task90dryrun-migrate-1 Exited
+ Container task90dryrun-api-1 Starting
+ Container task90dryrun-migrate-1 Exited
+ Container task90dryrun-worker-1 Starting
+ Container task90dryrun-worker-1 Started
+ Container task90dryrun-api-1 Started
+== waiting for API health ==
+PASS  health 200
+== worker reachability to sidecars ==
+PASS  worker can reach all fake sidecars
+== fake sidecar probe inside api ==
+== Fake sidecar E2E probe ==
+PASS  api_health: status=200
+PASS  fake_sa_health: GET /get_settings
+PASS  fake_gmaps_health: POST /api/v1/jobs
+PASS  fake_email_verifier_health: GET /v1/health@example.com/verification
+PASS  fake_reacher_health: POST /v1/check_email
+PASS  enricher_social_analyzer: handles=2 platforms=['GitHub', 'Twitter']
+PASS  enricher_local_business: business_name=Hey Neighbor Cafe
+PASS  enricher_email_verify_basic: source=AfterShip Email Verifier
+PASS  enricher_email_verify_smtp: reacher_hits=1
+PASS  api_async_tier4: status=completed sources=['Google Maps Scraper'] business=Hey Neighbor Cafe
+PASS  sse_job_events: events=[{'job_id': 'job_e4a98c8d92c940598d101edd4fa87ff6', 'status': 'completed'}]
+
+Report written to /app/backend/.e2e-results/fake-sidecars-report.json
+Summary: 11 passed, 0 failed
+PASS  fake sidecar probe
+cat: 'C:/Program Files/Git/app/backend/.e2e-results/fake-sidecars-report.json': No such file or directory
+
+All fake sidecar E2E checks passed.
+time="2026-07-21T12:54:36Z" level=warning msg="/mnt/g/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend/docker/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Container task90dryrun-worker-1 Stopping
+ Container task90dryrun-social-analyzer-1 Stopping
+ Container task90dryrun-reacher-1 Stopping
+ Container task90dryrun-api-1 Stopping
+ Container task90dryrun-email-verifier-1 Stopping
+ Container task90dryrun-google-maps-scraper-1 Stopping
+ Container task90dryrun-api-1 Stopped
+ Container task90dryrun-api-1 Removing
+ Container task90dryrun-worker-1 Stopped
+ Container task90dryrun-worker-1 Removing
+ Container task90dryrun-api-1 Removed
+ Container task90dryrun-worker-1 Removed
+ Container task90dryrun-migrate-1 Stopping
+ Container task90dryrun-redis-1 Stopping
+ Container task90dryrun-migrate-1 Stopped
+ Container task90dryrun-migrate-1 Removing
+ Container task90dryrun-migrate-1 Removed
+ Container task90dryrun-postgres-1 Stopping
+ Container task90dryrun-redis-1 Stopped
+ Container task90dryrun-redis-1 Removing
+ Container task90dryrun-redis-1 Removed
+ Container task90dryrun-postgres-1 Stopped
+ Container task90dryrun-postgres-1 Removing
+ Container task90dryrun-postgres-1 Removed
+ Container task90dryrun-email-verifier-1 Stopped
+ Container task90dryrun-email-verifier-1 Removing
+ Container task90dryrun-social-analyzer-1 Stopped
+ Container task90dryrun-social-analyzer-1 Removing
+ Container task90dryrun-email-verifier-1 Removed
+ Container task90dryrun-reacher-1 Stopped
+ Container task90dryrun-reacher-1 Removing
+ Container task90dryrun-google-maps-scraper-1 Stopped
+ Container task90dryrun-google-maps-scraper-1 Removing
+ Container task90dryrun-social-analyzer-1 Removed
+ Container task90dryrun-reacher-1 Removed
+ Container task90dryrun-google-maps-scraper-1 Removed
+ Network task90dryrun_default Removing
+ Network task90dryrun_default Removed
+PASS  fake_sidecars (exit=0, 79s)
+
+Full-path report: G:\ThunderMarketingCorp\HyerEnrichment\.worktrees\task90-prod-dryrun\backend\.e2e-results\full-path-report.json
+Summary: 2 passed, 0 failed, 0 skipped
+PASS  full_path_e2e
+report: G:/ThunderMarketingCorp/HyerEnrichment/.worktrees/task90-prod-dryrun/backend/.e2e-results/prod-acceptance-report.json
+prod full acceptance ok
+PROD_FULL_ACCEPTANCE_EXIT_CODE=0

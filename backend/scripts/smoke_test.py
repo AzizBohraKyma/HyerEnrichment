@@ -19,6 +19,14 @@ import uuid
 
 import requests
 
+# Some messages below use non-ASCII arrows (\u2192). On Windows, stdout/stderr
+# default to the legacy console code page (e.g. cp1252) rather than UTF-8,
+# which raises UnicodeEncodeError and crashes the script before it can report
+# a single result. Force UTF-8 so this runs the same on any OS/terminal.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000").rstrip("/")
 API_TOKEN = os.environ.get("API_TOKEN", "change-me")
 TIMEOUT = float(os.environ.get("SMOKE_TIMEOUT", "60"))
