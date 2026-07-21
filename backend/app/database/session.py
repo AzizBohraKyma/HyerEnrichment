@@ -6,6 +6,7 @@ from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import get_settings
@@ -40,7 +41,7 @@ def _to_sync_url(url: str) -> str:
     return url
 
 
-def legacy_pre_alembic(connection) -> bool:
+def legacy_pre_alembic(connection: Connection) -> bool:
     """True when ORM tables exist but Alembic has never stamped this database."""
     inspector = inspect(connection)
     tables = set(inspector.get_table_names())

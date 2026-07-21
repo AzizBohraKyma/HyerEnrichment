@@ -14,6 +14,7 @@ import sys
 import uuid
 from contextvars import ContextVar
 from datetime import datetime, timezone
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -164,7 +165,9 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next: Any) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         incoming = request.headers.get("x-request-id", "").strip()
         request_id = incoming or str(uuid.uuid4())
         token = _request_id_ctx.set(request_id)

@@ -72,7 +72,22 @@ line-length = 100
 [tool.mypy]
 python_version = "3.12"
 warn_unused_configs = true
-strict = false
+strict = true
+# Prefer per-module overrides below over a blanket ignore_missing_imports.
+ignore_missing_imports = false
+
+[[tool.mypy.overrides]]
+module = [
+  "redis.*",
+  "rq.*",
+  "aioboto3.*",
+  "selenium.*",
+  "jobspy.*",
+  "dns.*",
+  "playwright.*",
+  "langfuse",
+  "MailChecker",
+]
 ignore_missing_imports = true
 
 [tool.coverage.run]

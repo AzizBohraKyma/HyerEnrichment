@@ -52,7 +52,7 @@ class SocialAnalyzerEnricher(Enricher):
                 "profiles": ["detected"],
             },
         )
-        if not isinstance(data, dict) or data == "Error":
+        if data == "Error" or not isinstance(data, dict):
             return {}
 
         candidates = extract_social_analyzer_candidates(data)

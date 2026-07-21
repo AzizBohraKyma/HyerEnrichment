@@ -52,4 +52,7 @@ class JobSpyEnricher(Enricher):
             return []
         if frame is None or getattr(frame, "empty", True):
             return []
-        return frame.to_dict(orient="records")
+        records = frame.to_dict(orient="records")
+        if not isinstance(records, list):
+            return []
+        return [row for row in records if isinstance(row, dict)]

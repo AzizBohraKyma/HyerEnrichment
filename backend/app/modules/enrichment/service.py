@@ -15,6 +15,7 @@ from app.domain.enrichment import (
 )
 from app.domain.enums import JobStatus
 from app.enrichers.pipeline import Pipeline
+from app.modules.enrichment.models import JobRecord
 from app.workers.queue import enqueue_enrichment
 
 
@@ -72,7 +73,7 @@ class EnrichmentService:
         )
 
     @staticmethod
-    def _to_response(job) -> EnrichmentJobResponse:
+    def _to_response(job: JobRecord) -> EnrichmentJobResponse:
         return EnrichmentJobResponse(
             id=job.id,
             status=JobStatus(job.status),

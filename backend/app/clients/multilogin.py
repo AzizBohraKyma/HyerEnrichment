@@ -98,7 +98,7 @@ class MultiloginClient:
             )
 
         refreshed = response.json().get("data", {}).get("token")
-        if not refreshed:
+        if not isinstance(refreshed, str) or not refreshed:
             raise MultiloginError("Multilogin refresh_token response missing token")
         return refreshed
 
@@ -146,6 +146,8 @@ class MultiloginClient:
                 api_base=api_base,
             )
 
+        if not isinstance(token, str) or not token:
+            raise MultiloginError("Multilogin sign-in response missing token")
         self._token = token
         self._token_expires_at = time.monotonic() + _TOKEN_TTL_SECONDS
         return token

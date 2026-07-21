@@ -100,8 +100,7 @@ class LinkedInBrowserClient:
                         and attempt < same_profile_retries
                     ):
                         continue
-                    if partial.outcome != LinkedInPhotoError.SUCCESS:
-                        save_failure_screenshot(driver, job_id)
+                    save_failure_screenshot(driver, job_id)
                     profile_outcome = map_outcome_to_profile(partial.outcome)
                     if profile_id and profile_outcome:
                         await self.pool.release(profile_id, profile_outcome)
