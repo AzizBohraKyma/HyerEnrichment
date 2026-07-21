@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - optional dependency
         def inc(self, *_args: object, **_kwargs: object) -> None:
             return None
 
-    def Counter(*_args: object, **_kwargs: object) -> _NoopMetric:  # type: ignore[no-redef,misc]
+    def Counter(*_args: object, **_kwargs: object) -> _NoopMetric:  # type: ignore[no-redef]
         return _NoopMetric()
 
 

@@ -41,7 +41,7 @@ async def check_rate_limit(client: Redis, scope: str, limit: int, window_seconds
     correctness).
     """
     key = f"ratelimit:{scope}"
-    count = await client.incr(key)
+    count = int(await client.incr(key))
     if count == 1:
         await client.expire(key, window_seconds)
     return count <= limit

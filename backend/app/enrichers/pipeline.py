@@ -17,6 +17,7 @@ from app.compliance.suppression import (
     is_request_suppressed,
 )
 from app.core.config import get_settings
+from app.domain.dossier import ConfidenceBreakdown, Dossier, SocialHandle
 from app.domain.enrichment import EnrichmentRequest
 from app.domain.enums import AuditEventType, JobStatus, RequestedTier
 from app.enrichers._shared import common_email_patterns, slugify_domain
@@ -311,7 +312,7 @@ class Pipeline:
         payload.setdefault("sources", [self._email_verify.source_name])
         return payload
 
-    async def _merge(self, request: EnrichmentRequest, payloads: list[dict[str, Any]]):
+    async def _merge(self, request: EnrichmentRequest, payloads: list[dict[str, Any]]) -> Dossier:
         dossier = merge_payloads(request, payloads)
         dossier.handles, dropped = await disambiguate_handles(
             request, dossier.handles, llm=self.llm
@@ -322,10 +323,12 @@ class Pipeline:
         return dossier
 
     # Compat aliases used by older tests that call private helpers on the orchestrator
-    async def _disambiguate_handles(self, request: EnrichmentRequest, handles):
+    async def _disambiguate_handles(
+        self, request: EnrichmentRequest, handles: list[SocialHandle]
+    ) -> tuple[list[SocialHandle], int]:
         return await disambiguate_handles(request, handles, llm=self.llm)
 
-    def _base_dossier(self, request: EnrichmentRequest):
+    def _base_dossier(self, request: EnrichmentRequest) -> Dossier:
         return base_dossier(request)
 
     @staticmethod
@@ -340,7 +343,9 @@ class Pipeline:
 
         return job_location_specificity(location)
 
-    async def _build_confidence(self, request: EnrichmentRequest, dossier):
+    async def _build_confidence(
+        self, request: EnrichmentRequest, dossier: Dossier
+    ) -> list[ConfidenceBreakdown]:
         return build_confidence(request, dossier)
 
     async def _is_suppressed(self, request: EnrichmentRequest) -> bool:

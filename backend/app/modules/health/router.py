@@ -12,7 +12,7 @@ except ImportError:  # pragma: no cover - optional runtime dependency fallback
     def _generate_latest_noop(*_args: Any, **_kwargs: Any) -> bytes:
         return b""
 
-    generate_latest = _generate_latest_noop  # type: ignore[assignment]
+    generate_latest = _generate_latest_noop
 
 from app.core.api_route import EnvelopeAPIRoute
 from app.core.config import Settings, get_settings
@@ -55,7 +55,7 @@ async def metrics() -> PlainTextResponse:
 
 
 @router.post("/internal/error-tracking-probe")
-async def error_tracking_probe(settings: Settings = Depends(get_settings)):
+async def error_tracking_probe(settings: Settings = Depends(get_settings)) -> dict[str, Any]:
     """E2E-only probe: capture a known exception when explicitly enabled."""
     if not settings.enable_error_tracking_probe:
         raise NotFoundError("not found")

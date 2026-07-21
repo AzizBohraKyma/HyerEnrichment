@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from redis.exceptions import RedisError
 from sqlalchemy import select
@@ -60,7 +61,7 @@ def _payload_from_record(record: PhotoCacheRecord) -> dict[str, str | float]:
     }
 
 
-def _photo_from_payload(payload: dict) -> PhotoAsset | None:
+def _photo_from_payload(payload: dict[str, Any]) -> PhotoAsset | None:
     expires_raw = payload.get("expires_at")
     if not expires_raw:
         return None
