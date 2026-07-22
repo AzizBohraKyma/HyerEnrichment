@@ -9,8 +9,18 @@
 #   -f docker-compose.tier1.yml as a third file when ENABLE_TIER1=true.
 #
 # TLS terminates at the reverse proxy (see docs/deployment.md); API listens HTTP :8000.
+#
+# NOTE: Compose merges `ports:` lists across -f files by concatenation, not
+# override — a bare `ports:` here would ADD to docker-compose.yml's mapping
+# instead of replacing it (api would then try to bind both 0.0.0.0:8000 and
+# 127.0.0.1:8000, which self-conflicts and fails to start). The `!override`
+# merge tag (Compose spec, Docker Compose v2.24+) forces a real replace.
 
 services:
+  migrate:
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+
   api:
     env_file:
       - ${API_ENV_FILE:-../.env.production}
@@ -19,7 +29,7 @@ services:
       API_TOKEN: ${API_TOKEN:?set API_TOKEN}
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
       REDIS_URL: ${REDIS_URL:?set REDIS_URL}
-    ports:
+    ports: !override
       - "127.0.0.1:8000:8000"
     restart: unless-stopped
 
@@ -46,13 +56,13 @@ services:
     restart: unless-stopped
 
   social-analyzer:
-    ports: []
+    ports: !override []
     restart: unless-stopped
 
   google-maps-scraper:
-    ports: []
+    ports: !override []
     restart: unless-stopped
 
   email-verifier:
-    ports: []
+    ports: !override []
     restart: unless-stopped

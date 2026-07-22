@@ -8,6 +8,11 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: ^backend/docker/docker-compose.*\.yml$
+      - id: check-yaml
+        name: check-yaml (compose merge tags, syntax-only)
+        args: [--unsafe]
+        files: ^backend/docker/docker-compose.*\.yml$
       - id: check-added-large-files
       - id: detect-private-key
 
