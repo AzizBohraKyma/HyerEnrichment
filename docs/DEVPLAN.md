@@ -42,6 +42,7 @@ Make “clone → run → verify” one path. **These items are open until merge
 - [x] **Smoke beyond health (gap 77)** — Expand [`backend/scripts/smoke_test.py`](../backend/scripts/smoke_test.py) past `GET /health`: reject unauthenticated enrich; run a tiny authenticated `/enrich/sync`; exit non-zero on failure. Wire `make smoke` once the Makefile exists.
 - [ ] **DEVPLAN (gap 82)** — This file. Keep phases updated when milestones land; do not treat presence of the file as “project complete.”
 - [x] **Fresh-setup verification (gap 84)** — After Makefile + smoke land: on a clean machine/worktree run `make setup` → `make up` → `make smoke` and record evidence (commands, dates, pass/fail). See [`SETUP_VERIFICATION.md`](SETUP_VERIFICATION.md).
+- [x] **WSL2 + Tier 1 dev topology** — One-time `systemd` fix for Docker `localhost` ports in WSL2, and native RQ worker required for Multilogin ChromeDriver access. See [`DEV_SETUP_WSL.md`](DEV_SETUP_WSL.md).
 
 **Exit:** A new contributor can follow docs-only commands and get a green smoke without tribal knowledge.
 
