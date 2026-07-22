@@ -1,0 +1,72 @@
+time="2026-07-22T06:11:35Z" level=warning msg="/mnt/g/ThunderMarketingCorp/HyerEnrichment/backend/docker/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+== real-world single-profile run ==
+POST http://127.0.0.1:8000/enrich  tiers=['tier2', 'tier3', 'tier4']
+identifiers: linkedin_url=https://www.linkedin.com/in/nithin-kamath-81136242/ username=Nithin0dha company=Zerodha business=Zerodha Bengaluru email=None
+job_id=job_566d095d13744a678acac9f144a458d4 — polling until completed (timeout=600s)
+  ... status=queued (0s elapsed)
+  ... status=queued (10s elapsed)
+  ... status=queued (20s elapsed)
+  ... status=queued (30s elapsed)
+  ... status=queued (40s elapsed)
+  ... status=queued (50s elapsed)
+  ... status=queued (60s elapsed)
+  ... status=queued (70s elapsed)
+  ... status=queued (80s elapsed)
+  ... status=queued (90s elapsed)
+  ... status=queued (100s elapsed)
+  ... status=queued (110s elapsed)
+  ... status=queued (120s elapsed)
+  ... status=queued (130s elapsed)
+  ... status=queued (140s elapsed)
+  ... status=queued (150s elapsed)
+  ... status=queued (160s elapsed)
+  ... status=queued (170s elapsed)
+  ... status=completed (180s elapsed)
+
+== merged dossier ==
+photo: asset_url=(none) confidence=None
+handles (18):
+  - Aniworld: Nithin0dha (https://aniworld.to/user/profil/Nithin0dha) confidence=0.75
+  - Bsky: Nithin0dha (https://bsky.app/profile/Nithin0dha.bsky.social) confidence=0.85
+  - Clubhouse: Nithin0dha (https://www.clubhouse.com/@Nithin0dha) confidence=0.75
+  - Periscope: Nithin0dha (https://www.periscope.tv/Nithin0dha/) confidence=0.75
+  - Producthunt: Nithin0dha (https://www.producthunt.com/@Nithin0dha) confidence=0.85
+  - T: Nithin0dha (https://t.me/Nithin0dha) confidence=0.85
+  - Trakt: Nithin0dha (https://www.trakt.tv/users/Nithin0dha) confidence=0.75
+  - Mastodon: Nithin0dha (https://mastodon.cloud/@Nithin0dha) confidence=0.75
+  - Baby: Nithin0dha (https://www.baby.ru/u/Nithin0dha) confidence=0.75
+  - Patreon: Nithin0dha (https://www.patreon.com/soxoj) confidence=0.85
+  - Cdn: Nithin0dha (https://cdn.bsky.app/img/avatar/plain/did:plc:xoawbiefkgqprl5h6epgmqdq/bafkreidi3wluqg7zk4jh5uit3mc4tvrclztgb6gblaxsczie7xxfthl5hq) confidence=0.85
+  - Api: Nithin0dha (https://api.memory.lol/v1/tw/Nithin0dha) confidence=0.85
+  - Twitter: Nithin0dha (https://twitter.com/Nithin0dha) confidence=0.85
+  - Pbs: Nithin0dha (https://pbs.twimg.com/profile_images/2051257929026936832/IfHfgfrb.jpg) confidence=0.85
+  - Zerodha: Nithin0dha (http://www.zerodha.com) confidence=0.85
+  - Computers Electronics and Technology > Social Networks and Online Communities: Nithin0dha (https://facebook.com/Nithin0dha) confidence=1.0
+  - Computers Electronics and Technology > Computers Electronics and Technology: Nithin0dha (https://t.me/Nithin0dha) confidence=1.0
+  - Internet: Nithin0dha (https://mobile.twitter.com/Nithin0dha) confidence=0.91
+emails: ['cmartorella@edge-security.com', 'nithindha@zerodha.com', 'nithin.kamath@zerodha.com', 'prateek.singh@zerodha.com', 'nikhil.kamath@zerodha.com', 'vinay.c@zerodha.com', 'sagar.gudekote@zerodha.com', 'shameek.kolambkar@zerodha.com', 'dinesh.pai@zerodha.com', 'krishna.l.@zerodha.com', 'akshay.degamwar@zerodha.com', 'vishal.jain@zerodha.com', 'anurag.bansal@zerodha.com', 'viraj.joshi@zerodha.com', 'kashish.kapoor@zerodha.com', 'swati.sharma@zerodha.com', 'ratan.kumar@zerodha.com', 'salman.quraishi@zerodha.com', 'sindhu.kr@zerodha.com', 'abhinav.negi@zerodha.com', 'austin.prakesh@zerodha.com', 'pawan.tripathi@zerodha.com', 'shradha.pujar@zerodha.com', 'neelesh.verma@zerodha.com', 'bhuvanesh.r@zerodha.com', 'abhinav.raut@zerodha.com', 'akhila.a.@zerodha.com', 'aastha.khurana@zerodha.com', 'nithin.sasikumar@zerodha.com', 'jayanti.bhattacharya@zerodha.com', 'dr..agrawal@zerodha.com', 'abid.hassan@zerodha.com', 'faisal.mohammed@zerodha.com', 'yogesh.varthe@zerodha.com', 'kedarnath.mirajkar@zerodha.com', 'vishnu.sudhakaran@zerodha.com', 'anurag.priyadarshi@zerodha.com', 'karan.sharma@zerodha.com', 'dong.qing@zerodha.com', 'rohit.soni@zerodha.com', 'nithya.easwaran@zerodha.com', 'sneha.p.@zerodha.com', 'hanan.delvi@zerodha.com', 'ajin.asokan@zerodha.com', 'vaibhav.jalan@zerodha.com', 'tarang.meher@zerodha.com', 'anshul.rai@zerodha.com', 'vinod.sathyaraj@zerodha.com', 'naman.lohiya@zerodha.com', 'shivam.parashar@zerodha.com', 'manikandan.ramalingam@zerodha.com', 'rishi.sharma@zerodha.com', 'milan.ray@zerodha.com', 'seema.patil@zerodha.com', 'junaid.khan@zerodha.com', 'aniket.thakkar@zerodha.com', 'akshara.mayya@zerodha.com', 'vipul.jain@zerodha.com', 'sarita.raichura@zerodha.com', 'chinmay.kamat@zerodha.com', 'asif.mulla@zerodha.com', 'lizzie.chapman@zerodha.com', 'bhaskar.s@zerodha.com', 'adesh.tyagi@zerodha.com', 'shivani.singh@zerodha.com', 'pankthi.jain@zerodha.com', 'raj.shamani@zerodha.com', 'cs.s@zerodha.com', 'priyanka.adhikary@zerodha.com', 'vishranth.suresh@zerodha.com', 'marie.guillouette@zerodha.com', 'kabilan.senguttuvan@zerodha.com', 'nirmal.m.jain@zerodha.com', 'nishkaam.mehta@zerodha.com', 'manojkumar.sampathkumar@zerodha.com', 'jayesh.bhawsar@zerodha.com', 'saumya.choudhary@zerodha.com', 'charulika.raman@zerodha.com']
+verified_emails (10):
+  - cmartorella@edge-security.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - nithindha@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - nithin.kamath@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - prateek.singh@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - nikhil.kamath@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - vinay.c@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - sagar.gudekote@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - shameek.kolambkar@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - dinesh.pai@zerodha.com status=deliverable confidence=0.65 source=AfterShip Email Verifier
+  - krishna.l.@zerodha.com status=disposable confidence=0.0 source=mailchecker
+github: (empty)
+coworkers (76): ['Nithin Kamath', 'Prateek Singh', 'Nikhil Kamath', 'Vinay C', 'Sagar Gudekote', 'Shameek Kolambkar', 'Dinesh Pai', 'Krishna L', 'Akshay Degamwar', 'Vishal Jain', 'Anurag Bansal', 'Viraj Joshi', 'Kashish Kapoor', 'Swati Sharma', 'Ratan Kumar', 'Salman Quraishi', 'Sindhu Kr', 'Abhinav Negi', 'Austin Prakesh', 'Pawan Tripathi', 'Shradha Pujar', 'Neelesh Verma', 'Bhuvanesh R', 'Abhinav Raut', 'Akhila A', 'Aastha Khurana', 'Nithin Sasikumar', 'Jayanti Bhattacharya', 'Dr Agrawal', 'Abid Hassan', 'Faisal Mohammed', 'Yogesh Varthe', 'Kedarnath Mirajkar', 'Vishnu Sudhakaran', 'Anurag Priyadarshi', 'Karan Sharma', 'Dong Qing', 'Rohit Soni', 'Nithya Easwaran', 'Sneha P', 'Hanan Delvi', 'Ajin Asokan', 'Vaibhav Jalan', 'Tarang Meher', 'Anshul Rai', 'Vinod Sathyaraj', 'Naman Lohiya', 'Shivam Parashar', 'Manikandan Ramalingam', 'Rishi Sharma', 'Milan Ray', 'Seema Patil', 'Junaid Khan', 'Aniket Thakkar', 'Akshara Mayya', 'Vipul Jain', 'Sarita Raichura', 'Chinmay Kamat', 'Asif Mulla', 'Lizzie Chapman', 'Bhaskar S', 'Adesh Tyagi', 'Shivani Singh', 'Pankthi Jain', 'Raj Shamani', 'Cs S', 'Priyanka Adhikary', 'Vishranth Suresh', 'Marie Guillouette', 'Kabilan Senguttuvan', 'Nirmal M Jain', 'Nishkaam Mehta', 'Manojkumar Sampathkumar', 'Jayesh Bhawsar', 'Saumya Choudhary', 'Charulika Raman']
+jobs (0):
+business: {'name': 'Zerodha Fund House', 'address': '2nd floor, Zerodha Fund House, Indiqube Penta, Richmond Rd, Shanthala Nagar, Ashok Nagar, Bengaluru, Karnataka 560025', 'website': 'https://www.zerodhafundhouse.com/', 'rating': 4.1, 'phone': '', 'metadata': {'job_id': '6e6d971e-4529-4812-a931-7f6b0eedf5b0', 'provider': 'Google Maps Scraper'}}
+sources: ['CrossLinked', 'Email Sleuth', 'Email Verify', 'Google Maps Scraper', 'Maigret', 'Sherlock', 'Social Analyzer', 'theHarvester']
+confidence breakdown:
+  - identity-match: 0.91 evidence=['cross-source handles: 18', 'llm disambiguation dropped: 0', 'avg handle confidence: 0.84']
+  - email-verification: 0.89 evidence=['verified emails: 9']
+  - coverage: 1.0 evidence=['sources: CrossLinked, Email Sleuth, Email Verify, Google Maps Scraper, Maigret, Sherlock, Social Analyzer, theHarvester']
+
+PASS  job completed in 180.7s, sources=['CrossLinked', 'Email Sleuth', 'Email Verify', 'Google Maps Scraper', 'Maigret', 'Sherlock', 'Social Analyzer', 'theHarvester']
+
+Report written to /app/backend/.e2e-results/real-world-single-profile-report.json
+time="2026-07-22T06:14:39Z" level=warning msg="/mnt/g/ThunderMarketingCorp/HyerEnrichment/backend/docker/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"

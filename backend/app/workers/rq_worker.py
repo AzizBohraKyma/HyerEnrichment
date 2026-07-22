@@ -36,7 +36,10 @@ def main() -> None:
         worker = Worker([queue], connection=connection)
     else:
         worker = SimpleWorker([queue], connection=connection)
-        worker.death_penalty_class = _NoOpDeathPenalty
+        # RQ's stubs type this as UnixSignalDeathPenalty specifically; the
+        # Windows-safe no-op subclass below satisfies BaseDeathPenalty at
+        # runtime but not that narrower stub type.
+        worker.death_penalty_class = _NoOpDeathPenalty  # type: ignore[assignment]
     worker.work(with_scheduler=True)
 
 
