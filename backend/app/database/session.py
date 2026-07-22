@@ -1,13 +1,15 @@
 import logging
 from collections.abc import AsyncIterator
 from pathlib import Path
+from typing import Any
 
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import ConnectionPoolEntry
 
 from app.core.config import get_settings
 
@@ -15,7 +17,26 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 # pool_pre_ping recycles stale connections (e.g. after a Postgres restart).
-engine = create_async_engine(settings.database_url, future=True, pool_pre_ping=True)
+_engine_kwargs: dict[str, Any] = {"future": True, "pool_pre_ping": True}
+if settings.database_url.startswith("sqlite"):
+    # SQLite's default rollback-journal mode takes an exclusive lock on writes,
+    # so the API and worker processes sharing one file can race and raise
+    # "database is locked" even for short INSERT/UPDATE statements (seen live
+    # during the Tier 1 canary: photo_cache writes from the worker collided
+    # with API reads). WAL allows concurrent readers during a writer, and
+    # busy_timeout makes SQLite retry instead of failing immediately.
+    _engine_kwargs["connect_args"] = {"timeout": 30}
+engine = create_async_engine(settings.database_url, **_engine_kwargs)
+if settings.database_url.startswith("sqlite"):
+
+    @event.listens_for(engine.sync_engine, "connect")
+    def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: ConnectionPoolEntry) -> None:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.close()
+
+
 logger.info("database engine created (dialect=%s)", engine.dialect.name)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 

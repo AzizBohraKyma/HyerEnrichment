@@ -39,6 +39,7 @@ class CanaryRow:
     method: str | None
     confidence: float
     note: str = ""
+    expect_photo: bool = True
 
 
 async def run_canary(path: Path) -> list[CanaryRow]:
@@ -55,6 +56,9 @@ async def run_canary(path: Path) -> list[CanaryRow]:
         url = str(entry.get("linkedin_url") or "").strip()
         slug = extract_linkedin_slug(url) or str(entry.get("slug") or "").strip().lower()
         category = str(entry.get("category") or "unknown")
+        # ``private`` rows model profiles Tier 1 should not surface a photo for;
+        # everything else defaults to expecting a photo unless explicitly overridden.
+        expect_photo = bool(entry.get("expect_photo", category != "private"))
 
         if not url or not slug:
             rows.append(
@@ -68,6 +72,7 @@ async def run_canary(path: Path) -> list[CanaryRow]:
                     method=None,
                     confidence=0.0,
                     note="missing linkedin_url or slug",
+                    expect_photo=expect_photo,
                 )
             )
             continue
@@ -84,21 +89,31 @@ async def run_canary(path: Path) -> list[CanaryRow]:
                     bytes_len=0,
                     method="cache",
                     confidence=cached.confidence,
+                    expect_photo=expect_photo,
                 )
             )
             continue
 
         result = await browser.scrape_photo(url, job_id=f"canary-{slug}")
+        got_photo = result.outcome == LinkedInPhotoError.SUCCESS
+        # Score against the row's expectation, not raw scrape success: a
+        # ``private`` row correctly yielding no photo is a PASS, and a row
+        # that unexpectedly leaks a photo for an ``expect_photo=false``
+        # profile is a real FAIL worth flagging.
+        matches_expectation = got_photo == expect_photo
+        note = "" if matches_expectation else "outcome did not match expect_photo"
         rows.append(
             CanaryRow(
                 slug=slug,
                 linkedin_url=url,
                 category=category,
-                status="OK" if result.outcome == LinkedInPhotoError.SUCCESS else "FAIL",
+                status="OK" if matches_expectation else "FAIL",
                 outcome=result.outcome.value,
                 bytes_len=len(result.image_bytes or b""),
                 method=result.method.value if result.method else None,
                 confidence=result.confidence,
+                note=note,
+                expect_photo=expect_photo,
             )
         )
 

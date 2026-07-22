@@ -141,12 +141,19 @@ class LinkedInBrowserClient:
             save_failure_screenshot(driver, job_id)
             if profile_id:
                 await self.pool.release(profile_id, ProfileOutcome.TEMPORARY_FAILURE)
+                # acquire() already charged a daily view; refund it since no
+                # LinkedIn page was ever actually viewed (start_profile/driver
+                # connect failed before scraping began). Seen live: a
+                # start_profile 400 (profile still "started" from a previous
+                # crashed session) otherwise burns a view for nothing.
+                await self.pool.refund_view(profile_id)
             return LinkedInPhotoResult(outcome=LinkedInPhotoError.TEMPORARY_FAILURE)
         except Exception:
             logger.warning("LinkedIn scrape failed", exc_info=True)
             save_failure_screenshot(driver, job_id)
             if profile_id:
                 await self.pool.release(profile_id, ProfileOutcome.TEMPORARY_FAILURE)
+                await self.pool.refund_view(profile_id)
             return LinkedInPhotoResult(outcome=LinkedInPhotoError.TEMPORARY_FAILURE)
         finally:
             if driver is not None:

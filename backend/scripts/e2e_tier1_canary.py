@@ -78,6 +78,18 @@ def default_expect_photo(category: str, explicit: bool | None = None) -> bool:
     return str(category or "").strip().lower() != "private"
 
 
+def unwrap_envelope(payload: Any) -> dict[str, Any]:
+    """Unwrap the shared ``{success, data}`` response envelope (EnvelopeAPIRoute).
+
+    Falls back to the raw payload for responses that are not enveloped (e.g.
+    error bodies or future unwrapped endpoints) so callers can still inspect them.
+    """
+    if isinstance(payload, dict) and "success" in payload and "data" in payload:
+        data = payload.get("data")
+        return data if isinstance(data, dict) else {}
+    return payload if isinstance(payload, dict) else {}
+
+
 def load_canary_entries(path: Path) -> list[dict[str, Any]]:
     raw = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(raw, list):
@@ -213,7 +225,7 @@ class Tier1ApiCanary:
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(f"{self.base_url}/health")
-            payload = response.json() if response.status_code == 200 else {}
+            payload = unwrap_envelope(response.json()) if response.status_code == 200 else {}
             ok = response.status_code == 200 and payload.get("status") == "ok"
             self.record_check("api_health", ok, f"status={response.status_code}")
         except (httpx.HTTPError, json.JSONDecodeError) as exc:
@@ -235,7 +247,7 @@ class Tier1ApiCanary:
                     f"status={response.status_code} body={response.text[:200]}",
                 )
                 return
-            ok, detail = sync_guard_ok(response.json())
+            ok, detail = sync_guard_ok(unwrap_envelope(response.json()))
             self.record_check("sync_guard", ok, detail)
         except (httpx.HTTPError, json.JSONDecodeError) as exc:
             self.record_check("sync_guard", False, str(exc))
@@ -272,7 +284,7 @@ class Tier1ApiCanary:
                     status="FAIL",
                     detail=f"enqueue status={enqueue.status_code} body={enqueue.text[:200]}",
                 )
-            job_id = str(enqueue.json()["id"])
+            job_id = str(unwrap_envelope(enqueue.json())["id"])
             job = await self._poll_job(job_id)
         except (httpx.HTTPError, KeyError, json.JSONDecodeError) as exc:
             return ProfileResult(
@@ -309,7 +321,7 @@ class Tier1ApiCanary:
                     f"{self.base_url}/enrich/{job_id}",
                     headers=self.headers,
                 )
-                final = poll.json()
+                final = unwrap_envelope(poll.json())
                 if final.get("status") not in {"queued", "running"}:
                     return final
                 await asyncio.sleep(self.poll_interval)
