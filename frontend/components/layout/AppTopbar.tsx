@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HealthIndicator } from "@/components/console/HealthIndicator";
 import { Button } from "@/components/ui/button";
+import { HyrepathLogo } from "@/components/layout/HyrepathLogo";
 
 export function AppTopbar() {
   const pathname = usePathname();
@@ -24,22 +25,32 @@ export function AppTopbar() {
                 : "Look up";
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-sm">
-      <div className="flex items-center gap-3">
-        <div>
-          <p className="text-xs text-muted-foreground">Hyrepath console</p>
-          <p className="text-sm font-medium">{sectionLabel}</p>
+    <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between border-b border-border/40 bg-background/95 px-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:px-6">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <HyrepathLogo className="size-5" />
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Hyrepath
+            </p>
+            <p className="text-sm font-semibold">{sectionLabel}</p>
+          </div>
         </div>
-        <Link
-          href="/"
-          className="hidden text-xs text-muted-foreground hover:text-foreground sm:inline"
-        >
-          Marketing hub
-        </Link>
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="text-muted-foreground">/</span>
+          <Link
+            href="/"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Marketing hub
+          </Link>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <HealthIndicator />
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" size="sm" className="h-9">
           <Link href="/opt-out">Opt out</Link>
         </Button>
       </div>
