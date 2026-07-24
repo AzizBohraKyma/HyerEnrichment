@@ -117,11 +117,17 @@ class Pipeline:
         job = await self.jobs.mark_status(job, JobStatus.running)
         try:
             return await self._execute(job, request, sync_mode=False)
-        except Exception:
+        except Exception as exc:
+            logger.error(
+                "job execution failed",
+                exc_info=True,
+                extra={"job_id": job_id, "exception_type": type(exc).__name__},
+            )
             await self.jobs.rollback()
             failed = await self.jobs.get(job_id)
             if failed is not None:
                 await self.jobs.mark_status(failed, JobStatus.failed)
+                await publish_job_status(job_id, JobStatus.failed)
             raise
 
     async def _execute(
