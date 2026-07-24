@@ -1,0 +1,48 @@
+# Tier-specific worker pools with dedicated concurrency levels
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.tier-workers.yml up -d
+# Scale: docker compose -f ... scale worker-tier1=2 worker-tier234=8
+
+services:
+  # Tier 1 workers: Heavy browser automation (1-2 instances)
+  # Requires: docker-compose.tier1.yml for Multilogin configuration
+  worker-tier1:
+    extends:
+      file: docker-compose.yml
+      service: worker
+    environment:
+      # Queue routing configuration
+      WORKER_QUEUE_MODE: per_tier
+      WORKER_TARGET_QUEUE: tier1
+      # Enable Tier 1 LinkedIn photo scraping
+      ENABLE_TIER1: "true"
+      # Inherit all tier1 settings from docker-compose.tier1.yml when stacked
+    deploy:
+      replicas: 2  # Low concurrency for browser automation
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import redis; r = redis.from_url('${REDIS_URL}'); r.ping()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Tier 2-4 workers: Lightweight API enrichers (4-8 instances)
+  worker-tier234:
+    extends:
+      file: docker-compose.yml
+      service: worker
+    environment:
+      # Queue routing configuration
+      WORKER_QUEUE_MODE: per_tier
+      WORKER_TARGET_QUEUE: tier234
+      # Disable heavy tier1 dependencies
+      ENABLE_TIER1: "false"
+    deploy:
+      replicas: 6  # High concurrency for API-based enrichers
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import redis; r = redis.from_url('${REDIS_URL}'); r.ping()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

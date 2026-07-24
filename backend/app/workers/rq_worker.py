@@ -1,14 +1,17 @@
+import logging
 import os
 from typing import cast
 
-from rq import Queue, SimpleWorker, Worker
+from rq import SimpleWorker, Worker
 from rq.timeouts import BaseDeathPenalty, UnixSignalDeathPenalty
 from rq.worker import BaseWorker
 
 from app.core.config import get_settings, validate_tier1_settings
 from app.core.logging import configure_logging
 from app.observability.error_tracking import init_error_tracking
-from app.workers.queue import QUEUE_NAME, get_redis_connection
+from app.workers.queue import get_redis_connection, get_worker_queue
+
+logger = logging.getLogger(__name__)
 
 
 class _NoOpDeathPenalty(BaseDeathPenalty):
@@ -28,7 +31,10 @@ def main() -> None:
     configure_logging()
     init_error_tracking()
     connection = get_redis_connection()
-    queue = Queue(QUEUE_NAME, connection=connection)
+    queue = get_worker_queue()
+
+    logger.info(f"Worker starting, listening to queue: {queue.name}")
+
     # RQ's default Worker forks (no os.fork on Windows) and uses SIGALRM
     # for job timeouts (also unavailable on Windows). SimpleWorker + no-op
     # death penalty keeps local dev working; Linux production keeps defaults.

@@ -23,6 +23,41 @@ cd backend/docker
 docker compose up --build api worker redis postgres
 ```
 
+### Worker Scaling
+
+**Single-queue mode (default):** All workers process jobs from one shared queue.
+
+```bash
+# Scale workers horizontally (4 workers processing any tier)
+docker compose up -d --scale worker=4
+```
+
+**Tier-specific workers:** Dedicated worker pools per tier with separate concurrency levels.
+
+```bash
+# Deploy with tier-specific workers
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.prod.yml \
+  -f docker-compose.tier-workers.yml \
+  up -d
+
+# Tier 1 (browser): 2 workers
+# Tier 2-4 (API): 6 workers (configurable via deploy.replicas)
+```
+
+**Environment variables for tier-specific routing:**
+
+```bash
+# Queue routing mode (default: single)
+WORKER_QUEUE_MODE=per_tier  # or "single"
+
+# For per_tier mode, each worker specifies its queue
+WORKER_TARGET_QUEUE=tier1    # or "tier234"
+```
+
+See `docker-compose.tier-workers.yml` for the tier-specific worker configuration.
+
 Then:
 
 ```bash
