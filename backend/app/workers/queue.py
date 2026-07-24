@@ -53,4 +53,7 @@ def enqueue_enrichment(job_id: str, requested_tiers: list[RequestedTier] | None 
     queue_name = get_queue_name_for_tiers(tiers)
     connection = get_redis_connection()
     queue = Queue(queue_name, connection=connection)
-    queue.enqueue(run_enrichment_job, job_id)
+
+    # Set job timeout to accommodate full all-tier enrichment (20-30 min typical)
+    timeout_seconds = get_settings().rq_job_timeout_seconds
+    queue.enqueue(run_enrichment_job, job_id, job_timeout=timeout_seconds)

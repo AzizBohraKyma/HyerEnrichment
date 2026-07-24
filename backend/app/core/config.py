@@ -151,6 +151,9 @@ class Settings(BaseSettings):
     # Compliance
     audit_log_retention_years: int = Field(default=5, alias="AUDIT_LOG_RETENTION_YEARS")
 
+    # RQ job timeout (seconds) — must accommodate full all-tier enrichment (20-30 min)
+    rq_job_timeout_seconds: int = Field(default=3000, alias="RQ_JOB_TIMEOUT_SECONDS")
+
 
 _TIER1_PROD_ENVS = frozenset({"production", "staging"})
 
