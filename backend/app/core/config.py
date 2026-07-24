@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,6 +35,18 @@ class Settings(BaseSettings):
     llm_mode: str = Field(default="stub", alias="LLM_MODE")  # stub|ollama|litellm
     email_verify_level: str = Field(default="basic", alias="EMAIL_VERIFY_LEVEL")  # basic|smtp
     enable_tier1: bool = Field(default=False, alias="ENABLE_TIER1")
+
+    # Worker queue routing
+    worker_queue_mode: Literal["single", "per_tier"] = Field(
+        default="single",
+        alias="WORKER_QUEUE_MODE",
+        description="Queue routing: 'single' (default) or 'per_tier' (tier1 + tier234 queues)",
+    )
+    worker_target_queue: str | None = Field(
+        default=None,
+        alias="WORKER_TARGET_QUEUE",
+        description="For per_tier mode: which queue this worker listens to (tier1 or tier234)",
+    )
 
     # Tier 1 — LinkedIn photo (Multilogin + Selenium)
     multilogin_api_url: str = Field(

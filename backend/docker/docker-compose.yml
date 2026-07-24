@@ -295,7 +295,7 @@ services:
     profiles: ["observability"]
     command: ./manage.py migrate
     environment: &glitchtip-env
-      DATABASE_URL: ${GLITCHTIP_DATABASE_URL:-postgresql://hyrepath:hyrepath@postgres:5432/glitchtip}
+      DATABASE_URL: ${GLITCHTIP_DATABASE_URL:-postgresql://hyrepath:psjjssjsjndj479987ffhudfui@postgres:5432/glitchtip}
       SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-change-me-glitchtip-secret}
       PORT: "8000"
       GLITCHTIP_DOMAIN: ${GLITCHTIP_PUBLIC_URL:-http://localhost:8001}
