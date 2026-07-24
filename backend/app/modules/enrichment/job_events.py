@@ -19,7 +19,9 @@ from app.domain.enums import JobStatus
 
 logger = logging.getLogger(__name__)
 
-TERMINAL_STATUSES = frozenset({JobStatus.completed, JobStatus.failed, JobStatus.suppressed})
+TERMINAL_STATUSES = frozenset(
+    {JobStatus.completed, JobStatus.completed_no_data, JobStatus.failed, JobStatus.suppressed}
+)
 
 HEARTBEAT_SECONDS = 15.0
 MAX_STREAM_SECONDS = 300.0

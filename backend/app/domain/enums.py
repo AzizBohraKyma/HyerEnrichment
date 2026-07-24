@@ -12,6 +12,7 @@ class JobStatus(StrEnum):
     queued = "queued"
     running = "running"
     completed = "completed"
+    completed_no_data = "completed_no_data"
     failed = "failed"
     suppressed = "suppressed"
     purged = "purged"

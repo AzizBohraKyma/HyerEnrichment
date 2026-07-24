@@ -142,9 +142,21 @@ class Pipeline:
 
         payloads = await self._dispatch(request, sync_mode=sync_mode)
         dossier = await self._merge(request, payloads)
+
+        # Determine if we found any enrichment data
+        has_data = (
+            dossier.photo is not None
+            or len(dossier.handles) > 0
+            or len(dossier.emails) > 0
+            or len(dossier.verified_emails) > 0
+            or len(dossier.sources) > 0
+            or dossier.business is not None
+        )
+
+        status = JobStatus.completed if has_data else JobStatus.completed_no_data
         return await self.jobs.mark_status(
             job,
-            JobStatus.completed,
+            status,
             dossier_payload=dossier.model_dump(mode="json"),
         )
 
