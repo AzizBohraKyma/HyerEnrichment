@@ -13,11 +13,11 @@ type EntityDetailPanelProps = {
 
 function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="shrink-0 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+    <div className="flex items-start gap-4 mb-3">
+      <div className="w-28 shrink-0 text-xs font-medium uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
-      <div className="text-sm text-foreground">{value}</div>
+      <div className="min-w-0 flex-1 text-sm text-foreground break-words">{value}</div>
     </div>
   );
 }
